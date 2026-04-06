@@ -204,7 +204,7 @@
     .map-btn:active { transform: scale(.97); }
     .map-btn.amap     { background: linear-gradient(135deg,#00b09b,#38ef7d); box-shadow: 0 4px 16px rgba(0,176,155,.4); }
     .map-btn.gmap     { background: linear-gradient(135deg,#4285f4,#34a853); box-shadow: 0 4px 16px rgba(66,133,244,.4); }
-    .map-btn.eleme    { background: linear-gradient(135deg,#00aaff,#0066ff); box-shadow: 0 4px 16px rgba(0,102,255,.4); }
+    .map-btn.eleme    { background: linear-gradient(135deg,#ff6600,#ff4400); box-shadow: 0 4px 16px rgba(255,80,0,.4); }
     .map-btn.meituan  { background: linear-gradient(135deg,#ff6000,#ffaa00); box-shadow: 0 4px 16px rgba(255,96,0,.4); }
     .map-btn.jd       { background: linear-gradient(135deg,#e1251b,#ff6b6b); box-shadow: 0 4px 16px rgba(225,37,27,.4); }
     .map-btn svg { flex-shrink: 0; }
@@ -326,7 +326,7 @@ const I18N = {
     tip:      '✦ 减脂餐概率加权较高，为你的健康加油 ✦',
     amap:     n => `高德地图·搜附近「${n}」`,
     gmap:     n => `Google Maps·搜附近「${n}」`,
-    eleme:    n => `饿了么·搜「${n}」`,
+    eleme:    n => `淘宝闪购·搜「${n}」`,
     meituan:  n => `美团外卖·搜「${n}」`,
     jd:       n => `京东秒送·搜「${n}」`,
     skip1:    '✦ 省下的都是赚到的 ✦',
@@ -341,7 +341,7 @@ const I18N = {
     tip:      '✦ Light Meal has higher weight — stay healthy! ✦',
     amap:     n => `Amap · "${n}" nearby`,
     gmap:     n => `Google Maps · "${n}" nearby`,
-    eleme:    n => `Eleme · "${n}"`,
+    eleme:    n => `Taobao Flash · "${n}"`,
     meituan:  n => `Meituan · "${n}"`,
     jd:       n => `JD Miaosong · "${n}"`,
     skip1:    '✦ Money saved is money earned ✦',
@@ -609,20 +609,18 @@ function openMeituan(kw) {
 function openEleme(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
-  // 降级网页：淘宝闪购（饿了么母公司）外卖搜索
-  const webUrl  = `https://h5.ele.me/waimai/msite/#/?keyword=${encoded}`;
+  // 淘宝闪购（ele.me）主页，两端稳定可访问
+  const webUrl  = `https://www.ele.me/`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
   if (/Android/i.test(ua)) {
-    // intent:// → 优先打开饿了么App(me.ele)，未装则降级H5
+    // 优先打开淘宝App(com.taobao.taobao)，未装降级淘宝闪购网页
     window.location.href =
-      `intent://waimai/home` +
-      `#Intent;scheme=eleme;package=me.ele;` +
+      `intent://taobao.com#Intent;scheme=taobao;` +
+      `package=com.taobao.taobao;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
   } else {
-    // iOS：打开饿了么App首页，关键词已复制，进去长按粘贴
-    const timer = setTimeout(() => { window.location.href = webUrl; }, 1200);
-    window.addEventListener('blur', () => clearTimeout(timer), { once: true });
-    window.location.href = `eleme://`;
+    // iOS：taobao:// 打开淘宝App，1.2s 后降级网页
+    iosOpenApp(`taobao://`, webUrl, kw);
   }
 }
 
