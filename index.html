@@ -204,6 +204,7 @@
     .map-btn:active { transform: scale(.97); }
     .map-btn.amap     { background: linear-gradient(135deg,#00b09b,#38ef7d); box-shadow: 0 4px 16px rgba(0,176,155,.4); }
     .map-btn.gmap     { background: linear-gradient(135deg,#4285f4,#34a853); box-shadow: 0 4px 16px rgba(66,133,244,.4); }
+    .map-btn.meituan  { background: linear-gradient(135deg,#ff6000,#ffaa00); box-shadow: 0 4px 16px rgba(255,96,0,.4); }
     .map-btn svg { flex-shrink: 0; }
 
     .no-map-tip { color: rgba(255,255,255,.3); font-size: .84rem; font-style: italic; }
@@ -301,6 +302,7 @@ const I18N = {
     tip:      '✦ 减脂餐概率加权较高，为你的健康加油 ✦',
     amap:     n => `高德地图·搜附近「${n}」`,
     gmap:     n => `Google Maps·搜附近「${n}」`,
+    meituan:  n => `美团外卖·搜「${n}」`,
     skip1:    '✦ 省下的都是赚到的 ✦',
     skip2:    '✦ 今日断食，清心寡欲 ✦',
   },
@@ -313,6 +315,7 @@ const I18N = {
     tip:      '✦ Light Meal has higher weight — stay healthy! ✦',
     amap:     n => `Amap · "${n}" nearby`,
     gmap:     n => `Google Maps · "${n}" nearby`,
+    meituan:  n => `Meituan · "${n}"`,
     skip1:    '✦ Money saved is money earned ✦',
     skip2:    '✦ Fasting today, virtue +1 ✦',
   },
@@ -512,6 +515,26 @@ const PIN = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
   <circle cx="12" cy="10" r="3"/></svg>`;
 
+function openMeituan(kw) {
+  const ua      = navigator.userAgent;
+  const encoded = encodeURIComponent(kw);
+  const webUrl  = `https://waimai.meituan.com/search?q=${encoded}`;
+
+  if (/Android/i.test(ua)) {
+    // 尝试唤起美团外卖 App 并搜索
+    window.location.href =
+      `intent://waimai.meituan.com/search?q=${encoded}` +
+      `#Intent;scheme=https;package=com.sankuai.meituan.takeoutnew;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+  } else if (/iPhone|iPad|iPod/i.test(ua)) {
+    // iOS：先尝试 App scheme，失败则跳网页
+    const t = setTimeout(() => { window.location.href = webUrl; }, 1000);
+    window.location.href = `meituanwaimai://search?keyword=${encoded}`;
+    window.addEventListener('blur', () => clearTimeout(t), { once: true });
+  } else {
+    window.open(webUrl, '_blank');
+  }
+}
+
 function renderMapArea(food) {
   const mapArea = document.getElementById('mapArea');
   if (food.kw) {
@@ -524,6 +547,7 @@ function renderMapArea(food) {
       <div class="map-btns">
         <a class="map-btn amap"     href="${amapUrl}"  target="_blank" rel="noopener">${PIN} ${tx.amap(name)}</a>
         <a class="map-btn gmap"     href="${gmapUrl}"  target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
+        <button class="map-btn meituan" data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openMeituan(this.dataset.kw)">${PIN} ${tx.meituan(name)}</button>
       </div>`;
   } else {
     const tx  = t();
