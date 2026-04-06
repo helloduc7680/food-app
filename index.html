@@ -328,7 +328,7 @@ const I18N = {
     gmap:     n => `Google Maps·搜附近「${n}」`,
     eleme:    n => `饿了么·搜「${n}」`,
     meituan:  n => `美团外卖·搜「${n}」`,
-    jd:       n => `京东外卖·搜「${n}」`,
+    jd:       n => `京东秒送·搜「${n}」`,
     skip1:    '✦ 省下的都是赚到的 ✦',
     skip2:    '✦ 今日断食，清心寡欲 ✦',
   },
@@ -343,7 +343,7 @@ const I18N = {
     gmap:     n => `Google Maps · "${n}" nearby`,
     eleme:    n => `Eleme · "${n}"`,
     meituan:  n => `Meituan · "${n}"`,
-    jd:       n => `JD Food · "${n}"`,
+    jd:       n => `JD Miaosong · "${n}"`,
     skip1:    '✦ Money saved is money earned ✦',
     skip2:    '✦ Fasting today, virtue +1 ✦',
   },
@@ -565,14 +565,16 @@ function iosOpenApp(scheme, webUrl) {
 function openJD(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
-  const webUrl  = `https://waimai.jd.com/search?keyword=${encoded}`;
+  // 京东秒送搜索页
+  const webUrl  = `https://miaosong.jd.com/search?keyword=${encoded}`;
+  const appParams = encodeURIComponent(JSON.stringify({category:'jump',des:'miaosong_search',keyWord:kw}));
   if (/Android/i.test(ua)) {
     window.location.href =
-      `intent://waimai.jd.com/search?keyword=${encoded}` +
+      `intent://miaosong.jd.com/search?keyword=${encoded}` +
       `#Intent;scheme=https;package=com.jingdong.app.mall;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
   } else {
-    iosOpenApp(`openapp.jdmobile://virtual?params=${encodeURIComponent(JSON.stringify({category:'jump',des:'search',keyWord:kw}))}`, webUrl);
+    iosOpenApp(`openapp.jdmobile://virtual?params=${appParams}`, webUrl);
   }
 }
 
@@ -593,7 +595,7 @@ function openMeituan(kw) {
 function openEleme(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
-  const webUrl  = `https://www.ele.me/search?keyword=${encoded}`;
+  const webUrl  = `https://h5.ele.me/search/?q=${encoded}`;
   if (/Android/i.test(ua)) {
     window.location.href =
       `intent://search?keyword=${encoded}` +
