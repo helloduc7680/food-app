@@ -206,6 +206,7 @@
     .map-btn.gmap     { background: linear-gradient(135deg,#4285f4,#34a853); box-shadow: 0 4px 16px rgba(66,133,244,.4); }
     .map-btn.eleme    { background: linear-gradient(135deg,#00aaff,#0066ff); box-shadow: 0 4px 16px rgba(0,102,255,.4); }
     .map-btn.meituan  { background: linear-gradient(135deg,#ff6000,#ffaa00); box-shadow: 0 4px 16px rgba(255,96,0,.4); }
+    .map-btn.jd       { background: linear-gradient(135deg,#e1251b,#ff6b6b); box-shadow: 0 4px 16px rgba(225,37,27,.4); }
     .map-btn svg { flex-shrink: 0; }
 
     .no-map-tip { color: rgba(255,255,255,.3); font-size: .84rem; font-style: italic; }
@@ -305,6 +306,7 @@ const I18N = {
     gmap:     n => `Google Maps·搜附近「${n}」`,
     eleme:    n => `饿了么·搜「${n}」`,
     meituan:  n => `美团外卖·搜「${n}」`,
+    jd:       n => `京东外卖·搜「${n}」`,
     skip1:    '✦ 省下的都是赚到的 ✦',
     skip2:    '✦ 今日断食，清心寡欲 ✦',
   },
@@ -319,6 +321,7 @@ const I18N = {
     gmap:     n => `Google Maps · "${n}" nearby`,
     eleme:    n => `Eleme · "${n}"`,
     meituan:  n => `Meituan · "${n}"`,
+    jd:       n => `JD Food · "${n}"`,
     skip1:    '✦ Money saved is money earned ✦',
     skip2:    '✦ Fasting today, virtue +1 ✦',
   },
@@ -530,6 +533,27 @@ const PIN = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
   <circle cx="12" cy="10" r="3"/></svg>`;
 
+function iosOpenApp(scheme, webUrl) {
+  // iOS：先尝试打开 App，1.2秒内没响应则跳网页
+  const timer = setTimeout(() => { window.location.href = webUrl; }, 1200);
+  window.addEventListener('blur', () => clearTimeout(timer), { once: true });
+  window.location.href = scheme;
+}
+
+function openJD(kw) {
+  const ua      = navigator.userAgent;
+  const encoded = encodeURIComponent(kw);
+  const webUrl  = `https://waimai.jd.com/search?keyword=${encoded}`;
+  if (/Android/i.test(ua)) {
+    window.location.href =
+      `intent://waimai.jd.com/search?keyword=${encoded}` +
+      `#Intent;scheme=https;package=com.jingdong.app.mall;` +
+      `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+  } else {
+    iosOpenApp(`openapp.jdmobile://virtual?params=${encodeURIComponent(JSON.stringify({category:'jump',des:'search',keyWord:kw}))}`, webUrl);
+  }
+}
+
 function openMeituan(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
@@ -540,7 +564,7 @@ function openMeituan(kw) {
       `#Intent;scheme=https;package=com.sankuai.meituan.takeoutnew;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
   } else {
-    window.location.href = webUrl;
+    iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, webUrl);
   }
 }
 
@@ -548,15 +572,13 @@ function openEleme(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
   const webUrl  = `https://www.ele.me/search?keyword=${encoded}`;
-
   if (/Android/i.test(ua)) {
     window.location.href =
       `intent://search?keyword=${encoded}` +
       `#Intent;scheme=eleme;package=me.ele;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
   } else {
-    // iOS 及其他：直接跳转，避免 Safari 弹窗拦截
-    window.location.href = webUrl;
+    iosOpenApp(`eleme://search?keyword=${encoded}`, webUrl);
   }
 }
 
@@ -584,6 +606,7 @@ function renderMapArea(food) {
         <a class="map-btn gmap"    href="${gmapUrl}" target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
         <button class="map-btn eleme"   data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openEleme(this.dataset.kw)">${PIN} ${tx.eleme(name)}</button>
         <button class="map-btn meituan" data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openMeituan(this.dataset.kw)">${PIN} ${tx.meituan(name)}</button>
+        <button class="map-btn jd"      data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openJD(this.dataset.kw)">${PIN} ${tx.jd(name)}</button>
       </div>`;
   } else {
     const tx  = t();
