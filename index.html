@@ -609,15 +609,20 @@ function openMeituan(kw) {
 function openEleme(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
-  const webUrl  = `https://www.ele.me/search?keyword=${encoded}`;
+  // 降级网页：淘宝闪购（饿了么母公司）外卖搜索
+  const webUrl  = `https://h5.ele.me/waimai/msite/#/?keyword=${encoded}`;
+  copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
   if (/Android/i.test(ua)) {
-    copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后长按粘贴');
+    // intent:// → 优先打开饿了么App(me.ele)，未装则降级H5
     window.location.href =
-      `intent://search?keyword=${encoded}` +
+      `intent://waimai/home` +
       `#Intent;scheme=eleme;package=me.ele;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
   } else {
-    iosOpenApp(`eleme://search?keyword=${encoded}`, webUrl, kw);
+    // iOS：打开饿了么App首页，关键词已复制，进去长按粘贴
+    const timer = setTimeout(() => { window.location.href = webUrl; }, 1200);
+    window.addEventListener('blur', () => clearTimeout(timer), { once: true });
+    window.location.href = `eleme://`;
   }
 }
 
