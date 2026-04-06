@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>今日食运</title>
+  <meta name="theme-color" content="#7b2ff7" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="今日食运" />
+  <script>
+    // 内联 manifest，避免本地文件找不到 manifest.json
+    try {
+      const m = { name:'今日食运', short_name:'食运', start_url:'./',
+        display:'standalone', background_color:'#06060f', theme_color:'#7b2ff7',
+        icons:[{src:'icon.svg',sizes:'any',type:'image/svg+xml'}] };
+      const blob = new Blob([JSON.stringify(m)],{type:'application/manifest+json'});
+      const link = document.createElement('link');
+      link.rel = 'manifest';
+      link.href = URL.createObjectURL(blob);
+      document.currentScript.before(link);
+    } catch(e){}
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: #06060f;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      overflow-x: hidden;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: calc(env(safe-area-inset-top,0px) + 60px) 20px
+               calc(env(safe-area-inset-bottom,0px) + 50px);
+    }
+
+    /* 背景光晕 */
+    .orb { position:fixed; border-radius:50%; filter:blur(60px); opacity:.25; pointer-events:none; z-index:0; animation:drift ease-in-out infinite alternate; }
+    @media (max-width: 480px) { .orb { filter:blur(40px); opacity:.2; } }
+    .orb1 { width:420px;height:420px;background:#7b2ff7;top:-100px;left:-80px;animation-duration:9s; }
+    .orb2 { width:360px;height:360px;background:#f72fa7;top:45%;right:-80px;animation-duration:11s;animation-delay:-4s; }
+    .orb3 { width:280px;height:280px;background:#f7a12f;bottom:-40px;left:30%;animation-duration:13s;animation-delay:-8s; }
+    @keyframes drift { from{transform:translate(0,0)scale(1)}to{transform:translate(16px,-16px)scale(1.05)} }
+
+    /* 语言切换 */
+    .lang-switch {
+      position: fixed;
+      top: calc(env(safe-area-inset-top,0px) + 14px);
+      right: 16px;
+      z-index: 20;
+      display: flex;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      overflow: hidden;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    .lang-btn {
+      padding: 7px 15px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.4);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .lang-btn.active { background: rgba(123,47,247,0.75); color: #fff; }
+
+    /* 主容器 */
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* 标题 */
+    .header { text-align: center; }
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: 5px;
+      background: linear-gradient(135deg,#f9ca24,#f0932b,#e84393);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p { margin-top: 6px; color: rgba(255,255,255,.32); font-size: .78rem; letter-spacing: 2px; }
+
+    /* 转盘区 */
+    .wheel-section { display: flex; flex-direction: column; align-items: center; }
+    .pointer {
+      width: 0; height: 0;
+      border-left: 13px solid transparent;
+      border-right: 13px solid transparent;
+      border-top: 26px solid #fff;
+      filter: drop-shadow(0 0 8px rgba(255,255,255,.85));
+      margin-bottom: -1px;
+      z-index: 2;
+    }
+    .wheel-frame {
+      position: relative;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.07),
+                  0 0 55px rgba(120,50,220,.5),
+                  0 20px 60px rgba(0,0,0,.6);
+    }
+    #wheelCanvas { display: block; border-radius: 50%; }
+
+    /* 中心按钮 */
+    .center-btn {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(145deg,#fff,#ddd);
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 900;
+      color: #222;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.4), 0 0 0 4px rgba(255,255,255,.1);
+      transition: transform .15s, box-shadow .15s;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .center-btn:hover:not(:disabled) {
+      transform: translate(-50%,-50%) scale(1.08);
+      box-shadow: 0 6px 28px rgba(249,202,36,.7), 0 0 0 4px rgba(255,255,255,.18);
+    }
+    .center-btn:active:not(:disabled) { transform: translate(-50%,-50%) scale(.95); }
+    .center-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    /* 结果卡 */
+    .result-card {
+      width: 100%;
+      background: rgba(30,20,50,0.85);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 26px;
+      padding: 28px 22px 24px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(24px) scale(.96);
+      transition: opacity .45s cubic-bezier(.34,1.4,.64,1),
+                  transform .45s cubic-bezier(.34,1.4,.64,1);
+      pointer-events: none;
+    }
+    .result-card.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
+    .result-emoji {
+      display: block;
+      font-size: 3.4rem;
+      margin-bottom: 10px;
+      animation: emojiPop .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes emojiPop { from{transform:scale(.2)rotate(-20deg);opacity:0}to{transform:scale(1)rotate(0);opacity:1} }
+
+    .result-name {
+      font-size: 2.2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg,#f9ca24,#f0932b,#e84393);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .result-desc { color: rgba(255,255,255,.42); font-size: .84rem; margin-bottom: 22px; }
+
+    /* 地图按钮 */
+    .map-btns { display: flex; flex-direction: column; gap: 10px; }
+    .map-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 18px;
+      border-radius: 50px;
+      color: #fff;
+      text-decoration: none;
+      font-size: .88rem;
+      font-weight: 600;
+      transition: transform .18s, filter .18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .map-btn:active { transform: scale(.97); }
+    .map-btn.amap     { background: linear-gradient(135deg,#00b09b,#38ef7d); box-shadow: 0 4px 16px rgba(0,176,155,.4); }
+    .map-btn.gmap     { background: linear-gradient(135deg,#4285f4,#34a853); box-shadow: 0 4px 16px rgba(66,133,244,.4); }
+    .map-btn svg { flex-shrink: 0; }
+
+    .no-map-tip { color: rgba(255,255,255,.3); font-size: .84rem; font-style: italic; }
+    .tip { color: rgba(255,255,255,.2); font-size: .68rem; letter-spacing: 1.5px; text-align: center; }
+
+    /* 彩带 */
+    .confetti-wrap { position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden; }
+    .cp { position:absolute;top:-16px;animation:cpFall linear forwards; }
+    @keyframes cpFall { to{transform:translate(var(--dx),110vh)rotate(var(--dr));opacity:0} }
+  </style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+<div class="confetti-wrap" id="confetti"></div>
+
+<div class="lang-switch">
+  <button class="lang-btn active" id="btnZH" onclick="setLang('zh')">中文</button>
+  <button class="lang-btn"        id="btnEN" onclick="setLang('en')">EN</button>
+</div>
+
+<div class="container">
+  <div class="header">
+    <h1 id="titleMain"></h1>
+    <p  id="titleSub"></p>
+  </div>
+
+  <div class="wheel-section">
+    <div class="pointer"></div>
+    <div class="wheel-frame" id="wheelFrame">
+      <canvas id="wheelCanvas"></canvas>
+      <button class="center-btn" id="spinBtn" onclick="spin()"></button>
+    </div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <span class="result-emoji" id="rEmoji"></span>
+    <div  class="result-name"  id="rName"></div>
+    <div  class="result-desc"  id="rDesc"></div>
+    <div  id="mapArea"></div>
+  </div>
+
+  <p class="tip" id="tipText"></p>
+
+</div>
+
+<script>
+// ── 食物数据 ──────────────────────────────────────────────────
+const foods = [
+  { zh:'火锅',     en:'Hot Pot',              emoji:'🍲', w:5, kw:{zh:'火锅',      en:'hot pot'},             desc:{zh:'热辣翻滚，涮出快乐！',          en:'Sizzling hot, dip & enjoy!'} },
+  { zh:'烤肉',     en:'BBQ',                  emoji:'🥩', w:5, kw:{zh:'烤肉',      en:'barbecue'},            desc:{zh:'滋滋作响，香气四溢！',          en:'Smoky & sizzling perfection!'} },
+  { zh:'日料',     en:'Japanese',             emoji:'🍣', w:4, kw:{zh:'日本料理',  en:'japanese food'},       desc:{zh:'精致细腻，慢享时光！',          en:'Elegant & refined flavors!'} },
+  { zh:'粤菜',     en:'Cantonese',            emoji:'🦐', w:4, kw:{zh:'粤菜',      en:'cantonese food'},      desc:{zh:'清淡鲜美，食在广东！',          en:'Fresh & delicate Guangdong style!'} },
+  { zh:'东北菜',   en:'NE Chinese',           emoji:'🥘', w:4, kw:{zh:'东北菜',    en:'northeast chinese'},   desc:{zh:'分量足，暖心暖胃！',            en:'Hearty portions, warm your soul!'} },
+  { zh:'砂锅粥',   en:'Claypot Congee',       emoji:'🍚', w:4, kw:{zh:'砂锅粥',    en:'clay pot congee'},     desc:{zh:'绵滑软糯，暖到心里！',          en:'Silky smooth & comforting!'} },
+  { zh:'椰子鸡',   en:'Coconut Chicken',      emoji:'🥥', w:4, kw:{zh:'椰子鸡',    en:'coconut chicken'},     desc:{zh:'椰香浓郁，清甜鲜嫩！',          en:'Fragrant coconut & tender chicken!'} },
+  { zh:'麻辣烫',   en:'Malatang',             emoji:'🌶️', w:5, kw:{zh:'麻辣烫',    en:'malatang'},            desc:{zh:'麻麻辣辣，爽！',               en:'Numbing, spicy & addictive!'} },
+  { zh:'螺蛳粉',   en:'Snail Noodles',        emoji:'🍜', w:4, kw:{zh:'螺蛳粉',    en:'luosifen noodles'},    desc:{zh:'臭香臭香，欲罢不能！',          en:'Stinky & irresistible!'} },
+  { zh:'KFC',      en:'KFC',                  emoji:'🍗', w:4, kw:{zh:'KFC肯德基', en:'KFC'},                 desc:{zh:'脆皮鸡腿，快乐加倍！',          en:'Crispy chicken, double the joy!'} },
+  { zh:'麦当劳',   en:"McDonald's",           emoji:'🍔', w:4, kw:{zh:'麦当劳',    en:"mcdonald's"},          desc:{zh:'我就喜欢！',                   en:"I'm lovin' it!"} },
+  { zh:'羊肉串',   en:'Lamb Skewers',         emoji:'🍢', w:4, kw:{zh:'羊肉串',    en:'lamb skewers'},        desc:{zh:'烤到焦香，撸串走起！',          en:'Charred & fragrant skewers!'} },
+  { zh:'减脂餐',   en:'Light Meal',           emoji:'🥗', w:8, kw:{zh:'健康轻食',  en:'healthy salad'},       desc:{zh:'低卡高蛋白，离腹肌更近一步！',   en:'Low-cal, high-protein, abs incoming!'} },
+  { zh:'简餐',     en:'Simple Meal',          emoji:'🥙', w:4, kw:{zh:'简餐轻食',  en:'simple meal'},         desc:{zh:'简简单单，也是幸福！',          en:'Simple but satisfying!'} },
+  { zh:'煲仔饭',   en:'Claypot Rice',         emoji:'🍱', w:4, kw:{zh:'煲仔饭',    en:'claypot rice'},        desc:{zh:'锅气十足，饭香四溢！',          en:'Wok-charred & fragrant!'} },
+  { zh:'包子',     en:'Steamed Buns',         emoji:'🥟', w:3, kw:{zh:'包子',      en:'baozi'},               desc:{zh:'热乎乎的包子，满足！',          en:'Fluffy warm buns, so satisfying!'} },
+  { zh:'河粉',     en:'Rice Noodles',         emoji:'🍝', w:4, kw:{zh:'河粉',      en:'rice noodles'},        desc:{zh:'滑嫩爽口，越式风情！',          en:'Silky smooth Vietnamese vibes!'} },
+  { zh:'肠粉',     en:'Rice Roll',            emoji:'🌯', w:4, kw:{zh:'肠粉',      en:'cheung fun'},          desc:{zh:'薄皮嫩滑，广式经典！',          en:'Silky rice rolls, Cantonese classic!'} },
+  { zh:'海鲜砂锅粥',en:'Seafood Congee',      emoji:'🦞', w:4, kw:{zh:'海鲜砂锅粥',en:'seafood congee'},      desc:{zh:'鲜味十足，海陆双拼！',          en:'Ocean-fresh goodness in a pot!'} },
+  { zh:'川菜',     en:'Sichuan',              emoji:'🥵', w:4, kw:{zh:'川菜',      en:'sichuan food'},        desc:{zh:'麻辣鲜香，川味正宗！',          en:'Bold, spicy & mouthwatering!'} },
+  { zh:'湘菜',     en:'Hunan',                emoji:'🫑', w:4, kw:{zh:'湘菜',      en:'hunan food'},          desc:{zh:'辣而不麻，湘味浓烈！',          en:'Pure spicy, Hunan-style heat!'} },
+  { zh:'杭帮菜',   en:'Hangzhou',             emoji:'🍃', w:4, kw:{zh:'杭帮菜',    en:'hangzhou food'},       desc:{zh:'清雅精致，江南风味！',          en:'Delicate & elegant Jiangnan taste!'} },
+  { zh:'烤鸭',     en:'Roast Duck',           emoji:'🦆', w:4, kw:{zh:'烤鸭',      en:'roast duck'},          desc:{zh:'皮脆肉嫩，北京风范！',          en:'Crispy skin, juicy Beijing duck!'} },
+  { zh:'煎饼果子', en:'Jianbing',             emoji:'🫔', w:3, kw:{zh:'煎饼果子',  en:'jianbing crepe'},      desc:{zh:'早餐之王，现摊现卷！',          en:'King of street breakfast!'} },
+  { zh:'烤冷面',   en:'Grilled Cold Noodle',  emoji:'🫓', w:3, kw:{zh:'烤冷面',    en:'grilled cold noodle'}, desc:{zh:'东北灵魂小吃，香！',            en:'Crispy grilled noodle magic!'} },
+  { zh:'拉面',     en:'Ramen',                emoji:'🍜', w:4, kw:{zh:'拉面',      en:'ramen noodles'},       desc:{zh:'劲道弹牙，汤底浓郁！',          en:'Chewy noodles, rich broth!'} },
+  { zh:'板面',     en:'Ban Noodles',          emoji:'🍝', w:3, kw:{zh:'板面',      en:'ban noodles'},         desc:{zh:'安徽特色，劲道过瘾！',          en:'Anhui-style chewy noodles!'} },
+  { zh:'肉夹馍',   en:'Chinese Burger',       emoji:'🥪', w:4, kw:{zh:'肉夹馍',    en:'roujiamo'},            desc:{zh:'西安一绝，满口香！',            en:"Xi'an's legendary meat sandwich!"} },
+  { zh:'羊肉泡馍', en:'Lamb Pao Mo',          emoji:'🫕', w:3, kw:{zh:'羊肉泡馍',  en:'lamb paomo'},          desc:{zh:'西安传统，泡出鲜味！',          en:'Tear & soak for ultimate flavor!'} },
+  { zh:'凉皮',     en:'Liangpi',              emoji:'🥒', w:4, kw:{zh:'凉皮',      en:'liangpi'},             desc:{zh:'爽滑劲道，夏日首选！',          en:'Cool, chewy & refreshing!'} },
+  { zh:'自助餐',   en:'Buffet',               emoji:'🍽️', w:3, kw:{zh:'自助餐',    en:'buffet restaurant'},   desc:{zh:'管够管饱，吃回本！',            en:'All-you-can-eat, maximize value!'} },
+  { zh:'饿着',     en:'Skip It',              emoji:'😤', w:2, kw:null,                                       desc:{zh:'省钱省时，修行之道……',          en:'Save money, embrace the fast...'} },
+  { zh:'不吃',     en:"Don't Eat",            emoji:'🙅', w:2, kw:null,                                       desc:{zh:'今天辟谷，功德+1',              en:'Fasting today, virtue +1'} },
+];
+
+// ── i18n ─────────────────────────────────────────────────────
+const I18N = {
+  zh: {
+    title:    '今日食运',
+    sub:      '转动命运之轮，看看今天吃什么',
+    spin:     '转！',
+    respun:   '再转',
+    spinning: '…',
+    tip:      '✦ 减脂餐概率加权较高，为你的健康加油 ✦',
+    amap:     n => `高德地图·搜附近「${n}」`,
+    gmap:     n => `Google Maps·搜附近「${n}」`,
+    skip1:    '✦ 省下的都是赚到的 ✦',
+    skip2:    '✦ 今日断食，清心寡欲 ✦',
+  },
+  en: {
+    title:    "Today's Food Fate",
+    sub:      'Spin the Wheel of Food Destiny',
+    spin:     'Spin!',
+    respun:   'Again',
+    spinning: '…',
+    tip:      '✦ Light Meal has higher weight — stay healthy! ✦',
+    amap:     n => `Amap · "${n}" nearby`,
+    gmap:     n => `Google Maps · "${n}" nearby`,
+    skip1:    '✦ Money saved is money earned ✦',
+    skip2:    '✦ Fasting today, virtue +1 ✦',
+  },
+};
+
+let lang = 'zh';
+let animating = false;
+let currentFood = null;
+const t = () => I18N[lang];
+
+// ── 语言切换 ─────────────────────────────────────────────────
+function setLang(l) {
+  lang = l;
+  document.documentElement.lang = l === 'zh' ? 'zh-CN' : 'en';
+  document.getElementById('btnZH').classList.toggle('active', l === 'zh');
+  document.getElementById('btnEN').classList.toggle('active', l === 'en');
+  applyLang();
+  if (typeof rotation !== 'undefined') drawWheel(rotation);
+}
+
+function applyLang() {
+  const tx = t();
+  document.getElementById('titleMain').textContent = tx.title;
+  document.getElementById('titleSub').textContent  = tx.sub;
+  document.getElementById('tipText').textContent   = tx.tip;
+  const btn = document.getElementById('spinBtn');
+  if (!animating) btn.textContent = btn.dataset.spun ? tx.respun : tx.spin;
+  if (document.getElementById('resultCard').classList.contains('show') && currentFood) {
+    renderMapArea(currentFood);
+    document.getElementById('rName').textContent = currentFood[lang] || currentFood.zh;
+    document.getElementById('rDesc').textContent = currentFood.desc[lang] || currentFood.desc.zh;
+  }
+}
+
+// ── Canvas 初始化（等 DOM 完全渲染后再计算尺寸）─────────────
+const COLORS = [
+  '#e84393','#f0932b','#f9ca24','#6ab04c','#22a6b3','#7952b3',
+  '#eb4d4b','#fd79a8','#fdcb6e','#00b894','#0984e3','#a29bfe',
+  '#d63031','#e17055','#00cec9','#6c5ce7','#fab1a0','#55efc4',
+  '#e84393','#f0932b','#f9ca24','#6ab04c','#22a6b3','#7952b3',
+  '#eb4d4b','#fd79a8','#fdcb6e','#00b894','#0984e3','#a29bfe',
+  '#d63031','#e17055',
+];
+
+const totalW = foods.reduce((s,f) => s + f.w, 0);
+
+let canvas, ctx, CX, CY, R, SIZE, segs, rotation = 0;
+
+function initCanvas() {
+  const maxW   = Math.min(window.innerWidth, document.documentElement.clientWidth) || 360;
+  SIZE         = Math.max(260, Math.min(320, maxW - 60));
+  const dpr    = Math.min(window.devicePixelRatio || 1, 2);
+
+  canvas = document.getElementById('wheelCanvas');
+  canvas.style.width  = SIZE + 'px';
+  canvas.style.height = SIZE + 'px';
+  canvas.width  = SIZE * dpr;
+  canvas.height = SIZE * dpr;
+
+  ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  CX = SIZE / 2; CY = SIZE / 2; R = SIZE / 2 - 6;
+
+  let acc = 0;
+  segs = foods.map((f, i) => {
+    const arc = f.w / totalW * Math.PI * 2;
+    const s   = { ...f, sa: acc, ea: acc + arc, color: COLORS[i % COLORS.length] };
+    acc += arc;
+    return s;
+  });
+
+  drawWheel(0);
+}
+
+function drawWheel(rot) {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, SIZE, SIZE);
+
+  segs.forEach(seg => {
+    const sa = seg.sa + rot, ea = seg.ea + rot, arc = ea - sa;
+
+    // 扇形
+    ctx.beginPath(); ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, sa, ea); ctx.closePath();
+    ctx.fillStyle = seg.color; ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1.2; ctx.stroke();
+
+    if (arc < 0.1) return;
+    const mid = (sa + ea) / 2;
+    ctx.save();
+    ctx.translate(CX + Math.cos(mid)*R*.67, CY + Math.sin(mid)*R*.67);
+    ctx.rotate(mid + Math.PI / 2);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(255,255,255,0.93)';
+    const label = (lang === 'zh' ? seg.zh : seg.en) || seg.zh;
+    if (arc >= 0.36) {
+      ctx.font = `${Math.min(14, arc*15)}px sans-serif`;
+      ctx.fillText(seg.emoji, 0, -9);
+      ctx.font = `bold ${Math.min(10, arc*11)}px 'PingFang SC','Microsoft YaHei',sans-serif`;
+      ctx.fillText(label.length > 5 ? label.slice(0,5)+'…' : label, 0, 7);
+    } else if (arc >= 0.17) {
+      ctx.font = `${Math.min(14, arc*20)}px sans-serif`;
+      ctx.fillText(seg.emoji, 0, 0);
+    }
+    ctx.restore();
+  });
+
+  // 外圈
+  ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 3; ctx.stroke();
+
+  // 中心盘
+  ctx.beginPath(); ctx.arc(CX, CY, 42, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(8,8,20,0.6)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 2; ctx.stroke();
+}
+
+// ── 加权随机 ─────────────────────────────────────────────────
+function weightedPick() {
+  let r = Math.random() * totalW, cum = 0;
+  for (let i = 0; i < foods.length; i++) { cum += foods[i].w; if (r < cum) return i; }
+  return foods.length - 1;
+}
+
+// ── 彩带 ─────────────────────────────────────────────────────
+function launchConfetti() {
+  const wrap = document.getElementById('confetti');
+  const clrs = ['#f9ca24','#f0932b','#eb4d4b','#6ab04c','#0984e3','#7952b3','#fd79a8','#55efc4'];
+  for (let i = 0; i < 70; i++) {
+    const el = document.createElement('div'); el.className = 'cp';
+    el.style.cssText = `
+      left:${Math.random()*100}%;
+      width:${6+Math.random()*8}px; height:${8+Math.random()*10}px;
+      border-radius:${Math.random()>.5?'50%':'2px'};
+      background:${clrs[i%clrs.length]};
+      --dx:${(Math.random()-.5)*180}px;
+      --dr:${Math.random()*720-360}deg;
+      animation-duration:${1.4+Math.random()*1.4}s;
+      animation-delay:${Math.random()*.4}s;
+      opacity:1;
+    `;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+}
+
+// ── 旋转 ─────────────────────────────────────────────────────
+function spin() {
+  if (animating) return;
+  animating = true;
+  const btn = document.getElementById('spinBtn');
+  btn.disabled = true;
+  btn.textContent = t().spinning;
+  document.getElementById('resultCard').classList.remove('show');
+
+  const idx    = weightedPick();
+  const seg    = segs[idx];
+  currentFood  = foods[idx];
+
+  const pointer    = -Math.PI / 2;
+  const midAngle   = (seg.sa + seg.ea) / 2;
+  const targetBase = pointer - midAngle;
+  const curNorm    = ((rotation    % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+  const tgtNorm    = ((targetBase  % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+  let delta = tgtNorm - curNorm;
+  if (delta <= 0.01) delta += Math.PI * 2;
+
+  const target   = rotation + (5 + Math.floor(Math.random()*3)) * Math.PI*2 + delta;
+  const startRot = rotation;
+  const t0       = performance.now();
+  const easeOut  = x => 1 - Math.pow(1-x, 4);
+
+  requestAnimationFrame(function frame(now) {
+    const prog = Math.min((now - t0) / 4800, 1);
+    rotation = startRot + (target - startRot) * easeOut(prog);
+    drawWheel(rotation);
+    if (prog < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      rotation = target;
+      animating = false;
+      btn.disabled = false;
+      btn.textContent = t().respun;
+      btn.dataset.spun = '1';
+      launchConfetti();
+      showResult(currentFood);
+    }
+  });
+}
+
+// ── 地图按钮 ─────────────────────────────────────────────────
+
+
+
+const PIN = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+  <circle cx="12" cy="10" r="3"/></svg>`;
+
+function renderMapArea(food) {
+  const mapArea = document.getElementById('mapArea');
+  if (food.kw) {
+    const kw          = food.kw[lang] || food.kw.zh;
+    const name        = food[lang] || food.zh;
+    const amapUrl     = `https://www.amap.com/search?query=${encodeURIComponent(kw)}`;
+    const gmapUrl     = `https://www.google.com/maps/search/${encodeURIComponent(kw+'附近')}`;
+    const tx = t();
+    mapArea.innerHTML = `
+      <div class="map-btns">
+        <a class="map-btn amap"     href="${amapUrl}"  target="_blank" rel="noopener">${PIN} ${tx.amap(name)}</a>
+        <a class="map-btn gmap"     href="${gmapUrl}"  target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
+      </div>`;
+  } else {
+    const tx  = t();
+    const tip = (food.zh === '饿着' || food.en === 'Skip It') ? tx.skip1 : tx.skip2;
+    mapArea.innerHTML = `<p class="no-map-tip">${tip}</p>`;
+  }
+}
+
+function showResult(food) {
+  document.getElementById('rEmoji').textContent = food.emoji;
+  document.getElementById('rName').textContent  = food[lang] || food.zh;
+  document.getElementById('rDesc').textContent  = food.desc[lang] || food.desc.zh;
+  renderMapArea(food);
+  setTimeout(() => document.getElementById('resultCard').classList.add('show'), 120);
+}
+
+// ── 启动（兼容所有 readyState，防止 load 事件已错过）────────
+// 只执行一次，防止多次触发导致 Canvas scale 叠加错位
+let _appStarted = false;
+function startApp() {
+  if (_appStarted) return;
+  _appStarted = true;
+  try {
+    initCanvas();
+    applyLang();
+    document.getElementById('spinBtn').textContent = t().spin;
+  } catch(e) {
+    _appStarted = false; // 失败允许重试
+    setTimeout(startApp, 100);
+  }
+}
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  requestAnimationFrame(startApp);
+} else {
+  document.addEventListener('DOMContentLoaded', startApp);
+}
+
+
+// Service Worker（仅 HTTPS 部署时生效）
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
