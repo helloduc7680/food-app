@@ -204,7 +204,6 @@
     .map-btn:active { transform: scale(.97); }
     .map-btn.amap     { background: linear-gradient(135deg,#00b09b,#38ef7d); box-shadow: 0 4px 16px rgba(0,176,155,.4); }
     .map-btn.gmap     { background: linear-gradient(135deg,#4285f4,#34a853); box-shadow: 0 4px 16px rgba(66,133,244,.4); }
-    .map-btn.eleme    { background: linear-gradient(135deg,#ff6600,#ff4400); box-shadow: 0 4px 16px rgba(255,80,0,.4); }
     .map-btn.meituan  { background: linear-gradient(135deg,#ff6000,#ffaa00); box-shadow: 0 4px 16px rgba(255,96,0,.4); }
     .map-btn.jd       { background: linear-gradient(135deg,#e1251b,#ff6b6b); box-shadow: 0 4px 16px rgba(225,37,27,.4); }
     .map-btn svg { flex-shrink: 0; }
@@ -326,7 +325,6 @@ const I18N = {
     tip:      '✦ 减脂餐概率加权较高，为你的健康加油 ✦',
     amap:     n => `高德地图·搜附近「${n}」`,
     gmap:     n => `Google Maps·搜附近「${n}」`,
-    eleme:    n => `淘宝闪购·搜「${n}」`,
     meituan:  n => `美团外卖·搜「${n}」`,
     jd:       n => `京东秒送·搜「${n}」`,
     skip1:    '✦ 省下的都是赚到的 ✦',
@@ -341,7 +339,6 @@ const I18N = {
     tip:      '✦ Light Meal has higher weight — stay healthy! ✦',
     amap:     n => `Amap · "${n}" nearby`,
     gmap:     n => `Google Maps · "${n}" nearby`,
-    eleme:    n => `Taobao Flash · "${n}"`,
     meituan:  n => `Meituan · "${n}"`,
     jd:       n => `JD Miaosong · "${n}"`,
     skip1:    '✦ Money saved is money earned ✦',
@@ -592,42 +589,12 @@ function openJD(kw) {
 }
 
 function openMeituan(kw) {
-  const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
   const webUrl  = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${encoded}`;
-  if (/Android/i.test(ua)) {
-    copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后长按粘贴');
-    window.location.href =
-      `intent://waimai.meituan.com/search?keyword=${encoded}` +
-      `#Intent;scheme=https;package=com.sankuai.meituan.takeoutnew;` +
-      `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
-  } else {
-    iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, webUrl, kw);
-  }
+  // iOS + 安卓通用：meituanwaimai:// 直接跳美团外卖搜索结果页，关键词自动填入
+  iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, webUrl, kw);
 }
 
-function openEleme(kw) {
-  const ua      = navigator.userAgent;
-  const encoded = encodeURIComponent(kw);
-  // 淘宝App内页路由：直接跳闪购搜索（taobao:// scheme，不经过浏览器）
-  const pageParams  = encodeURIComponent(JSON.stringify({
-    '$page': 'pages/market/flash/search',
-    'keyword': kw
-  }));
-  const taobaoUrl   = `taobao://page/m?params=${pageParams}`;
-  const fallbackUrl = `https://www.ele.me/`;
-  copyKw(kw); showToast('「' + kw + '」已复制 ✓');
-  if (/Android/i.test(ua)) {
-    // intent: taobao scheme → 直接打开淘宝闪购搜索页，带关键词
-    window.location.href =
-      `intent://page/m?params=${pageParams}` +
-      `#Intent;scheme=taobao;package=com.taobao.taobao;` +
-      `S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
-  } else {
-    // iOS: taobao:// 直接跳闪购搜索，1.5s 内没打开则降级网页
-    iosOpenApp(taobaoUrl, fallbackUrl, kw);
-  }
-}
 
 function showToast(msg) {
   const el = document.createElement('div');
@@ -651,7 +618,6 @@ function renderMapArea(food) {
       <div class="map-btns">
         <a class="map-btn amap"    href="${amapUrl}" target="_blank" rel="noopener">${PIN} ${tx.amap(name)}</a>
         <a class="map-btn gmap"    href="${gmapUrl}" target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
-        <button class="map-btn eleme"   data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openEleme(this.dataset.kw)">${PIN} ${tx.eleme(name)}</button>
         <button class="map-btn meituan" data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openMeituan(this.dataset.kw)">${PIN} ${tx.meituan(name)}</button>
         <button class="map-btn jd"      data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openJD(this.dataset.kw)">${PIN} ${tx.jd(name)}</button>
       </div>`;
