@@ -533,16 +533,12 @@ function openEleme(kw) {
   const webUrl  = `https://h5.ele.me/search/?keyword=${encoded}`;
 
   if (/Android/i.test(ua)) {
-    // 饿了么 Android 深链，自动带关键词搜索
     window.location.href =
       `intent://search?keyword=${encoded}` +
       `#Intent;scheme=eleme;package=me.ele;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
-  } else if (/iPhone|iPad|iPod/i.test(ua)) {
-    const timer = setTimeout(() => { window.location.href = webUrl; }, 1200);
-    window.location.href = `eleme://search?keyword=${encoded}`;
-    window.addEventListener('blur', () => clearTimeout(timer), { once: true });
   } else {
+    // iOS 及其他：直接跳网页版，避免 Safari 拦截 App scheme
     window.open(webUrl, '_blank');
   }
 }
