@@ -538,8 +538,8 @@ function openEleme(kw) {
       `#Intent;scheme=eleme;package=me.ele;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
   } else {
-    // iOS 及其他：直接跳网页版，避免 Safari 拦截 App scheme
-    window.open(webUrl, '_blank');
+    // iOS 及其他：直接跳转，避免 Safari 弹窗拦截
+    window.location.href = webUrl;
   }
 }
 
