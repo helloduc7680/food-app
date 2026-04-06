@@ -595,7 +595,7 @@ function openMeituan(kw) {
 function openEleme(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
-  const webUrl  = `https://h5.ele.me/search/?q=${encoded}`;
+  const webUrl  = `https://www.ele.me/search?keyword=${encoded}`;
   if (/Android/i.test(ua)) {
     window.location.href =
       `intent://search?keyword=${encoded}` +
