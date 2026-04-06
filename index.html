@@ -555,8 +555,20 @@ const PIN = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
   <circle cx="12" cy="10" r="3"/></svg>`;
 
-function iosOpenApp(scheme, webUrl) {
-  // iOS：先尝试打开 App，1.2秒内没响应则跳网页
+function copyKw(kw) {
+  try {
+    const el = document.createElement('textarea');
+    el.value = kw;
+    el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+    document.body.appendChild(el);
+    el.focus(); el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+  } catch(e) {}
+}
+
+function iosOpenApp(scheme, webUrl, kw) {
+  if (kw) { copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后长按粘贴'); }
   const timer = setTimeout(() => { window.location.href = webUrl; }, 1200);
   window.addEventListener('blur', () => clearTimeout(timer), { once: true });
   window.location.href = scheme;
@@ -569,12 +581,13 @@ function openJD(kw) {
   const webUrl  = `https://miaosong.jd.com/search?keyword=${encoded}`;
   const appParams = encodeURIComponent(JSON.stringify({category:'jump',des:'miaosong_search',keyWord:kw}));
   if (/Android/i.test(ua)) {
+    copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后长按粘贴');
     window.location.href =
       `intent://miaosong.jd.com/search?keyword=${encoded}` +
       `#Intent;scheme=https;package=com.jingdong.app.mall;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
   } else {
-    iosOpenApp(`openapp.jdmobile://virtual?params=${appParams}`, webUrl);
+    iosOpenApp(`openapp.jdmobile://virtual?params=${appParams}`, webUrl, kw);
   }
 }
 
@@ -583,12 +596,13 @@ function openMeituan(kw) {
   const encoded = encodeURIComponent(kw);
   const webUrl  = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${encoded}`;
   if (/Android/i.test(ua)) {
+    copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后长按粘贴');
     window.location.href =
       `intent://waimai.meituan.com/search?keyword=${encoded}` +
       `#Intent;scheme=https;package=com.sankuai.meituan.takeoutnew;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
   } else {
-    iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, webUrl);
+    iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, webUrl, kw);
   }
 }
 
@@ -597,12 +611,13 @@ function openEleme(kw) {
   const encoded = encodeURIComponent(kw);
   const webUrl  = `https://www.ele.me/search?keyword=${encoded}`;
   if (/Android/i.test(ua)) {
+    copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后长按粘贴');
     window.location.href =
       `intent://search?keyword=${encoded}` +
       `#Intent;scheme=eleme;package=me.ele;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
   } else {
-    iosOpenApp(`eleme://search?keyword=${encoded}`, webUrl);
+    iosOpenApp(`eleme://search?keyword=${encoded}`, webUrl, kw);
   }
 }
 
