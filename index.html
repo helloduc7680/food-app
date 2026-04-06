@@ -609,18 +609,21 @@ function openMeituan(kw) {
 function openEleme(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
-  // 淘宝闪购（ele.me）主页，两端稳定可访问
-  const webUrl  = `https://www.ele.me/`;
-  copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
+  // 淘宝闪购搜索页（App Links / Universal Links 会在淘宝App内打开）
+  const searchUrl = `https://market.m.taobao.com/apps/market/flash/index.html?keyword=${encoded}`;
+  const fallback  = `https://www.ele.me/`;
+  copyKw(kw); showToast('「' + kw + '」已复制 ✓');
   if (/Android/i.test(ua)) {
-    // 优先打开淘宝App(com.taobao.taobao)，未装降级淘宝闪购网页
+    // App Links：让淘宝App拦截 market.m.taobao.com，直接带关键词打开闪购搜索
     window.location.href =
-      `intent://taobao.com#Intent;scheme=taobao;` +
-      `package=com.taobao.taobao;` +
-      `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+      `intent://market.m.taobao.com/apps/market/flash/index.html?keyword=${encoded}` +
+      `#Intent;scheme=https;package=com.taobao.taobao;` +
+      `S.browser_fallback_url=${encodeURIComponent(searchUrl)};end`;
   } else {
-    // iOS：taobao:// 打开淘宝App，1.2s 后降级网页
-    iosOpenApp(`taobao://`, webUrl, kw);
+    // iOS Universal Link：淘宝App拦截 market.m.taobao.com 带关键词进闪购
+    const timer = setTimeout(() => { window.location.href = fallback; }, 1500);
+    window.addEventListener('blur', () => clearTimeout(timer), { once: true });
+    window.location.href = searchUrl;
   }
 }
 
