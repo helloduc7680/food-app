@@ -632,7 +632,6 @@ function openMeituan(kw) {
   const encoded = encodeURIComponent(kw);
   const h5Url   = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${encoded}`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
-  // Android/iOS 统一：直接唤起 App，未安装则回落 H5
   iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, h5Url, null, null);
 }
 
