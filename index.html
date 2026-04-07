@@ -616,8 +616,13 @@ function openTaobao(kw) {
   const encoded = encodeURIComponent(kw);
   const h5Url   = `https://www.ele.me/search?keyword=${encoded}`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
-  // iOS + 安卓统一：taobao:// 直接唤起淘宝App首页，未安装提示
-  iosOpenApp(`taobao://`, null, kw, '淘宝App');
+  if (/Android/i.test(ua)) {
+    // 安卓：直接打开淘宝闪购网页（无需App），稳定可用
+    window.location.href = h5Url;
+  } else {
+    // iOS：taobao:// 直接唤起淘宝App，未安装提示
+    iosOpenApp(`taobao://`, null, kw, '淘宝App');
+  }
 }
 
 function openMeituan(kw) {
