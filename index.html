@@ -435,7 +435,7 @@ const COLORS = [
 // 简单吃吃的食物索引（0-based）
 const simpleIdx = new Set([0,1,2,6,11,18,22,23,24,30,31,32,36,38,42,43,66,67,71]);
 let currentChannel = 'simple';
-let activeFoods = foods.filter((_,i) => simpleIdx.has(i));
+let activeFoods = foods.filter((_,i) => !simpleIdx.has(i));
 let totalW = activeFoods.reduce((s,f) => s + f.w, 0);
 
 let canvas, ctx, CX, CY, R, SIZE, segs, rotation = 0;
@@ -523,8 +523,8 @@ function weightedPick() {
 
 function rebuildSegs() {
   activeFoods = currentChannel === 'simple'
-    ? foods.filter((_,i) => simpleIdx.has(i))
-    : foods.filter((_,i) => !simpleIdx.has(i));
+    ? foods.filter((_,i) => !simpleIdx.has(i))
+    : foods.filter((_,i) => simpleIdx.has(i));
   totalW = activeFoods.reduce((s,f) => s + f.w, 0);
   let acc = 0;
   segs = activeFoods.map((f, i) => {
