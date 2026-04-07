@@ -624,8 +624,12 @@ function openTaobao(kw) {
   const encoded = encodeURIComponent(kw);
   const h5Url   = `https://www.ele.me/`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
-  // iOS + 安卓统一：eleme:// 直接唤起饿了么App，未安装提示
-  iosOpenApp(`eleme://search?keyword=${encoded}`, null, kw, '饿了么App');
+  if (/Android/i.test(ua)) {
+    // 安卓：唤起失败则回落 H5，避免报错
+    iosOpenApp(`eleme://search?keyword=${encoded}`, h5Url, null, null);
+  } else {
+    iosOpenApp(`eleme://search?keyword=${encoded}`, null, null, '饿了么App');
+  }
 }
 
 function openMeituan(kw) {
