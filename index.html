@@ -618,12 +618,12 @@ function openTaobao(kw) {
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
   if (/Android/i.test(ua)) {
     window.location.href =
-      `intent://waimai/home` +
+      `intent://search?keyword=${encoded}` +
       `#Intent;scheme=eleme;` +
       `package=me.ele;` +
       `S.browser_fallback_url=${encodeURIComponent(h5Url)};end`;
   } else {
-    iosOpenApp(`eleme://`, null, kw, '饿了么App');
+    iosOpenApp(`eleme://search?keyword=${encoded}`, null, kw, '饿了么App');
   }
 }
 
