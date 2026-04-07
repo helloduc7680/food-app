@@ -517,7 +517,6 @@ function drawWheel(rot) {
   if (!ctx) return;
   ctx.clearRect(0, 0, SIZE, SIZE);
 
-  const recentMap = buildRecentMap();
   segs.forEach(seg => {
     const sa = seg.sa + rot, ea = seg.ea + rot, arc = ea - sa;
 
@@ -529,7 +528,6 @@ function drawWheel(rot) {
 
     if (arc < 0.1) return;
     const mid = (sa + ea) / 2;
-    const days = recentMap[seg.zh];
     ctx.save();
     ctx.translate(CX + Math.cos(mid)*R*.67, CY + Math.sin(mid)*R*.67);
     ctx.rotate(mid + Math.PI / 2);
@@ -541,11 +539,6 @@ function drawWheel(rot) {
       ctx.fillText(seg.emoji, 0, -9);
       ctx.font = `bold ${Math.min(10, arc*11)}px 'PingFang SC','Microsoft YaHei',sans-serif`;
       ctx.fillText(label.length > 5 ? label.slice(0,5)+'…' : label, 0, 7);
-      if (days !== undefined) {
-        ctx.font = `${Math.min(8, arc*8)}px 'PingFang SC','Microsoft YaHei',sans-serif`;
-        ctx.fillStyle = days === 0 ? '#ff6b81' : '#ffa502';
-        ctx.fillText(days === 0 ? '今天吃过' : `${days}天前`, 0, 19);
-      }
     } else if (arc >= 0.17) {
       ctx.font = `${Math.min(14, arc*20)}px sans-serif`;
       ctx.fillText(seg.emoji, 0, 0);
