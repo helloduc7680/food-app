@@ -556,17 +556,10 @@ const PIN = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
   <circle cx="12" cy="10" r="3"/></svg>`;
 
 function copyKw(kw) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(kw).catch(() => _legacyCopy(kw));
-  } else {
-    _legacyCopy(kw);
-  }
-}
-function _legacyCopy(kw) {
   try {
     const el = document.createElement('textarea');
     el.value = kw;
-    // 必须在视口内才能在部分安卓浏览器上成功选中
+    // 保持在视口内，部分安卓浏览器离屏元素无法选中
     el.style.cssText = 'position:fixed;top:0;left:0;width:2px;height:2px;opacity:0.01;';
     document.body.appendChild(el);
     el.focus(); el.select();
