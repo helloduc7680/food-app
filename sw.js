@@ -1,4 +1,4 @@
-const CACHE = 'food-app-v2';
+const CACHE = 'food-app-__VERSION__';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
