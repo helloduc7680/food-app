@@ -631,17 +631,15 @@ function openMeituan(kw) {
   const h5Url   = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${encoded}`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
   if (/Android/i.test(ua)) {
-    // 安卓用 <a> 点击触发，系统对链接点击处理优先级高于 JS 导航
+    // 安卓只用 visibilitychange 检测（blur 会被 intent 解析误触发）
     const a = document.createElement('a');
     a.href = `meituanwaimai://search?keyword=${encoded}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    // 2.5s 未跳走则回落 H5
-    let left = false;
-    document.addEventListener('visibilitychange', () => { left = true; }, { once: true });
-    window.addEventListener('blur', () => { left = true; }, { once: true });
-    setTimeout(() => { if (!left) window.location.href = h5Url; }, 2500);
+    let opened = false;
+    document.addEventListener('visibilitychange', () => { opened = true; }, { once: true });
+    setTimeout(() => { if (!opened) window.location.href = h5Url; }, 3000);
   } else {
     iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, null, null, '美团外卖App');
   }
