@@ -210,6 +210,19 @@
     .map-btn svg { flex-shrink: 0; }
 
     .no-map-tip { color: rgba(255,255,255,.3); font-size: .84rem; font-style: italic; }
+
+    /* 历史徽章 */
+    .history-badge {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .history-badge.today { background: rgba(255,71,87,.25); color: #ff6b81; border: 1px solid rgba(255,71,87,.4); }
+    .history-badge.past  { background: rgba(255,165,2,.2);  color: #ffa502; border: 1px solid rgba(255,165,2,.35); }
     .tip { color: rgba(255,255,255,.2); font-size: .68rem; letter-spacing: 1.5px; text-align: center; }
 
     /* 通道切换 */
@@ -268,6 +281,7 @@
   <div class="result-card" id="resultCard">
     <span class="result-emoji" id="rEmoji"></span>
     <div  class="result-name"  id="rName"></div>
+    <div  id="rHistory"></div>
     <div  class="result-desc"  id="rDesc"></div>
     <div  id="mapArea"></div>
   </div>
@@ -436,6 +450,40 @@ const COLORS = [
 const simpleIdx = new Set([0,1,2,6,11,18,22,23,24,30,31,32,36,38,42,43,66,67,71]);
 // 两个通道共享的索引：东北菜/KFC/麦当劳/川菜/湘菜/杭帮菜/新疆菜/泰国菜/越南菜/鲁菜/徽菜
 const sharedIdx = new Set([4,9,10,19,20,21,47,50,51,64,68]);
+
+// 权重：减脂餐加倍，其余统一
+function getWeight(f) { return f.zh === '减脂餐' ? 8 : 4; }
+
+// ── 历史记录（localStorage，每台设备独立存储7天）────────────
+let _histCache = null;
+function getHistory() {
+  if (_histCache === null) {
+    try { _histCache = JSON.parse(localStorage.getItem('food-history') || '[]'); }
+    catch { _histCache = []; }
+  }
+  return _histCache;
+}
+function saveHistory(food) {
+  try {
+    const h = getHistory();
+    h.push({ zh: food.zh, ts: Date.now() });
+    const cutoff = Date.now() - 7 * 864e5;
+    _histCache = h.filter(x => x.ts > cutoff);
+    localStorage.setItem('food-history', JSON.stringify(_histCache));
+  } catch(e) {}
+}
+function buildRecentMap() {
+  const now = Date.now(), cutoff = now - 7 * 864e5, map = {};
+  getHistory().filter(h => h.ts > cutoff).forEach(h => {
+    const d = Math.floor((now - h.ts) / 864e5);
+    if (!(h.zh in map) || map[h.zh] > d) map[h.zh] = d;
+  });
+  return map;
+}
+function getLastSeen(foodZh) {
+  const map = buildRecentMap();
+  return foodZh in map ? map[foodZh] : null;
+}
 let currentChannel = 'simple';
 let activeFoods = foods.filter((_,i) => !simpleIdx.has(i));
 let totalW = activeFoods.reduce((s,f) => s + f.w, 0);
@@ -462,21 +510,14 @@ function initCanvas() {
   ctx.scale(dpr, dpr);
   CX = SIZE / 2; CY = SIZE / 2; R = SIZE / 2 - 6;
 
-  let acc = 0;
-  segs = activeFoods.map((f, i) => {
-    const arc = f.w / totalW * Math.PI * 2;
-    const s   = { ...f, sa: acc, ea: acc + arc, color: COLORS[i % COLORS.length] };
-    acc += arc;
-    return s;
-  });
-
-  drawWheel(0);
+  rebuildSegs();
 }
 
 function drawWheel(rot) {
   if (!ctx) return;
   ctx.clearRect(0, 0, SIZE, SIZE);
 
+  const recentMap = buildRecentMap();
   segs.forEach(seg => {
     const sa = seg.sa + rot, ea = seg.ea + rot, arc = ea - sa;
 
@@ -485,6 +526,17 @@ function drawWheel(rot) {
     ctx.arc(CX, CY, R, sa, ea); ctx.closePath();
     ctx.fillStyle = seg.color; ctx.fill();
     ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1.2; ctx.stroke();
+
+    // 历史小圆点
+    const days = recentMap[seg.zh];
+    if (days !== undefined) {
+      const mid = (sa + ea) / 2;
+      const dotR = R - 10;
+      ctx.beginPath();
+      ctx.arc(CX + Math.cos(mid)*dotR, CY + Math.sin(mid)*dotR, 4, 0, Math.PI*2);
+      ctx.fillStyle = days === 0 ? '#ff4757' : '#ffa502';
+      ctx.fill();
+    }
 
     if (arc < 0.1) return;
     const mid = (sa + ea) / 2;
@@ -519,7 +571,7 @@ function drawWheel(rot) {
 // ── 加权随机 ─────────────────────────────────────────────────
 function weightedPick() {
   let r = Math.random() * totalW, cum = 0;
-  for (let i = 0; i < activeFoods.length; i++) { cum += activeFoods[i].w; if (r < cum) return i; }
+  for (let i = 0; i < activeFoods.length; i++) { cum += getWeight(activeFoods[i]); if (r < cum) return i; }
   return activeFoods.length - 1;
 }
 
@@ -527,11 +579,12 @@ function rebuildSegs() {
   activeFoods = currentChannel === 'simple'
     ? foods.filter((_,i) => !simpleIdx.has(i))
     : foods.filter((_,i) => simpleIdx.has(i) || sharedIdx.has(i));
-  totalW = activeFoods.reduce((s,f) => s + f.w, 0);
+  totalW = activeFoods.reduce((s,f) => s + getWeight(f), 0);
   let acc = 0;
   segs = activeFoods.map((f, i) => {
-    const arc = f.w / totalW * Math.PI * 2;
-    const s = { ...f, sa: acc, ea: acc + arc, color: COLORS[i % COLORS.length] };
+    const w = getWeight(f);
+    const arc = w / totalW * Math.PI * 2;
+    const s = { ...f, w, sa: acc, ea: acc + arc, color: COLORS[i % COLORS.length] };
     acc += arc;
     return s;
   });
@@ -750,9 +803,20 @@ function renderMapArea(food) {
 }
 
 function showResult(food) {
+  const daysAgo = getLastSeen(food.zh);
+  saveHistory(food);
+  _histCache = null; // 下次 drawWheel 重新读缓存
   document.getElementById('rEmoji').textContent = food.emoji;
   document.getElementById('rName').textContent  = food[lang] || food.zh;
   document.getElementById('rDesc').textContent  = food.desc[lang] || food.desc.zh;
+  const badge = document.getElementById('rHistory');
+  if (daysAgo === null) {
+    badge.innerHTML = '';
+  } else if (daysAgo === 0) {
+    badge.innerHTML = '<span class="history-badge today">今天已出现过</span>';
+  } else {
+    badge.innerHTML = `<span class="history-badge past">${daysAgo}天前出现过</span>`;
+  }
   renderMapArea(food);
   setTimeout(() => document.getElementById('resultCard').classList.add('show'), 120);
 }
