@@ -9,6 +9,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="今日食运" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
   <script>
     // 内联 manifest，避免本地文件找不到 manifest.json
     try {
@@ -29,7 +31,8 @@
       min-height: 100vh;
       min-height: 100dvh;
       background: #06060f;
-      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      font-family: 'Nunito', 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      font-weight: 800;
       overflow-x: hidden;
       overflow-y: auto;
       display: flex;
@@ -37,7 +40,7 @@
       align-items: center;
       justify-content: flex-start;
       padding: calc(env(safe-area-inset-top,0px) + 60px) 20px
-               calc(env(safe-area-inset-bottom,0px) + 50px);
+               calc(env(safe-area-inset-bottom,0px) + 40px);
     }
 
     /* 背景光晕 */
@@ -82,7 +85,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 28px;
+      gap: 20px;
       width: 100%;
       max-width: 400px;
     }
@@ -90,15 +93,16 @@
     /* 标题 */
     .header { text-align: center; }
     .header h1 {
-      font-size: 2rem;
+      font-family: 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
+      font-size: 2.2rem;
       font-weight: 900;
-      letter-spacing: 5px;
+      letter-spacing: 6px;
       background: linear-gradient(135deg,#f9ca24,#f0932b,#e84393);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .header p { margin-top: 6px; color: rgba(255,255,255,.32); font-size: .78rem; letter-spacing: 2px; }
+    .header p { margin-top: 4px; color: rgba(255,255,255,.32); font-size: .78rem; letter-spacing: 2px; font-weight: 700; }
 
     /* 转盘区 */
     .wheel-section { display: flex; flex-direction: column; align-items: center; }
@@ -156,7 +160,7 @@
       -webkit-backdrop-filter: none;
       border: 1px solid rgba(255,255,255,.1);
       border-radius: 26px;
-      padding: 28px 22px 24px;
+      padding: 22px 20px 20px;
       text-align: center;
       opacity: 0;
       transform: translateY(24px) scale(.96);
@@ -168,45 +172,58 @@
 
     .result-emoji {
       display: block;
-      font-size: 3.4rem;
-      margin-bottom: 10px;
+      font-size: 3rem;
+      margin-bottom: 6px;
       animation: emojiPop .5s cubic-bezier(.34,1.56,.64,1) both;
     }
     @keyframes emojiPop { from{transform:scale(.2)rotate(-20deg);opacity:0}to{transform:scale(1)rotate(0);opacity:1} }
 
     .result-name {
+      font-family: 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
       font-size: 2.2rem;
       font-weight: 900;
       background: linear-gradient(135deg,#f9ca24,#f0932b,#e84393);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
-    .result-desc { color: rgba(255,255,255,.42); font-size: .84rem; margin-bottom: 22px; }
+    .result-desc { color: rgba(255,255,255,.42); font-size: .82rem; font-weight: 700; margin-bottom: 14px; }
 
-    /* 地图按钮 */
-    .map-btns { display: flex; flex-direction: column; gap: 10px; }
+    /* 地图/外卖按钮区 */
+    .link-section { display: flex; flex-direction: column; gap: 8px; }
+    .link-section + .link-section { margin-top: 10px; }
+    .section-label {
+      font-size: .7rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,.3);
+      text-align: left;
+      padding-left: 4px;
+      margin-bottom: 2px;
+    }
+    .map-btns { display: flex; flex-direction: column; gap: 8px; }
     .map-btn {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 13px 18px;
+      padding: 11px 18px;
       border-radius: 50px;
       color: #fff;
       text-decoration: none;
-      font-size: .88rem;
-      font-weight: 600;
+      font-size: .9rem;
+      font-weight: 900;
+      letter-spacing: .5px;
       transition: transform .18s, filter .18s;
       -webkit-tap-highlight-color: transparent;
     }
     .map-btn:active { transform: scale(.97); }
-    .map-btn.amap     { background: linear-gradient(135deg,#00b09b,#38ef7d); box-shadow: 0 4px 16px rgba(0,176,155,.4); }
-    .map-btn.gmap     { background: linear-gradient(135deg,#4285f4,#34a853); box-shadow: 0 4px 16px rgba(66,133,244,.4); }
-    .map-btn.taobao   { background: linear-gradient(135deg,#00aaff,#0066ff); box-shadow: 0 4px 16px rgba(0,102,255,.4); }
-    .map-btn.meituan  { background: linear-gradient(135deg,#ff6000,#ffaa00); box-shadow: 0 4px 16px rgba(255,96,0,.4); }
-    .map-btn.jd       { background: linear-gradient(135deg,#e1251b,#ff6b6b); box-shadow: 0 4px 16px rgba(225,37,27,.4); }
+    .map-btn.amap     { background: linear-gradient(135deg,#00b09b,#38ef7d); box-shadow: 0 4px 14px rgba(0,176,155,.4); }
+    .map-btn.gmap     { background: linear-gradient(135deg,#4285f4,#34a853); box-shadow: 0 4px 14px rgba(66,133,244,.4); }
+    .map-btn.taobao   { background: linear-gradient(135deg,#00aaff,#0066ff); box-shadow: 0 4px 14px rgba(0,102,255,.4); }
+    .map-btn.meituan  { background: linear-gradient(135deg,#ff6000,#ffaa00); box-shadow: 0 4px 14px rgba(255,96,0,.4); }
+    .map-btn.jd       { background: linear-gradient(135deg,#e1251b,#ff6b6b); box-shadow: 0 4px 14px rgba(225,37,27,.4); }
     .map-btn svg { flex-shrink: 0; }
 
     .no-map-tip { color: rgba(255,255,255,.3); font-size: .84rem; font-style: italic; }
@@ -214,11 +231,11 @@
     /* 历史徽章 */
     .history-badge {
       display: inline-block;
-      margin-bottom: 14px;
-      padding: 4px 14px;
+      margin-bottom: 10px;
+      padding: 3px 12px;
       border-radius: 20px;
-      font-size: .75rem;
-      font-weight: 700;
+      font-size: .72rem;
+      font-weight: 900;
       letter-spacing: 1px;
     }
     .history-badge.today { background: rgba(255,71,87,.25); color: #ff6b81; border: 1px solid rgba(255,71,87,.4); }
@@ -776,12 +793,20 @@ function renderMapArea(food) {
     const gmapUrl     = `https://www.google.com/maps/search/${encodeURIComponent(kw+'附近')}`;
     const tx = t();
     mapArea.innerHTML = `
-      <div class="map-btns">
-        <a class="map-btn amap"    href="${amapUrl}" target="_blank" rel="noopener">${PIN} ${tx.amap(name)}</a>
-        <a class="map-btn gmap"    href="${gmapUrl}" target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
-        <button class="map-btn taobao"  data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openTaobao(this.dataset.kw)">${PIN} ${tx.taobao(name)}</button>
-        <button class="map-btn meituan" data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openMeituan(this.dataset.kw)">${PIN} ${tx.meituan(name)}</button>
-        <button class="map-btn jd"      data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openJD(this.dataset.kw)">${PIN} ${tx.jd(name)}</button>
+      <div class="link-section">
+        <div class="section-label">🗺 附近搜索</div>
+        <div class="map-btns">
+          <a class="map-btn amap" href="${amapUrl}" target="_blank" rel="noopener">${PIN} ${tx.amap(name)}</a>
+          <a class="map-btn gmap" href="${gmapUrl}" target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
+        </div>
+      </div>
+      <div class="link-section">
+        <div class="section-label">🛵 外卖点餐</div>
+        <div class="map-btns">
+          <button class="map-btn taobao"  data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openTaobao(this.dataset.kw)">${PIN} ${tx.taobao(name)}</button>
+          <button class="map-btn meituan" data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openMeituan(this.dataset.kw)">${PIN} ${tx.meituan(name)}</button>
+          <button class="map-btn jd"      data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openJD(this.dataset.kw)">${PIN} ${tx.jd(name)}</button>
+        </div>
       </div>`;
   } else {
     const tx  = t();
