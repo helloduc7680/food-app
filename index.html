@@ -614,9 +614,19 @@ function openJD(kw) {
 function openTaobao(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
-  copyKw(kw);
-  // iOS + 安卓统一：taobao:// 直接唤起淘宝App，未安装则提示
-  iosOpenApp(`taobao://`, null, kw, '淘宝App');
+  const h5Url   = `https://www.ele.me/`;
+  copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
+  if (/Android/i.test(ua)) {
+    // 淘宝闪购 = 饿了么，包名 me.ele，scheme eleme
+    window.location.href =
+      `intent://waimai/home` +
+      `#Intent;scheme=eleme;` +
+      `package=me.ele;` +
+      `S.browser_fallback_url=${encodeURIComponent(h5Url)};end`;
+  } else {
+    // iOS：eleme:// 唤起淘宝闪购App，未安装提示
+    iosOpenApp(`eleme://`, null, kw, '淘宝闪购App');
+  }
 }
 
 function openMeituan(kw) {
