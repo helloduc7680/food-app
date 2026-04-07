@@ -556,10 +556,18 @@ const PIN = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
   <circle cx="12" cy="10" r="3"/></svg>`;
 
 function copyKw(kw) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(kw).catch(() => _legacyCopy(kw));
+  } else {
+    _legacyCopy(kw);
+  }
+}
+function _legacyCopy(kw) {
   try {
     const el = document.createElement('textarea');
     el.value = kw;
-    el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+    // 必须在视口内才能在部分安卓浏览器上成功选中
+    el.style.cssText = 'position:fixed;top:0;left:0;width:2px;height:2px;opacity:0.01;';
     document.body.appendChild(el);
     el.focus(); el.select();
     document.execCommand('copy');
@@ -621,21 +629,11 @@ function openTaobao(kw) {
 }
 
 function openMeituan(kw) {
-  const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
   const h5Url   = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${encoded}`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
-  if (/Android/i.test(ua)) {
-    // 安卓必须用 intent:// 格式，Chrome 才能识别自定义 scheme
-    window.location.href =
-      `intent://search?keyword=${encoded}` +
-      `#Intent;scheme=meituanwaimai;` +
-      `package=com.sankuai.meituan.takeoutnew;` +
-      `S.browser_fallback_url=${encodeURIComponent(h5Url)};end`;
-  } else {
-    // iOS：meituanwaimai:// 直接跳，未安装提示
-    iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, null, kw, '美团外卖App');
-  }
+  // Android/iOS 统一：直接唤起 App，未安装则回落 H5
+  iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, h5Url, null, null);
 }
 
 
