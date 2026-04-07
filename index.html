@@ -212,6 +212,22 @@
     .no-map-tip { color: rgba(255,255,255,.3); font-size: .84rem; font-style: italic; }
     .tip { color: rgba(255,255,255,.2); font-size: .68rem; letter-spacing: 1.5px; text-align: center; }
 
+    /* 通道切换 */
+    .channel-switch { display:flex; gap:10px; width:100%; }
+    .channel-btn {
+      flex:1; padding:13px 8px; border-radius:18px;
+      border:2px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.05);
+      color:rgba(255,255,255,0.45); font-size:.95rem; font-weight:800;
+      cursor:pointer; transition:all .2s; letter-spacing:2px;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .channel-btn.active {
+      background:linear-gradient(135deg,#7b2ff7,#f72fa7);
+      border-color:transparent; color:#fff;
+      box-shadow:0 4px 20px rgba(123,47,247,0.45);
+    }
+
     /* 彩带 */
     .confetti-wrap { position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden; }
     .cp { position:absolute;top:-16px;animation:cpFall linear forwards; }
@@ -234,6 +250,11 @@
   <div class="header">
     <h1 id="titleMain"></h1>
     <p  id="titleSub"></p>
+  </div>
+
+  <div class="channel-switch">
+    <button class="channel-btn active" id="btnSimple" onclick="setChannel('simple')">简单吃吃</button>
+    <button class="channel-btn"        id="btnFeast"  onclick="setChannel('feast')">大吃一顿</button>
   </div>
 
   <div class="wheel-section">
@@ -411,7 +432,11 @@ const COLORS = [
   '#d63031','#e17055',
 ];
 
-const totalW = foods.reduce((s,f) => s + f.w, 0);
+// 简单吃吃的食物索引（0-based）
+const simpleIdx = new Set([0,1,2,6,11,18,22,23,24,30,31,32,36,38,42,43,66,67,71]);
+let currentChannel = 'simple';
+let activeFoods = foods.filter((_,i) => simpleIdx.has(i));
+let totalW = activeFoods.reduce((s,f) => s + f.w, 0);
 
 let canvas, ctx, CX, CY, R, SIZE, segs, rotation = 0;
 
@@ -436,7 +461,7 @@ function initCanvas() {
   CX = SIZE / 2; CY = SIZE / 2; R = SIZE / 2 - 6;
 
   let acc = 0;
-  segs = foods.map((f, i) => {
+  segs = activeFoods.map((f, i) => {
     const arc = f.w / totalW * Math.PI * 2;
     const s   = { ...f, sa: acc, ea: acc + arc, color: COLORS[i % COLORS.length] };
     acc += arc;
@@ -492,8 +517,36 @@ function drawWheel(rot) {
 // ── 加权随机 ─────────────────────────────────────────────────
 function weightedPick() {
   let r = Math.random() * totalW, cum = 0;
-  for (let i = 0; i < foods.length; i++) { cum += foods[i].w; if (r < cum) return i; }
-  return foods.length - 1;
+  for (let i = 0; i < activeFoods.length; i++) { cum += activeFoods[i].w; if (r < cum) return i; }
+  return activeFoods.length - 1;
+}
+
+function rebuildSegs() {
+  activeFoods = currentChannel === 'simple'
+    ? foods.filter((_,i) => simpleIdx.has(i))
+    : foods.filter((_,i) => !simpleIdx.has(i));
+  totalW = activeFoods.reduce((s,f) => s + f.w, 0);
+  let acc = 0;
+  segs = activeFoods.map((f, i) => {
+    const arc = f.w / totalW * Math.PI * 2;
+    const s = { ...f, sa: acc, ea: acc + arc, color: COLORS[i % COLORS.length] };
+    acc += arc;
+    return s;
+  });
+  rotation = 0;
+  drawWheel(0);
+}
+
+function setChannel(ch) {
+  if (currentChannel === ch) return;
+  currentChannel = ch;
+  document.getElementById('btnSimple').classList.toggle('active', ch === 'simple');
+  document.getElementById('btnFeast').classList.toggle('active', ch === 'feast');
+  document.getElementById('resultCard').classList.remove('show');
+  const btn = document.getElementById('spinBtn');
+  btn.textContent = t().spin;
+  delete btn.dataset.spun;
+  rebuildSegs();
 }
 
 // ── 彩带 ─────────────────────────────────────────────────────
@@ -536,7 +589,7 @@ function spin() {
 
   const idx    = weightedPick();
   const seg    = segs[idx];
-  currentFood  = foods[idx];
+  currentFood  = activeFoods[idx];
 
   const pointer    = -Math.PI / 2;
   const midAngle   = (seg.sa + seg.ea) / 2;
