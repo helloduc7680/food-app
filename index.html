@@ -634,7 +634,8 @@ function openMeituan(kw) {
     // 安卓用 intent:// 格式，Chrome 直接唤起 App；未安装则回落 H5
     window.location.href =
       `intent://search?keyword=${encoded}` +
-      `#Intent;scheme=meituanwaimai;` +
+      `#Intent;action=android.intent.action.VIEW;` +
+      `scheme=meituanwaimai;` +
       `package=com.sankuai.meituan.takeoutnew;` +
       `S.browser_fallback_url=${encodeURIComponent(h5Url)};end`;
   } else {
