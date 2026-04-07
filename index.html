@@ -574,17 +574,24 @@ function iosOpenApp(scheme, webUrl, kw) {
 function openJD(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
-  // 京东秒送搜索页
   const webUrl  = `https://miaosong.jd.com/search?keyword=${encoded}`;
-  const appParams = encodeURIComponent(JSON.stringify({category:'jump',des:'miaosong_search',keyWord:kw}));
+  copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
+  // openapp.jdmobile://virtual 跳京东App秒送搜索页
+  // des: 'miaosong' = 秒送首页, url参数带搜索路径
+  const page = encodeURIComponent(`https://miaosong.jd.com/search?keyword=${encoded}`);
+  const appParams = encodeURIComponent(JSON.stringify({
+    category: 'jump',
+    des: 'webview',
+    url: `https://miaosong.jd.com/search?keyword=${encoded}`
+  }));
+  const scheme = `openapp.jdmobile://virtual?params=${appParams}`;
   if (/Android/i.test(ua)) {
-    copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后长按粘贴');
     window.location.href =
-      `intent://miaosong.jd.com/search?keyword=${encoded}` +
-      `#Intent;scheme=https;package=com.jingdong.app.mall;` +
+      `intent://virtual?params=${appParams}` +
+      `#Intent;scheme=openapp.jdmobile;package=com.jingdong.app.mall;` +
       `S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
   } else {
-    iosOpenApp(`openapp.jdmobile://virtual?params=${appParams}`, webUrl, kw);
+    iosOpenApp(scheme, webUrl, kw);
   }
 }
 
