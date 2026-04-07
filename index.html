@@ -626,10 +626,16 @@ function openTaobao(kw) {
 }
 
 function openMeituan(kw) {
+  const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
   const h5Url   = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${encoded}`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
-  iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, h5Url, null, null);
+  if (/Android/i.test(ua)) {
+    // 安卓 meituanwaimai:// 不可靠，直接跳 H5，美团网页自动弹"打开 App"
+    window.location.href = h5Url;
+  } else {
+    iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, null, null, '美团外卖App');
+  }
 }
 
 
