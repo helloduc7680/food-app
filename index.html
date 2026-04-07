@@ -433,7 +433,7 @@ const COLORS = [
 ];
 
 // 简单吃吃的食物索引（0-based）
-const simpleIdx = new Set([0,1,2,6,11,18,22,23,24,30,31,32,36,38,42,43,66,67,71]);
+const simpleIdx = new Set([0,1,2,4,6,9,10,11,18,19,20,21,22,23,24,30,31,32,36,38,42,43,47,50,51,64,66,67,68,71]);
 let currentChannel = 'simple';
 let activeFoods = foods.filter((_,i) => !simpleIdx.has(i));
 let totalW = activeFoods.reduce((s,f) => s + f.w, 0);
