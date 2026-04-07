@@ -566,14 +566,19 @@ function copyKw(kw) {
 
 function iosOpenApp(scheme, fallbackUrl, kw, appName) {
   if (kw) { copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后长按粘贴'); }
+  let left = false;
+  const markLeft = () => { left = true; };
+  // visibilitychange 在安卓更可靠，blur 作为 iOS 补充
+  document.addEventListener('visibilitychange', markLeft, { once: true });
+  window.addEventListener('blur', markLeft, { once: true });
   const timer = setTimeout(() => {
-    if (appName) {
-      showToast('跳转失败，请先安装' + appName);
-    } else if (fallbackUrl) {
-      window.location.href = fallbackUrl;
+    document.removeEventListener('visibilitychange', markLeft);
+    window.removeEventListener('blur', markLeft);
+    if (!left) {
+      if (appName) showToast('跳转失败，请先安装' + appName);
+      else if (fallbackUrl) window.location.href = fallbackUrl;
     }
-  }, 1800);
-  window.addEventListener('blur', () => clearTimeout(timer), { once: true });
+  }, 2000);
   window.location.href = scheme;
 }
 
@@ -608,8 +613,17 @@ function openMeituan(kw) {
   const encoded = encodeURIComponent(kw);
   const h5Url   = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${encoded}`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
-  // iOS + 安卓统一：meituanwaimai:// scheme，未安装提示
-  iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, null, kw, '美团外卖App');
+  if (/Android/i.test(ua)) {
+    // 安卓必须用 intent:// 格式，Chrome 才能识别自定义 scheme
+    window.location.href =
+      `intent://search?keyword=${encoded}` +
+      `#Intent;scheme=meituanwaimai;` +
+      `package=com.sankuai.meituan.takeoutnew;` +
+      `S.browser_fallback_url=${encodeURIComponent(h5Url)};end`;
+  } else {
+    // iOS：meituanwaimai:// 直接跳，未安装提示
+    iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, null, kw, '美团外卖App');
+  }
 }
 
 
