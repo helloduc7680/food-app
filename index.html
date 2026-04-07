@@ -204,6 +204,7 @@
     .map-btn:active { transform: scale(.97); }
     .map-btn.amap     { background: linear-gradient(135deg,#00b09b,#38ef7d); box-shadow: 0 4px 16px rgba(0,176,155,.4); }
     .map-btn.gmap     { background: linear-gradient(135deg,#4285f4,#34a853); box-shadow: 0 4px 16px rgba(66,133,244,.4); }
+    .map-btn.taobao   { background: linear-gradient(135deg,#ff6600,#ff4400); box-shadow: 0 4px 16px rgba(255,80,0,.4); }
     .map-btn.meituan  { background: linear-gradient(135deg,#ff6000,#ffaa00); box-shadow: 0 4px 16px rgba(255,96,0,.4); }
     .map-btn.jd       { background: linear-gradient(135deg,#e1251b,#ff6b6b); box-shadow: 0 4px 16px rgba(225,37,27,.4); }
     .map-btn svg { flex-shrink: 0; }
@@ -325,6 +326,7 @@ const I18N = {
     tip:      '✦ 减脂餐概率加权较高，为你的健康加油 ✦',
     amap:     n => `高德地图·搜附近「${n}」`,
     gmap:     n => `Google Maps·搜附近「${n}」`,
+    taobao:   n => `淘宝闪购·搜「${n}」`,
     meituan:  n => `美团外卖·搜「${n}」`,
     jd:       n => `京东秒送·搜「${n}」`,
     skip1:    '✦ 省下的都是赚到的 ✦',
@@ -339,6 +341,7 @@ const I18N = {
     tip:      '✦ Light Meal has higher weight — stay healthy! ✦',
     amap:     n => `Amap · "${n}" nearby`,
     gmap:     n => `Google Maps · "${n}" nearby`,
+    taobao:   n => `Taobao Flash · "${n}"`,
     meituan:  n => `Meituan · "${n}"`,
     jd:       n => `JD Miaosong · "${n}"`,
     skip1:    '✦ Money saved is money earned ✦',
@@ -608,6 +611,23 @@ function openJD(kw) {
   }
 }
 
+function openTaobao(kw) {
+  const ua      = navigator.userAgent;
+  const encoded = encodeURIComponent(kw);
+  const h5Url   = `https://www.ele.me/search?keyword=${encoded}`;
+  copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
+  if (/Android/i.test(ua)) {
+    // 安卓 intent：优先打开淘宝App，未装降级淘宝闪购网页
+    window.location.href =
+      `intent://taobao.com#Intent;scheme=taobao;` +
+      `package=com.taobao.taobao;` +
+      `S.browser_fallback_url=${encodeURIComponent(h5Url)};end`;
+  } else {
+    // iOS：taobao:// 直接跳，未安装提示
+    iosOpenApp(`taobao://`, null, kw, '淘宝App');
+  }
+}
+
 function openMeituan(kw) {
   const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
@@ -649,6 +669,7 @@ function renderMapArea(food) {
       <div class="map-btns">
         <a class="map-btn amap"    href="${amapUrl}" target="_blank" rel="noopener">${PIN} ${tx.amap(name)}</a>
         <a class="map-btn gmap"    href="${gmapUrl}" target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
+        <button class="map-btn taobao"  data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openTaobao(this.dataset.kw)">${PIN} ${tx.taobao(name)}</button>
         <button class="map-btn meituan" data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openMeituan(this.dataset.kw)">${PIN} ${tx.meituan(name)}</button>
         <button class="map-btn jd"      data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openJD(this.dataset.kw)">${PIN} ${tx.jd(name)}</button>
       </div>`;
