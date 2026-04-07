@@ -617,10 +617,9 @@ function openTaobao(kw) {
   const h5Url   = `https://www.ele.me/search?keyword=${encoded}`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
   if (/Android/i.test(ua)) {
-    // intent:// 路径 + scheme=taobao，格式同美团
+    // 用 taobao.com App Links 让淘宝App拦截并打开闪购首页
     window.location.href =
-      `intent://` +
-      `#Intent;scheme=taobao;` +
+      `intent://taobao.com#Intent;scheme=https;` +
       `package=com.taobao.taobao;` +
       `S.browser_fallback_url=${encodeURIComponent(h5Url)};end`;
   } else {
