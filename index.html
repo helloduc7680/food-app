@@ -608,17 +608,8 @@ function openMeituan(kw) {
   const encoded = encodeURIComponent(kw);
   const h5Url   = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${encoded}`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
-  if (/Android/i.test(ua)) {
-    // intent + meituanwaimai scheme：优先打开美团外卖App，未装降级H5
-    window.location.href =
-      `intent://search?keyword=${encoded}` +
-      `#Intent;scheme=meituanwaimai;` +
-      `package=com.sankuai.meituan.takeoutnew;` +
-      `S.browser_fallback_url=${encodeURIComponent(h5Url)};end`;
-  } else {
-    // iOS：meituanwaimai:// 打开App，未安装提示
-    iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, null, kw, '美团外卖App');
-  }
+  // iOS + 安卓统一：meituanwaimai:// scheme，未安装提示
+  iosOpenApp(`meituanwaimai://search?keyword=${encoded}`, null, kw, '美团外卖App');
 }
 
 
