@@ -322,7 +322,7 @@ const foods = [
   { zh:'KFC',      en:'KFC',                  emoji:'🍗', w:4, kw:{zh:'KFC肯德基', en:'KFC'},                 desc:{zh:'炸鸡没有感情，但你有！',          en:'Crispy chicken, double the joy!'} },
   { zh:'麦当劳',   en:"McDonald's",           emoji:'🍔', w:4, kw:{zh:'麦当劳',    en:"mcdonald's"},          desc:{zh:'我就喜欢！（贝多芬同款感叹）',    en:"I'm lovin' it!"} },
   { zh:'羊肉串',   en:'Lamb Skewers',         emoji:'🍢', w:4, kw:{zh:'羊肉串',    en:'lamb skewers'},        desc:{zh:'撸串，社交货币开始结算！',        en:'Charred & fragrant skewers!'} },
-  { zh:'减脂餐',   en:'Light Meal',           emoji:'🥗', w:8, kw:{zh:'健康轻食',  en:'healthy salad'},       desc:{zh:'肌肉在向你招手，脂肪在跟你拜拜！', en:'Low-cal, high-protein, abs incoming!'} },
+  { zh:'轻食沙拉', en:'Salad Bowl',           emoji:'🥗', w:8, kw:{zh:'轻食沙拉',  en:'salad healthy food'},  desc:{zh:'肌肉在向你招手，脂肪在跟你拜拜！', en:'Low-cal, high-protein, abs incoming!'} },
   { zh:'简餐',     en:'Simple Meal',          emoji:'🥙', w:4, kw:{zh:'简餐轻食',  en:'simple meal'},         desc:{zh:'别人吃龙虾，你在感悟人生！',       en:'Simple but satisfying!'} },
   { zh:'煲仔饭',   en:'Claypot Rice',         emoji:'🍱', w:4, kw:{zh:'煲仔饭',    en:'claypot rice'},        desc:{zh:'锅底那层焦饭，才是精华所在！',    en:'Wok-charred & fragrant!'} },
   { zh:'包子',     en:'Steamed Buns',         emoji:'🥟', w:3, kw:{zh:'包子',      en:'baozi'},               desc:{zh:'热乎乎的包子，童年最美的记忆！',   en:'Fluffy warm buns, so satisfying!'} },
@@ -386,6 +386,18 @@ const foods = [
   { zh:'瓦罐汤',   en:'Clay Pot Soup',        emoji:'🫙', w:3, kw:{zh:'瓦罐汤',    en:'clay pot soup'},         desc:{zh:'慢火熬出来的，都是岁月的味道！',  en:'Slow-cooked nourishing clay pot!'} },
   { zh:'苏菜',     en:'Jiangsu Cuisine',      emoji:'🫕', w:3, kw:{zh:'苏菜淮扬菜', en:'jiangsu food'},        desc:{zh:'淮扬菜：连刀工都比你的人生精致！', en:'Delicate Jiangsu cuisine!'} },
   { zh:'闽菜',     en:'Fujian Cuisine',       emoji:'🦪', w:3, kw:{zh:'闽菜',      en:'fujian food'},         desc:{zh:'海鲜加上山珍，福建人赢麻了！',    en:'Fujian\'s best of sea & mountain!'} },
+  // ── 大吃一顿新增 ──
+  { zh:'韩国料理', en:'Korean Food',          emoji:'🇰🇷', w:4, kw:{zh:'韩国料理',  en:'korean food'},         desc:{zh:'欧巴说：今天也要好好吃饭！',      en:'K-food vibes, eat like a K-drama!'} },
+  { zh:'黄焖鸡米饭',en:'Braised Chicken Rice',emoji:'🍛', w:5, kw:{zh:'黄焖鸡米饭', en:'braised chicken rice'}, desc:{zh:'国民外卖扛把子，从不让人失望！',  en:'China\'s most ordered delivery!'} },
+  { zh:'盖浇饭',   en:'Rice with Topping',    emoji:'🍚', w:4, kw:{zh:'盖浇饭',    en:'rice with topping'},   desc:{zh:'往饭上一盖，问题都解决了！',      en:'One pour, all problems solved!'} },
+  { zh:'麻辣香锅', en:'Mala Dry Pot',         emoji:'🌶️', w:4, kw:{zh:'麻辣香锅',  en:'mala dry pot'},        desc:{zh:'干锅不干，麻辣到底！',            en:'Dry pot, wet your appetite!'} },
+  { zh:'鸡公煲',   en:'Chicken Hotpot',       emoji:'🍗', w:4, kw:{zh:'鸡公煲',    en:'chicken clay pot'},    desc:{zh:'一锅端上来，整桌都安静了！',      en:'One pot to silence the table!'} },
+  // ── 简单吃吃新增 ──
+  { zh:'过桥米线', en:'Crossing Bridge Noodle',emoji:'🍜', w:4, kw:{zh:'过桥米线',  en:'crossing bridge noodle'}, desc:{zh:'汤要烫，料要鲜，仪式感拉满！',   en:'Hot soup, fresh toppings, pure ritual!'} },
+  { zh:'鸡蛋灌饼', en:'Egg Stuffed Pancake',  emoji:'🥚', w:3, kw:{zh:'鸡蛋灌饼',  en:'egg stuffed pancake'}, desc:{zh:'早餐届的充气宝宝，鼓起来真好看！', en:'The puffed-up breakfast star!'} },
+  { zh:'馄饨',     en:'Wontons',              emoji:'🥟', w:4, kw:{zh:'馄饨',      en:'wonton soup'},         desc:{zh:'小小一个，包住整个冬天的温柔！',  en:'Tiny pockets of pure warmth!'} },
+  { zh:'炒花甲',   en:'Stir-fry Clams',       emoji:'🐚', w:4, kw:{zh:'炒花甲',    en:'stir fry clams'},      desc:{zh:'花甲：来来来，我们练练嘴皮子！',  en:'Clam up & slurp! Endless fun!'} },
+  { zh:'石锅拌饭', en:'Stone Pot Bibimbap',   emoji:'🍳', w:4, kw:{zh:'石锅拌饭',  en:'stone pot bibimbap'},  desc:{zh:'锅底嘎嘎响，越焦越好吃！',       en:'Sizzling stone pot, crispy bottom!'} },
   { zh:'饿着',     en:'Skip It',              emoji:'😤', w:2, kw:null,                                        desc:{zh:'这叫"间歇性进化"，不叫没吃！',   en:'Save money, embrace the fast...'} },
   { zh:'不吃',     en:"Don't Eat",            emoji:'🙅', w:2, kw:null,                                       desc:{zh:'今天辟谷，明天少一克脂肪，值了！', en:'Fasting today, virtue +1'} },
 ];
@@ -398,7 +410,7 @@ const I18N = {
     spin:     '转！',
     respun:   '再转',
     spinning: '…',
-    tip:      '✦ 减脂餐概率加权较高，为你的健康加油 ✦',
+    tip:      '✦ 轻食沙拉概率加权较高，为你的健康加油 ✦',
     amap:     n => `高德地图·搜附近「${n}」`,
     gmap:     n => `Google Maps·搜附近「${n}」`,
     taobao:   n => `饿了么·搜「${n}」`,
@@ -464,12 +476,12 @@ const COLORS = [
 ];
 
 // 大吃一顿专属索引（0-based，不含共享项）
-const simpleIdx = new Set([0,1,2,6,11,18,22,23,24,30,31,32,35,37,41,42,64,65,69]);
+const simpleIdx = new Set([0,1,2,6,11,18,22,23,24,30,31,32,35,37,41,42,64,65,69,75,76,77,78,79]);
 // 两个通道共享的索引：东北菜/KFC/麦当劳/川菜/湘菜/杭帮菜/新疆菜/泰国菜/越南菜/鲁菜/徽菜/苏菜/闽菜
 const sharedIdx = new Set([4,9,10,19,20,21,46,49,50,62,66,73,74]);
 
-// 权重：减脂餐加倍，其余统一
-function getWeight(f) { return f.zh === '减脂餐' ? 8 : 4; }
+// 权重：轻食沙拉加倍，其余统一
+function getWeight(f) { return f.zh === '轻食沙拉' ? 8 : 4; }
 
 // ── 历史记录（localStorage，每台设备独立存储7天）────────────
 let _histCache = null;
