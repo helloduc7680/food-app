@@ -456,6 +456,7 @@ const foods = [
   { zh:'碳酸饮料', en:'Soft Drink',           emoji:'🥤', w:3, kw:{zh:'碳酸饮料',  en:'soft drink'},          desc:{zh:'嘶啦啦，少女的快乐！',            en:'Fizzy girl energy!'} },
   { zh:'酒精饮品', en:'Alcoholic Drink',      emoji:'🍸', w:3, kw:{zh:'鸡尾酒果酒',en:'cocktail'},           desc:{zh:'微醺时刻，生活有点甜！',          en:'Buzz with a twist!'} },
   { zh:'可可饮品', en:'Cocoa Drink',          emoji:'🍫', w:3, kw:{zh:'可可饮品',  en:'cocoa drink'},         desc:{zh:'巧克力的温暖，一口入魂！',        en:'Chocolate warmth, soul soothing!'} },
+  { zh:'白开水',   en:'Plain Water',          emoji:'💧', w:24, kw:null,                                       desc:{zh:'最便宜的养生，最朴素的智慧！',    en:'Simplest wellness, pure wisdom!'} },
   { zh:'饿着',     en:'Skip It',              emoji:'😤', w:2, kw:null,                                        desc:{zh:'这叫"间歇性进化"，不叫没吃！',   en:'Save money, embrace the fast...'} },
   { zh:'不吃',     en:"Don't Eat",            emoji:'🙅', w:2, kw:null,                                       desc:{zh:'今天辟谷，明天少一克脂肪，值了！', en:'Fasting today, virtue +1'} },
 ];
@@ -542,7 +543,7 @@ const COLORS = [
 // 饮品单独：索引92-116（25道饮品，通道选择时不显示，或可单独一个饮品频道）
 const simpleIdx = new Set([0,1,5,10,17,21,22,23,29,30,31,34,36,40,41,63,64,68,74,75,76,77,78]);
 const feastIdx = new Set([86,87,88,89,90,91]); // 大吃一顿专属新增
-const beverageIdx = new Set([92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116]); // 饮品
+const beverageIdx = new Set([92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117]); // 饮品
 // 两个通道共享：东北菜/KFC/麦当劳/川菜/湘菜/杭帮菜/新疆菜/泰国菜/越南菜/鲁菜/徽菜/苏菜/闽菜/贵州菜/江西菜/客家菜/广式早茶
 const sharedIdx = new Set([3,8,9,18,19,20,45,48,49,61,65,72,73,79,80,81,82,83,84,85]);
 
