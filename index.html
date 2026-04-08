@@ -809,6 +809,24 @@ function openMeituan(kw) {
 }
 
 
+function openDianping(kw) {
+  const ua      = navigator.userAgent;
+  const encoded = encodeURIComponent(kw);
+  const h5Url   = `https://www.dianping.com/search/keyword/2/${encoded}`;
+  copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
+  if (/Android/i.test(ua)) {
+    // Android：intent 唤起大众点评，未安装回落 H5
+    window.location.href =
+      `intent://search?kw=${encoded}` +
+      `#Intent;scheme=dianping;` +
+      `package=com.dianping.v1;` +
+      `S.browser_fallback_url=${encodeURIComponent(h5Url)};end`;
+  } else {
+    // iOS：scheme 唤起，2s 内未跳转回落 H5
+    iosOpenApp(`dianping://search?kw=${encoded}`, h5Url, null, null);
+  }
+}
+
 function showToast(msg) {
   const el = document.createElement('div');
   el.textContent = msg;
@@ -833,7 +851,7 @@ function renderMapArea(food) {
         <div class="map-btns">
           <a class="map-btn amap"     href="${amapUrl}" target="_blank" rel="noopener">${PIN} ${tx.amap(name)}</a>
           <a class="map-btn gmap"     href="${gmapUrl}" target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
-          <a class="map-btn dianping" href="https://www.dianping.com/search/keyword/2/${encodeURIComponent(kw)}" target="_blank" rel="noopener">${PIN} ${tx.dianping(name)}</a>
+          <button class="map-btn dianping" data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openDianping(this.dataset.kw)">${PIN} ${tx.dianping(name)}</button>
         </div>
       </div>
       <div class="link-section">
