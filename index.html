@@ -224,6 +224,7 @@
     .map-btn.taobao   { background: linear-gradient(135deg,#00aaff,#0066ff); box-shadow: 0 4px 14px rgba(0,102,255,.4); }
     .map-btn.meituan  { background: linear-gradient(135deg,#ff6000,#ffaa00); box-shadow: 0 4px 14px rgba(255,96,0,.4); }
     .map-btn.jd       { background: linear-gradient(135deg,#e1251b,#ff6b6b); box-shadow: 0 4px 14px rgba(225,37,27,.4); }
+    .map-btn.dianping { background: linear-gradient(135deg,#ff4400,#ff7744); box-shadow: 0 4px 14px rgba(255,68,0,.4); }
     .map-btn svg { flex-shrink: 0; }
 
     .no-map-tip { color: rgba(255,255,255,.3); font-size: .84rem; font-style: italic; }
@@ -310,7 +311,6 @@
 <script>
 // ── 食物数据 ──────────────────────────────────────────────────
 const foods = [
-  { zh:'火锅',     en:'Hot Pot',              emoji:'🍲', w:5, kw:{zh:'火锅',      en:'hot pot'},             desc:{zh:'命运之轮把你推进锅里了！',        en:'Sizzling hot, dip & enjoy!'} },
   { zh:'烤肉',     en:'BBQ',                  emoji:'🥩', w:5, kw:{zh:'烤肉',      en:'barbecue'},            desc:{zh:'今晚就是你了，牛！',             en:'Smoky & sizzling perfection!'} },
   { zh:'日料',     en:'Japanese',             emoji:'🍣', w:4, kw:{zh:'日本料理',  en:'japanese food'},       desc:{zh:'装一次精致的自己吧！',           en:'Elegant & refined flavors!'} },
   { zh:'粤菜',     en:'Cantonese',            emoji:'🦐', w:4, kw:{zh:'粤菜',      en:'cantonese food'},      desc:{zh:'清淡？不，是矜持的鲜！',          en:'Fresh & delicate Guangdong style!'} },
@@ -398,6 +398,26 @@ const foods = [
   { zh:'馄饨',     en:'Wontons',              emoji:'🥟', w:4, kw:{zh:'馄饨',      en:'wonton soup'},         desc:{zh:'小小一个，包住整个冬天的温柔！',  en:'Tiny pockets of pure warmth!'} },
   { zh:'炒花甲',   en:'Stir-fry Clams',       emoji:'🐚', w:4, kw:{zh:'炒花甲',    en:'stir fry clams'},      desc:{zh:'花甲：来来来，我们练练嘴皮子！',  en:'Clam up & slurp! Endless fun!'} },
   { zh:'石锅拌饭', en:'Stone Pot Bibimbap',   emoji:'🍳', w:4, kw:{zh:'石锅拌饭',  en:'stone pot bibimbap'},  desc:{zh:'锅底嘎嘎响，越焦越好吃！',       en:'Sizzling stone pot, crispy bottom!'} },
+  // ── 大吃一顿专属 ──
+  { zh:'猪肚鸡',   en:'Pork Belly Chicken',   emoji:'🐔', w:4, kw:{zh:'猪肚鸡火锅',en:'pork belly chicken'},  desc:{zh:'猪肚包鸡，两种灵魂合体！',        en:'Two ingredients, one epic pot!'} },
+  { zh:'羊蝎子',   en:'Lamb Spine Hotpot',    emoji:'🍖', w:4, kw:{zh:'羊蝎子',    en:'lamb spine hotpot'},   desc:{zh:'啃骨头是门艺术，今天你是艺术家！', en:'Art of gnawing bones!'} },
+  { zh:'重庆火锅', en:'Chongqing Hotpot',     emoji:'🌶️', w:5, kw:{zh:'重庆火锅',  en:'chongqing hotpot'},    desc:{zh:'九宫格里的人生百味，辣到飞升！',  en:'Nine-grid inferno, ascend to spice!'} },
+  { zh:'老北京火锅',en:'Beijing Copper Pot',  emoji:'🫕', w:4, kw:{zh:'老北京涮羊肉',en:'beijing copper hotpot'},desc:{zh:'铜锅一开，北京魂儿就回来了！',   en:'Copper pot, Beijing soul is back!'} },
+  { zh:'啫啫煲',   en:'Sizzling Clay Pot',    emoji:'🔥', w:4, kw:{zh:'啫啫煲',    en:'sizzling clay pot'},   desc:{zh:'端上来就嘎嘎响，全场都看你！',    en:'Sizzles so loud, all eyes on you!'} },
+  { zh:'牛排',     en:'Steak',                emoji:'🥩', w:4, kw:{zh:'牛排西餐',  en:'steak western food'},  desc:{zh:'几分熟？这是今晚最重要的问题！',  en:'How well done? Tonight\'s big question!'} },
+  { zh:'铁板烧',   en:'Teppanyaki',           emoji:'🍳', w:4, kw:{zh:'铁板烧',    en:'teppanyaki'},          desc:{zh:'厨师在你面前表演，你在为他鼓掌！', en:'Chef performs, you applaud & eat!'} },
+  { zh:'海鲜大排档',en:'Seafood BBQ',         emoji:'🦞', w:4, kw:{zh:'海鲜大排档',en:'seafood barbecue'},    desc:{zh:'海货论斤称，今晚不算钱！',        en:'Seafood by the kilo, money later!'} },
+  { zh:'居酒屋',   en:'Izakaya',              emoji:'🍶', w:4, kw:{zh:'居酒屋',    en:'izakaya japanese bar'}, desc:{zh:'下班了，今晚做一次日本打工人！',  en:'After work vibes, izakaya style!'} },
+  { zh:'日式烧肉', en:'Japanese BBQ',         emoji:'🥩', w:4, kw:{zh:'日式烧肉',  en:'japanese barbecue'},   desc:{zh:'小火慢烤，每口都是仪式感！',      en:'Slow grill, maximum ritual!'} },
+  { zh:'齐齐哈尔烤肉',en:'QiQiHar BBQ',      emoji:'🔥', w:4, kw:{zh:'齐齐哈尔烤肉',en:'qiqihar grilled meat'},desc:{zh:'铁锅烤肉，东北霸气满满！',       en:'Iron plate BBQ, Northeast power!'} },
+  { zh:'韩式烤肉', en:'Korean BBQ',           emoji:'🇰🇷', w:4, kw:{zh:'韩式烤肉',  en:'korean barbecue'},     desc:{zh:'烤了包，包了吃，生活就该这么爽！', en:'Wrap it, eat it, live your best life!'} },
+  // ── 两个通道共享 ──
+  { zh:'贵州菜',   en:'Guizhou Cuisine',      emoji:'🌿', w:4, kw:{zh:'贵州菜',    en:'guizhou food'},        desc:{zh:'酸汤辣椒，贵州人的精神食粮！',    en:'Sour & spicy, Guizhou soul food!'} },
+  { zh:'江西菜',   en:'Jiangxi Cuisine',      emoji:'🌶️', w:4, kw:{zh:'江西菜',    en:'jiangxi food'},        desc:{zh:'小炒肉一上桌，饭都不够吃！',      en:'Jiangxi stir-fry, rice never enough!'} },
+  { zh:'客家菜',   en:'Hakka Cuisine',        emoji:'🥘', w:4, kw:{zh:'客家菜',    en:'hakka food'},          desc:{zh:'盐焗鸡问你：你还满意吗？',        en:'Salt-baked chicken says hi!'} },
+  { zh:'广式早茶', en:'Dim Sum',              emoji:'🫖', w:4, kw:{zh:'广式早茶点心',en:'dim sum cantonese'},  desc:{zh:'一盅两件，人生最美好的上午！',     en:'Dim sum & tea, perfect morning!'} },
+  // ── 简单吃吃专属 ──
+  { zh:'陕西菜',   en:'Shaanxi Cuisine',      emoji:'🫙', w:4, kw:{zh:'陕西菜',    en:'shaanxi food'},        desc:{zh:'面宽汤厚，西北汉子的浪漫！',      en:'Wide noodles, northwest romance!'} },
   { zh:'饿着',     en:'Skip It',              emoji:'😤', w:2, kw:null,                                        desc:{zh:'这叫"间歇性进化"，不叫没吃！',   en:'Save money, embrace the fast...'} },
   { zh:'不吃',     en:"Don't Eat",            emoji:'🙅', w:2, kw:null,                                       desc:{zh:'今天辟谷，明天少一克脂肪，值了！', en:'Fasting today, virtue +1'} },
 ];
@@ -413,6 +433,7 @@ const I18N = {
     tip:      '✦ 轻食沙拉概率加权较高，为你的健康加油 ✦',
     amap:     n => `高德地图·搜附近「${n}」`,
     gmap:     n => `Google Maps·搜附近「${n}」`,
+    dianping: n => `大众点评·搜「${n}」`,
     taobao:   n => `饿了么·搜「${n}」`,
     meituan:  n => `美团外卖·搜「${n}」`,
     jd:       n => `京东秒送·搜「${n}」`,
@@ -428,6 +449,7 @@ const I18N = {
     tip:      '✦ Light Meal has higher weight — stay healthy! ✦',
     amap:     n => `Amap · "${n}" nearby`,
     gmap:     n => `Google Maps · "${n}" nearby`,
+    dianping: n => `Dianping · "${n}"`,
     taobao:   n => `Eleme · "${n}"`,
     meituan:  n => `Meituan · "${n}"`,
     jd:       n => `JD Miaosong · "${n}"`,
@@ -476,9 +498,10 @@ const COLORS = [
 ];
 
 // 大吃一顿专属索引（0-based，不含共享项）
-const simpleIdx = new Set([0,1,2,6,11,18,22,23,24,30,31,32,35,37,41,42,64,65,69,75]);
-// 两个通道共享的索引：东北菜/KFC/麦当劳/川菜/湘菜/杭帮菜/新疆菜/泰国菜/越南菜/鲁菜/徽菜/苏菜/闽菜
-const sharedIdx = new Set([4,9,10,19,20,21,46,49,50,62,66,73,74]);
+// 大吃一顿专属索引（删火锅后全部-1，新增84-95）
+const simpleIdx = new Set([0,1,5,10,17,21,22,23,29,30,31,34,36,40,41,63,64,68,74,84,85,86,87,88,89,90,91,92,93,94,95]);
+// 两个通道共享：东北菜/KFC/麦当劳/川菜/湘菜/杭帮菜/新疆菜/泰国菜/越南菜/鲁菜/徽菜/苏菜/闽菜/贵州菜/江西菜/客家菜/广式早茶
+const sharedIdx = new Set([3,8,9,18,19,20,45,48,49,61,65,72,73,96,97,98,99]);
 
 // 权重：轻食沙拉加倍，其余统一
 function getWeight(f) { return f.zh === '轻食沙拉' ? 8 : 4; }
@@ -808,8 +831,9 @@ function renderMapArea(food) {
       <div class="link-section">
         <div class="section-label">🗺 附近搜索</div>
         <div class="map-btns">
-          <a class="map-btn amap" href="${amapUrl}" target="_blank" rel="noopener">${PIN} ${tx.amap(name)}</a>
-          <a class="map-btn gmap" href="${gmapUrl}" target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
+          <a class="map-btn amap"     href="${amapUrl}" target="_blank" rel="noopener">${PIN} ${tx.amap(name)}</a>
+          <a class="map-btn gmap"     href="${gmapUrl}" target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
+          <a class="map-btn dianping" href="https://www.dianping.com/search/keyword/2/${encodeURIComponent(kw)}" target="_blank" rel="noopener">${PIN} ${tx.dianping(name)}</a>
         </div>
       </div>
       <div class="link-section">
