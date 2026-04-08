@@ -315,7 +315,7 @@ const foods = [
   { zh:'日料',     en:'Japanese',             emoji:'🍣', w:4, kw:{zh:'日本料理',  en:'japanese food'},       desc:{zh:'装一次精致的自己吧！',           en:'Elegant & refined flavors!'} },
   { zh:'粤菜',     en:'Cantonese',            emoji:'🦐', w:4, kw:{zh:'粤菜',      en:'cantonese food'},      desc:{zh:'清淡？不，是矜持的鲜！',          en:'Fresh & delicate Guangdong style!'} },
   { zh:'东北菜',   en:'NE Chinese',           emoji:'🥘', w:4, kw:{zh:'东北菜',    en:'northeast chinese'},   desc:{zh:'份量大到老板以为你带了全家！',     en:'Hearty portions, warm your soul!'} },
-  { zh:'砂锅粥',   en:'Claypot Congee',       emoji:'🍚', w:4, kw:{zh:'砂锅粥',    en:'clay pot congee'},     desc:{zh:'软软糯糯，像胃被人轻轻拥抱！',    en:'Silky smooth & comforting!'} },
+  { zh:'砂锅',     en:'Clay Pot',             emoji:'🍚', w:4, kw:{zh:'砂锅',      en:'clay pot'},            desc:{zh:'软软糯糯，像胃被人轻轻拥抱！',    en:'Silky smooth & comforting!'} },
   { zh:'椰子鸡',   en:'Coconut Chicken',      emoji:'🥥', w:4, kw:{zh:'椰子鸡',    en:'coconut chicken'},     desc:{zh:'鸡：我本来想去海边的……',         en:'Fragrant coconut & tender chicken!'} },
   { zh:'麻辣烫',   en:'Malatang',             emoji:'🌶️', w:5, kw:{zh:'麻辣烫',    en:'malatang'},            desc:{zh:'自选地狱，主打一个心甘情愿！',    en:'Numbing, spicy & addictive!'} },
   { zh:'螺蛳粉',   en:'Snail Noodles',        emoji:'🍜', w:4, kw:{zh:'螺蛳粉',    en:'luosifen noodles'},    desc:{zh:'那股味儿，是你今天的试炼！',       en:'Stinky & irresistible!'} },
@@ -346,7 +346,6 @@ const foods = [
   { zh:'烤鱼',     en:'Grilled Fish',         emoji:'🐟', w:5, kw:{zh:'烤鱼',      en:'grilled fish'},        desc:{zh:'鱼在翻滚，你在微笑！',            en:'Spicy, tender & irresistible!'} },
   { zh:'串串香',   en:'Skewer Hot Pot',       emoji:'🍡', w:5, kw:{zh:'串串香',    en:'chuanchuan hotpot'},   desc:{zh:'每一签都是艰难的选择！',          en:'Every skewer is happiness!'} },
   { zh:'冒菜',     en:'Maocai',               emoji:'🥣', w:4, kw:{zh:'冒菜',      en:'maocai'},              desc:{zh:'一碗就能喂饱整颗心！',            en:'Spicy & satisfying bowl!'} },
-  { zh:'兰州拉面', en:'Lanzhou Beef Noodle',  emoji:'🍜', w:5, kw:{zh:'兰州拉面',  en:'lanzhou beef noodle'}, desc:{zh:'拉面师傅用双手给你写了首诗！',     en:'Authentic hand-pulled noodles!'} },
   { zh:'酸菜鱼',   en:'Sauerkraut Fish',      emoji:'🐠', w:5, kw:{zh:'酸菜鱼',    en:'sauerkraut fish'},     desc:{zh:'鱼在酸菜里，你在幸福里！',        en:'Tangy, tender & rice-killer!'} },
   { zh:'炸鸡',     en:'Fried Chicken',        emoji:'🍗', w:5, kw:{zh:'炸鸡',  en:'fried chicken'},       desc:{zh:'今天不需要理由，只需要炸鸡！',     en:'Crispy outside, juicy inside!'} },
   { zh:'披萨',     en:'Pizza',                emoji:'🍕', w:4, kw:{zh:'披萨',      en:'pizza'},               desc:{zh:'芝士就是正义！',                 en:'Cheesy pull, life is good!'} },
@@ -372,7 +371,6 @@ const foods = [
   { zh:'烩面',     en:'Huimian',              emoji:'🍜', w:3, kw:{zh:'烩面',      en:'henan huimian'},         desc:{zh:'一碗下去，整个河南都在你胃里！',  en:'Hearty lamb broth flat noodles!'} },
   { zh:'胡辣汤',   en:'Spicy Pepper Soup',    emoji:'🥣', w:3, kw:{zh:'胡辣汤',    en:'spicy pepper soup'},     desc:{zh:'早上灌一碗，整天都生猛！',        en:'Thick, spicy & soul-warming!'} },
   { zh:'沙茶面',   en:'Satay Noodles',        emoji:'🍜', w:3, kw:{zh:'沙茶面',    en:'satay noodles'},         desc:{zh:'沙茶酱：我才是这碗的灵魂！',      en:'Rich satay broth, Fujian style!'} },
-  { zh:'佛跳墙',   en:'Buddha Jumps Wall',    emoji:'🫕', w:2, kw:{zh:'佛跳墙',    en:'buddha jumps wall'},     desc:{zh:'连佛都管不住自己了，你能吗？',    en:'So fragrant even Buddha leaps!'} },
   { zh:'酸汤鱼',   en:'Sour Soup Fish',       emoji:'🐟', w:4, kw:{zh:'酸汤鱼',    en:'sour soup fish'},        desc:{zh:'酸到眯眼，鲜到拍桌！',            en:'Tangy & appetizing Guizhou fish!'} },
   { zh:'羊肉粉',   en:'Lamb Noodles',         emoji:'🍜', w:3, kw:{zh:'羊肉粉',    en:'lamb rice noodles'},     desc:{zh:'羊肉粉：朴实无华，但绝不简单！',  en:'Rich & fragrant lamb noodle bowl!'} },
   { zh:'鲁菜',     en:'Shandong Cuisine',     emoji:'🥘', w:3, kw:{zh:'鲁菜',      en:'shandong food'},         desc:{zh:'八大菜系老大哥，排场确实大！',     en:"The head of China's 8 cuisines!"} },
@@ -386,6 +384,8 @@ const foods = [
   { zh:'炸酱面',   en:'Zhajiangmian',         emoji:'🍜', w:4, kw:{zh:'炸酱面',    en:'zhajiang noodles'},      desc:{zh:'老北京炸酱面，胡同里的记忆！',    en:"Beijing's iconic saucy noodles!"} },
   { zh:'扬州炒饭', en:'Yangzhou Fried Rice',  emoji:'🍚', w:4, kw:{zh:'扬州炒饭',  en:'yangzhou fried rice'},   desc:{zh:'粒粒分明，每一粒都有自己的故事！', en:'Classic fluffy Yangzhou fried rice!'} },
   { zh:'瓦罐汤',   en:'Clay Pot Soup',        emoji:'🫙', w:3, kw:{zh:'瓦罐汤',    en:'clay pot soup'},         desc:{zh:'慢火熬出来的，都是岁月的味道！',  en:'Slow-cooked nourishing clay pot!'} },
+  { zh:'苏菜',     en:'Jiangsu Cuisine',      emoji:'🫕', w:3, kw:{zh:'苏菜淮扬菜', en:'jiangsu food'},        desc:{zh:'淮扬菜：连刀工都比你的人生精致！', en:'Delicate Jiangsu cuisine!'} },
+  { zh:'闽菜',     en:'Fujian Cuisine',       emoji:'🦪', w:3, kw:{zh:'闽菜',      en:'fujian food'},         desc:{zh:'海鲜加上山珍，福建人赢麻了！',    en:'Fujian\'s best of sea & mountain!'} },
   { zh:'饿着',     en:'Skip It',              emoji:'😤', w:2, kw:null,                                        desc:{zh:'这叫"间歇性进化"，不叫没吃！',   en:'Save money, embrace the fast...'} },
   { zh:'不吃',     en:"Don't Eat",            emoji:'🙅', w:2, kw:null,                                       desc:{zh:'今天辟谷，明天少一克脂肪，值了！', en:'Fasting today, virtue +1'} },
 ];
@@ -464,9 +464,9 @@ const COLORS = [
 ];
 
 // 大吃一顿专属索引（0-based，不含共享项）
-const simpleIdx = new Set([0,1,2,6,11,18,22,23,24,30,31,32,36,38,42,43,66,67,71]);
-// 两个通道共享的索引：东北菜/KFC/麦当劳/川菜/湘菜/杭帮菜/新疆菜/泰国菜/越南菜/鲁菜/徽菜
-const sharedIdx = new Set([4,9,10,19,20,21,47,50,51,64,68]);
+const simpleIdx = new Set([0,1,2,6,11,18,22,23,24,30,31,32,35,37,41,42,64,65,69]);
+// 两个通道共享的索引：东北菜/KFC/麦当劳/川菜/湘菜/杭帮菜/新疆菜/泰国菜/越南菜/鲁菜/徽菜/苏菜/闽菜
+const sharedIdx = new Set([4,9,10,19,20,21,46,49,50,62,66,73,74]);
 
 // 权重：减脂餐加倍，其余统一
 function getWeight(f) { return f.zh === '减脂餐' ? 8 : 4; }
