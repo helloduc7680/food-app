@@ -286,6 +286,7 @@
   <div class="channel-switch">
     <button class="channel-btn active" id="btnSimple" onclick="setChannel('simple')">简单吃吃</button>
     <button class="channel-btn"        id="btnFeast"  onclick="setChannel('feast')">大吃一顿</button>
+    <button class="channel-btn"        id="btnBeverage" onclick="setChannel('beverage')">饮品</button>
   </div>
 
   <div class="wheel-section">
@@ -418,6 +419,43 @@ const foods = [
   { zh:'广式早茶', en:'Dim Sum',              emoji:'🫖', w:4, kw:{zh:'广式早茶点心',en:'dim sum cantonese'},  desc:{zh:'一盅两件，人生最美好的上午！',     en:'Dim sum & tea, perfect morning!'} },
   // ── 简单吃吃专属 ──
   { zh:'陕西菜',   en:'Shaanxi Cuisine',      emoji:'🫙', w:4, kw:{zh:'陕西菜',    en:'shaanxi food'},        desc:{zh:'面宽汤厚，西北汉子的浪漫！',      en:'Wide noodles, northwest romance!'} },
+  { zh:'烩面',     en:'Huimian',              emoji:'🍲', w:3, kw:{zh:'烩面',      en:'henan huimian'},       desc:{zh:'一碗下去，整个河南都在你胃里！',  en:'Hearty lamb broth flat noodles!'} },
+  { zh:'胡辣汤',   en:'Spicy Pepper Soup',    emoji:'🌶️', w:3, kw:{zh:'胡辣汤',    en:'spicy pepper soup'},   desc:{zh:'早上灌一碗，整天都生猛！',        en:'Thick, spicy & soul-warming!'} },
+  { zh:'刀削面',   en:'Knife-cut Noodles',    emoji:'🍜', w:4, kw:{zh:'刀削面',    en:'knife cut noodles'},   desc:{zh:'每一刀都是师傅的情绪价值！',      en:'Hand-shaved, silky & chewy!'} },
+  { zh:'莜面',     en:'Oat Noodles',          emoji:'🍜', w:3, kw:{zh:'莜面',      en:'oat noodles'},         desc:{zh:'山西人的灵魂面食，Q弹劲道！',     en:'Chewy oat noodle perfection!'} },
+  // ── 大吃一顿专属（新增菜系） ──
+  { zh:'葫芦鸡',   en:'Gourd Chicken',        emoji:'🍗', w:4, kw:{zh:'葫芦鸡',    en:'gourd chicken'},       desc:{zh:'西安一绝，外焦里嫩，咬一口喷汁！', en:'Crispy outside, juicy Xi\'an treasure!'} },
+  { zh:'桑拿鸡',   en:'Sauna Chicken',        emoji:'🍗', w:4, kw:{zh:'桑拿鸡',    en:'sauna chicken'},       desc:{zh:'蒸汽烤鸡，香气直接飘进鼻腔！',    en:'Steamed chicken, aromatic bliss!'} },
+  { zh:'蒸汽海鲜', en:'Steamed Seafood',      emoji:'🦞', w:4, kw:{zh:'蒸汽海鲜',  en:'steamed seafood'},     desc:{zh:'原汁原味，海的味道全在这儿！',    en:'Ocean essence in every bite!'} },
+  { zh:'炕锅羊肉', en:'Braised Lamb Pot',     emoji:'🍖', w:4, kw:{zh:'炕锅羊肉',  en:'braised lamb pot'},    desc:{zh:'高原牧羊，一锅端上来的豪迈！',   en:'Highland lamb, bold mountain style!'} },
+  { zh:'手抓羊肉', en:'Hand-grab Lamb',       emoji:'🐑', w:4, kw:{zh:'手抓羊肉',  en:'hand grab lamb'},      desc:{zh:'用手抓着吃，文明暂时失联！',      en:"Grab with hands, abandon etiquette!"} },
+  { zh:'大排档',   en:'Street Stall Food',    emoji:'🍢', w:4, kw:{zh:'大排档',    en:'street stall'},        desc:{zh:'麻辣烧烤大排档，人多味道就正！',   en:'Crowded stall = authentic flavor!'} },
+  // ── 饮品单独分组 ──
+  { zh:'奶茶',     en:'Milk Tea',             emoji:'🧋', w:3, kw:{zh:'奶茶',      en:'milk tea'},            desc:{zh:'下午茶的灵魂，没有奶茶的下午不完整！', en:'Afternoon essential, no debate!'} },
+  { zh:'鲜奶茶',   en:'Fresh Milk Tea',       emoji:'🧋', w:3, kw:{zh:'鲜奶茶',    en:'fresh milk tea'},      desc:{zh:'奶香四溢，一口回到茶馆老板娘身边！', en:'Creamy nostalgia in a cup!'} },
+  { zh:'水果茶',   en:'Fruit Tea',            emoji:'🍵', w:3, kw:{zh:'水果茶',    en:'fruit tea'},           desc:{zh:'酸酸甜甜，就像人生的调味！',      en:'Sweet & tangy life flavoring!'} },
+  { zh:'柠檬茶',   en:'Lemon Tea',            emoji:'🍋', w:3, kw:{zh:'柠檬茶',    en:'lemon tea'},           desc:{zh:'一口柠檬，夏天就被治愈了！',      en:'One sip, summer solved!'} },
+  { zh:'纯茶',     en:'Pure Tea',             emoji:'☕', w:3, kw:{zh:'纯茶',      en:'pure tea'},            desc:{zh:'回归本真，茶叶的味道才是王道！',   en:'Pure leaf essence, no frills!'} },
+  { zh:'气泡茶',   en:'Bubble Tea',           emoji:'🥒', w:3, kw:{zh:'气泡茶',    en:'bubble tea'},          desc:{zh:'嘶啦啦的气泡，快乐也在冒泡！',    en:'Fizzy fun in every sip!'} },
+  { zh:'中式茶饮', en:'Chinese Tea Drink',    emoji:'🫖', w:3, kw:{zh:'中式茶饮',  en:'chinese tea drink'},   desc:{zh:'传统工艺，现代好喝！',             en:'Ancient wisdom, modern taste!'} },
+  { zh:'咖啡',     en:'Coffee',               emoji:'☕', w:3, kw:{zh:'咖啡',      en:'coffee'},              desc:{zh:'早起的秘诀，就藏在这一杯里！',    en:'Morning magic in a cup!'} },
+  { zh:'拿铁',     en:'Latte',                emoji:'🥛', w:3, kw:{zh:'拿铁',      en:'latte'},               desc:{zh:'奶咖完美搭配，喝过都说好！',      en:'Milk & coffee harmony!'} },
+  { zh:'美式咖啡', en:'Americano',             emoji:'🤎', w:3, kw:{zh:'美式咖啡',  en:'americano'},           desc:{zh:'简单粗暴，就是爱这一口醇！',      en:'Bold & no nonsense!'} },
+  { zh:'冷萃咖啡', en:'Cold Brew Coffee',     emoji:'🍶', w:3, kw:{zh:'冷萃咖啡',  en:'cold brew coffee'},    desc:{zh:'冷冰冰的咖啡，暖透人心！',        en:'Icy outside, cozy inside!'} },
+  { zh:'果汁',     en:'Juice',                emoji:'🧃', w:3, kw:{zh:'果汁',      en:'juice'},               desc:{zh:'鲜果一榨，维C直接补充！',         en:'Fresh squeeze, instant wellness!'} },
+  { zh:'鲜榨果汁', en:'Fresh Squeezed Juice', emoji:'🍹', w:3, kw:{zh:'鲜榨果汁',  en:'fresh squeezed juice'}, desc:{zh:'现榨现喝，果香最纯正！',          en:'Press it fresh, drink it now!'} },
+  { zh:'橙汁',     en:'Orange Juice',         emoji:'🍊', w:3, kw:{zh:'橙汁',      en:'orange juice'},        desc:{zh:'一杯橙汁，阳光也喝进肚子里！',    en:'Liquid sunshine goodness!'} },
+  { zh:'果汁饮料', en:'Juice Drink',          emoji:'🥤', w:3, kw:{zh:'果汁饮料',  en:'juice drink'},         desc:{zh:'甜蜜蜜，小朋友的最爱！',          en:'Sweet nostalgia in glass!'} },
+  { zh:'椰子饮品', en:'Coconut Drink',        emoji:'🥥', w:3, kw:{zh:'椰子饮品',  en:'coconut drink'},       desc:{zh:'椰香浓郁，像在喝夏天！',          en:'Tropical vibes all day!'} },
+  { zh:'杨枝甘露', en:'Mango Pomelo Sago',    emoji:'🌴', w:3, kw:{zh:'杨枝甘露',  en:'mango pomelo sago'},   desc:{zh:'港式甜品，一口就是满足！',        en:'Cantonese sweet perfection!'} },
+  { zh:'盐系饮品', en:'Salty Drinks',         emoji:'🧂', w:3, kw:{zh:'盐系饮品',  en:'salty drinks'},        desc:{zh:'咸中带甜，打破你的饮品想象！',    en:'Sweet meets salty, mind blown!'} },
+  { zh:'气泡水',   en:'Sparkling Water',      emoji:'✨', w:3, kw:{zh:'气泡水',    en:'sparkling water'},     desc:{zh:'无糖无卡，健身人士的福音！',      en:'Zero guilt, pure fizz!'} },
+  { zh:'豆浆',     en:'Soy Milk',             emoji:'🥛', w:3, kw:{zh:'豆浆',      en:'soy milk'},            desc:{zh:'早餐标配，豆香四溢！',            en:'Breakfast staple, bean perfection!'} },
+  { zh:'植物蛋白饮料',en:'Plant Protein Drink',emoji:'💪', w:3, kw:{zh:'植物蛋白',  en:'plant protein drink'},  desc:{zh:'健身从喝一杯开始！',              en:'Fitness starts with a sip!'} },
+  { zh:'低卡饮品', en:'Low-cal Drink',        emoji:'🍵', w:3, kw:{zh:'低卡饮品',  en:'low calorie drink'},   desc:{zh:'甜蜜不长肉，今天喝了一整天！',    en:'Sweet without guilt!'} },
+  { zh:'碳酸饮料', en:'Soft Drink',           emoji:'🥤', w:3, kw:{zh:'碳酸饮料',  en:'soft drink'},          desc:{zh:'嘶啦啦，少女的快乐！',            en:'Fizzy girl energy!'} },
+  { zh:'酒精饮品', en:'Alcoholic Drink',      emoji:'🍸', w:3, kw:{zh:'鸡尾酒果酒',en:'cocktail'},           desc:{zh:'微醺时刻，生活有点甜！',          en:'Buzz with a twist!'} },
+  { zh:'可可饮品', en:'Cocoa Drink',          emoji:'🍫', w:3, kw:{zh:'可可饮品',  en:'cocoa drink'},         desc:{zh:'巧克力的温暖，一口入魂！',        en:'Chocolate warmth, soul soothing!'} },
   { zh:'饿着',     en:'Skip It',              emoji:'😤', w:2, kw:null,                                        desc:{zh:'这叫"间歇性进化"，不叫没吃！',   en:'Save money, embrace the fast...'} },
   { zh:'不吃',     en:"Don't Eat",            emoji:'🙅', w:2, kw:null,                                       desc:{zh:'今天辟谷，明天少一克脂肪，值了！', en:'Fasting today, virtue +1'} },
 ];
@@ -498,10 +536,15 @@ const COLORS = [
 ];
 
 // 大吃一顿专属索引（0-based，不含共享项）
-// 大吃一顿专属索引（删火锅后全部-1，新增84-95）
-const simpleIdx = new Set([0,1,5,10,17,21,22,23,29,30,31,34,36,40,41,63,64,68,74,84,85,86,87,88,89,90,91,92,93,94,95]);
+// 通道索引：
+// 简单吃吃：烩面/胡辣汤/刀削面/莜面(索引82-85) + 原有简单吃吃食物
+// 大吃一顿：葫芦鸡/桑拿鸡/蒸汽海鲜/炕锅羊肉/手抓羊肉/大排档(索引86-91) + 共享菜系 + 原有大吃一顿食物
+// 饮品单独：索引92-116（25道饮品，通道选择时不显示，或可单独一个饮品频道）
+const simpleIdx = new Set([0,1,5,10,17,21,22,23,29,30,31,34,36,40,41,63,64,68,74,75,76,77,78]);
+const feastIdx = new Set([86,87,88,89,90,91]); // 大吃一顿专属新增
+const beverageIdx = new Set([92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116]); // 饮品
 // 两个通道共享：东北菜/KFC/麦当劳/川菜/湘菜/杭帮菜/新疆菜/泰国菜/越南菜/鲁菜/徽菜/苏菜/闽菜/贵州菜/江西菜/客家菜/广式早茶
-const sharedIdx = new Set([3,8,9,18,19,20,45,48,49,61,65,72,73,96,97,98,99]);
+const sharedIdx = new Set([3,8,9,18,19,20,45,48,49,61,65,72,73,79,80,81,82,83,84,85]);
 
 // 权重：轻食沙拉加倍，其余统一
 function getWeight(f) { return f.zh === '轻食沙拉' ? 8 : 4; }
@@ -537,8 +580,8 @@ function getLastSeen(foodZh) {
   return foodZh in map ? map[foodZh] : null;
 }
 let currentChannel = 'simple';
-let activeFoods = foods.filter((_,i) => !simpleIdx.has(i));
-let totalW = activeFoods.reduce((s,f) => s + f.w, 0);
+let activeFoods = foods.filter((_,i) => (simpleIdx.has(i) || sharedIdx.has(i)) && !beverageIdx.has(i));
+let totalW = activeFoods.reduce((s,f) => s + getWeight(f), 0);
 
 let canvas, ctx, CX, CY, R, SIZE, segs, rotation = 0;
 
@@ -616,9 +659,16 @@ function weightedPick() {
 }
 
 function rebuildSegs() {
-  activeFoods = currentChannel === 'simple'
-    ? foods.filter((_,i) => !simpleIdx.has(i))
-    : foods.filter((_,i) => simpleIdx.has(i) || sharedIdx.has(i));
+  if (currentChannel === 'simple') {
+    // 简单吃吃：simpleIdx + sharedIdx（不含饮品）
+    activeFoods = foods.filter((_,i) => (simpleIdx.has(i) || sharedIdx.has(i)) && !beverageIdx.has(i));
+  } else if (currentChannel === 'feast') {
+    // 大吃一顿：feastIdx + sharedIdx（不含饮品）
+    activeFoods = foods.filter((_,i) => (feastIdx.has(i) || sharedIdx.has(i)) && !beverageIdx.has(i));
+  } else if (currentChannel === 'beverage') {
+    // 饮品：单独一个通道
+    activeFoods = foods.filter((_,i) => beverageIdx.has(i));
+  }
   totalW = activeFoods.reduce((s,f) => s + getWeight(f), 0);
   let acc = 0;
   segs = activeFoods.map((f, i) => {
@@ -637,6 +687,7 @@ function setChannel(ch) {
   currentChannel = ch;
   document.getElementById('btnSimple').classList.toggle('active', ch === 'simple');
   document.getElementById('btnFeast').classList.toggle('active', ch === 'feast');
+  document.getElementById('btnBeverage').classList.toggle('active', ch === 'beverage');
   document.getElementById('resultCard').classList.remove('show');
   const btn = document.getElementById('spinBtn');
   btn.textContent = t().spin;
