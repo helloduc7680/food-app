@@ -810,21 +810,11 @@ function openMeituan(kw) {
 
 
 function openDianping(kw) {
-  const ua      = navigator.userAgent;
   const encoded = encodeURIComponent(kw);
   const h5Url   = `https://www.dianping.com/search/keyword/2/${encoded}`;
   copyKw(kw); showToast('「' + kw + '」已复制 ✓ 打开后搜索框长按粘贴');
-  if (/Android/i.test(ua)) {
-    // Android：intent 唤起大众点评，未安装回落 H5
-    window.location.href =
-      `intent://search?kw=${encoded}` +
-      `#Intent;scheme=dianping;` +
-      `package=com.dianping.v1;` +
-      `S.browser_fallback_url=${encodeURIComponent(h5Url)};end`;
-  } else {
-    // iOS：scheme 唤起，2s 内未跳转回落 H5
-    iosOpenApp(`dianping://search?kw=${encoded}`, h5Url, null, null);
-  }
+  // 与饿了么相同策略：先尝试 scheme 唤起 App，2s 内未跳转则回落 H5
+  iosOpenApp(`dianping://search?kw=${encoded}`, h5Url, null, null);
 }
 
 function showToast(msg) {
