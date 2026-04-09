@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <title>今天吃什么？</title>
+  <meta name="theme-color" content="#060606" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg:       #060606;
+      --gold:     #FFBF00;
+      --gold-dk:  #CC8800;
+      --blue:     #5BC8FF;
+      --white:    #FFFFFF;
+      --dim:      rgba(255,255,255,0.55);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      user-select: none;
+    }
+
+    /* ── Confetti ── */
+    .confetti-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 999; overflow: hidden; }
+    .cp { position: absolute; top: -20px; animation: cpFall linear forwards; }
+    @keyframes cpFall { to { transform: translate(var(--dx), 110vh) rotate(var(--dr)); opacity: 0; } }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.85); color: #fff; padding: 10px 20px;
+      border-radius: 20px; font-size: 13px; z-index: 9999;
+      pointer-events: none; white-space: nowrap;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    #toast.show { opacity: 1; }
+
+    /* ─────────────────────────────────────────────
+       NAV BAR (shared)
+    ───────────────────────────────────────────── */
+    .nav-bar {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: calc(52px + var(--safe-top));
+      padding-top: var(--safe-top);
+      display: flex; align-items: center; justify-content: space-between;
+      padding-left: 20px; padding-right: 20px;
+      z-index: 10;
+    }
+    .nav-pill {
+      padding: 7px 16px; border-radius: 20px;
+      background: rgba(255,255,255,0.1); border: none;
+      color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+      font-family: inherit;
+    }
+    .nav-pill:hover { background: rgba(255,255,255,0.18); }
+
+    /* ── Language toggle ── */
+    .lang-row { display: flex; gap: 5px; }
+    .lang-btn {
+      padding: 6px 14px; border-radius: 20px;
+      border: 1.5px solid rgba(255,255,255,0.18);
+      background: transparent; color: rgba(255,255,255,0.45);
+      font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .lang-btn.active {
+      background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.35);
+      color: #fff;
+    }
+
+    /* ─────────────────────────────────────────────
+       MAIN SCREEN
+    ───────────────────────────────────────────── */
+    #screen-main {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      background: var(--bg);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+    #screen-main.hidden { opacity: 0; pointer-events: none; transform: scale(0.96); }
+
+    /* ── Top: title zone ── */
+    .main-top {
+      flex: 0 0 auto;
+      padding: calc(var(--safe-top) + 64px) 28px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 6px;
+      opacity: 0.85;
+    }
+
+    .hero-title {
+      font-size: clamp(2.8rem, 13vw, 5rem);
+      font-weight: 900;
+      line-height: 1.02;
+      color: var(--gold);
+      letter-spacing: -1.5px;
+      /* Cartoon shadow for depth */
+      text-shadow:
+        2px 3px 0 rgba(0,0,0,0.6),
+        0 0 40px rgba(255,191,0,0.18);
+      font-family: 'Nunito', 'PingFang SC', 'Noto Sans SC', sans-serif;
+    }
+    .hero-title .mark {
+      color: var(--blue);
+      text-shadow: 2px 3px 0 rgba(0,0,0,0.5), 0 0 30px rgba(91,200,255,0.3);
+    }
+
+    /* ── Character image zone ── */
+    .character-zone {
+      flex: 1 1 0;
+      min-height: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .character-zone::before {
+      content: '';
+      position: absolute;
+      bottom: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 55%;
+      background: radial-gradient(ellipse at center,
+        rgba(255,191,0,0.08) 0%,
+        rgba(91,200,255,0.05) 50%,
+        transparent 75%);
+      pointer-events: none;
+    }
+
+    .monsters-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center bottom;
+      display: block;
+      /* Slightly lift them up */
+      padding-bottom: 8px;
+    }
+
+    /* Fallback when no image */
+    .monsters-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 6rem;
+      color: rgba(255,255,255,0.08);
+      letter-spacing: 8px;
+      padding-bottom: 20px;
+    }
+
+    /* ── Bottom controls ── */
+    .main-bottom {
+      flex: 0 0 auto;
+      padding: 16px 20px calc(24px + var(--safe-bot));
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Category chips */
+    .channel-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    .channel-chip {
+      flex: 1;
+      padding: 10px 6px;
+      border-radius: 50px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.6);
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.22s;
+      white-space: nowrap; font-family: inherit;
+      text-align: center;
+    }
+    .channel-chip.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #111;
+      font-weight: 800;
+      box-shadow: 0 4px 18px rgba(255,191,0,0.4);
+    }
+    .channel-chip:hover:not(.active) {
+      border-color: rgba(255,255,255,0.32);
+      color: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* CTA button */
+    .cta-btn {
+      width: 100%;
+      padding: 18px;
+      border-radius: 18px;
+      border: none;
+      background: var(--gold);
+      color: #111;
+      font-size: 19px;
+      font-weight: 900;
+      cursor: pointer;
+      letter-spacing: 1.5px;
+      font-family: 'Nunito', inherit;
+      box-shadow:
+        0 6px 24px rgba(255,191,0,0.45),
+        0 2px 6px rgba(0,0,0,0.3);
+      transition: transform 0.14s, box-shadow 0.14s;
+    }
+    .cta-btn:hover  { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(255,191,0,0.55), 0 2px 6px rgba(0,0,0,0.3); }
+    .cta-btn:active { transform: translateY(1px);  box-shadow: 0 3px 12px rgba(255,191,0,0.35); }
+
+    /* ─────────────────────────────────────────────
+       WHEEL SCREEN  (retained from original)
+    ───────────────────────────────────────────── */
+    #screen-wheel {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s;
+      z-index: 50;
+    }
+    #screen-wheel.active { opacity: 1; pointer-events: auto; }
+
+    .wheel-top-zone {
+      background: var(--bg);
+      flex: 0 0 44%;
+      position: relative;
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 24px 24px;
+    }
+    .wheel-eyebrow {
+      font-size: 11px; color: rgba(255,255,255,0.38);
+      letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .wheel-big-title {
+      font-size: clamp(2.4rem, 9vw, 3.8rem);
+      font-weight: 900; line-height: 1.1;
+      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      color: var(--gold);
+    }
+
+    .wheel-bottom-zone {
+      flex: 1;
+      background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a16 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px;
+      padding-bottom: calc(20px + var(--safe-bot));
+      position: relative; overflow: hidden;
+    }
+    .wheel-bottom-zone::before {
+      content: '';
+      position: absolute; width: 120%; height: 120%;
+      background: radial-gradient(ellipse at center,
+        rgba(139,92,246,0.12) 0%, rgba(6,182,212,0.08) 40%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .pointer-neon {
+      position: relative; z-index: 2;
+      filter: drop-shadow(0 0 8px #c084fc) drop-shadow(0 0 20px #a855f7);
+    }
+    .wheel-frame {
+      position: relative; border-radius: 50%;
+      box-shadow:
+        0 0 0 2px rgba(139,92,246,0.3),
+        0 0 40px rgba(139,92,246,0.2),
+        0 16px 48px rgba(0,0,0,0.6);
+    }
+    #wheelCanvas { display: block; border-radius: 50%; }
+
+    .spin-btn {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 72px; height: 72px; border-radius: 50%;
+      background: radial-gradient(circle at 38% 35%,
+        #ffffff 0%, #e8eaf6 30%, #9fa8da 70%, #5c6bc0 100%);
+      border: none; cursor: pointer;
+      font-size: 13px; font-weight: 900; color: #1a1a3e;
+      font-family: inherit; letter-spacing: 0.5px;
+      box-shadow:
+        0 4px 20px rgba(0,0,0,0.5),
+        inset 0 1px 3px rgba(255,255,255,0.8),
+        0 0 0 2px rgba(255,255,255,0.15);
+      transition: transform 0.15s, box-shadow 0.15s;
+      z-index: 5;
+    }
+    .spin-btn:hover:not(:disabled) {
+      transform: translate(-50%, -50%) scale(1.08);
+      box-shadow: 0 8px 28px rgba(139,92,246,0.5),
+        inset 0 1px 3px rgba(255,255,255,0.9),
+        0 0 0 2px rgba(255,255,255,0.25);
+    }
+    .spin-btn:active:not(:disabled) { transform: translate(-50%, -50%) scale(0.94); }
+    .spin-btn:disabled { opacity: 0.55; cursor: default; }
+
+    /* ─────────────────────────────────────────────
+       RESULT SCREEN  (retained from original)
+    ───────────────────────────────────────────── */
+    #screen-result {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.5s;
+      z-index: 60;
+    }
+    #screen-result.active { opacity: 1; pointer-events: auto; }
+
+    .result-top {
+      background: var(--bg);
+      padding: calc(var(--safe-top) + 56px) 24px 20px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      max-height: 60vh;
+    }
+    .result-eyebrow {
+      font-size: 11px; color: rgba(255,255,255,0.38);
+      letter-spacing: 2px; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .result-food-name {
+      font-size: clamp(3rem, 13vw, 5.5rem);
+      font-weight: 900; line-height: 1;
+      font-family: 'Nunito', 'PingFang SC', serif;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+    .result-desc {
+      font-size: 14px; color: rgba(255,255,255,0.5);
+      line-height: 1.5; margin-bottom: 12px;
+    }
+    .tags-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .tag { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1.5px solid; }
+    .tag.today   { background: rgba(255,71,87,0.15);  color: #ff6b81; border-color: rgba(255,71,87,0.35); }
+    .tag.past    { background: rgba(255,165,2,0.15);  color: #ffa502; border-color: rgba(255,165,2,0.3); }
+    .tag.meal    { background: rgba(76,175,80,0.15);  color: #66bb6a; border-color: rgba(76,175,80,0.3); }
+    .tag.weather { background: rgba(100,200,255,0.1); color: #64c8ff; border-color: rgba(100,200,255,0.25); }
+
+    .result-action-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .action-chip {
+      flex: 1; padding: 11px 8px; border-radius: 12px;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.7);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+      text-align: center; font-family: inherit;
+    }
+    .action-chip:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .action-chip.active-chip { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.25); }
+
+    .links-panel { display: none; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .links-panel.open { display: flex; }
+    .link-section-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: rgba(255,255,255,0.3); padding-left: 2px; margin-bottom: 4px; }
+
+    .map-btn {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 12px 16px; border-radius: 13px;
+      color: #fff; text-decoration: none;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none;
+      font-family: inherit;
+      transition: transform 0.2s, filter 0.2s;
+    }
+    .map-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    .map-btn:active { transform: scale(0.97); }
+    .map-btn.amap     { background: linear-gradient(135deg, #00b09b, #38ef7d); box-shadow: 0 4px 14px rgba(0,176,155,0.35); }
+    .map-btn.gmap     { background: linear-gradient(135deg, #4285f4, #34a853); box-shadow: 0 4px 14px rgba(66,133,244,0.35); }
+    .map-btn.dianping { background: linear-gradient(135deg, #ff4400, #ff7744); box-shadow: 0 4px 14px rgba(255,68,0,0.35); }
+    .map-btn.taobao   { background: linear-gradient(135deg, #00aaff, #0066ff); box-shadow: 0 4px 14px rgba(0,102,255,0.35); }
+    .map-btn.meituan  { background: linear-gradient(135deg, #ff6000, #ffaa00); box-shadow: 0 4px 14px rgba(255,96,0,0.35); }
+    .map-btn.jd       { background: linear-gradient(135deg, #e1251b, #ff6b6b); box-shadow: 0 4px 14px rgba(225,37,27,0.35); }
+    .map-btn.share-btn { background: linear-gradient(135deg, #7b2ff7, #f72fa7); box-shadow: 0 4px 14px rgba(123,47,247,0.4); }
+    .no-map-tip { color: rgba(255,255,255,0.35); font-size: 14px; font-style: italic; text-align: center; padding: 8px 0; }
+
+    .result-bottom {
+      flex: 1; display: flex; flex-direction: column;
+      background: var(--gold);
+      transition: background 0.5s;
+      position: relative; overflow: hidden;
+      min-height: 0;
+    }
+    .result-emoji-display {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(72px, 20vw, 120px);
+      animation: popInEmoji 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes popInEmoji {
+      from { transform: scale(0.2) rotate(-20deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .result-bottom-actions { padding: 0 20px calc(20px + var(--safe-bot)); }
+    .again-btn {
+      width: 100%; padding: 15px;
+      border-radius: 14px; border: none;
+      background: rgba(0,0,0,0.7); color: #fff;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .again-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* ─────────────────────────────────────────────
+       WEATHER CARD
+    ───────────────────────────────────────────── */
+    .title-weather-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-top: 4px;
+    }
+    .title-group { flex: 0 0 auto; }
+
+    .weather-card {
+      flex: 1;
+      min-height: 150px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: wcSlideIn 0.7s 0.4s ease both;
+      transition: border-color 0.6s;
+    }
+    @keyframes wcSlideIn {
+      from { opacity: 0; transform: translateX(22px) scale(0.93); }
+      to   { opacity: 1; transform: none; }
+    }
+    .weather-card.type-sunny  { border-color: rgba(255,191,0,0.22); }
+    .weather-card.type-rainy  { border-color: rgba(91,200,255,0.22); }
+    .weather-card.type-snow   { border-color: rgba(200,230,255,0.22); }
+    .weather-card.type-storm  { border-color: rgba(180,130,255,0.22); }
+
+    /* Rotating gradient background */
+    .wc-bg {
+      position: absolute; inset: 0;
+      background: conic-gradient(
+        from 0deg,
+        rgba(255,191,0,0.05) 0%,
+        rgba(91,200,255,0.05) 33%,
+        rgba(255,191,0,0.02) 66%,
+        rgba(91,200,255,0.05) 100%
+      );
+      animation: wcBgSpin 10s linear infinite;
+    }
+    @keyframes wcBgSpin { to { transform: rotate(360deg) scale(1.4); } }
+
+    /* Loading state */
+    .wc-loading {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+    }
+    .wc-orb {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: conic-gradient(from 0deg, #FFBF00 0%, #5BC8FF 50%, #FFBF00 100%);
+      animation: orbSpin 1.4s linear infinite;
+      opacity: 0.45;
+    }
+    @keyframes orbSpin { to { transform: rotate(360deg); } }
+    .wc-load-text {
+      font-size: 11px; color: rgba(255,255,255,0.35);
+      letter-spacing: 1.5px; font-weight: 600;
+    }
+
+    /* Content */
+    .wc-content {
+      display: none; flex-direction: column;
+      align-items: center; gap: 2px;
+      padding: 16px 20px;
+      position: relative; z-index: 1;
+      animation: wcContentIn 0.5s ease both;
+    }
+    .wc-content.show { display: flex; }
+    @keyframes wcContentIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* Icon */
+    .wc-icon-wrap {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4px;
+    }
+    .wc-glow {
+      position: absolute;
+      width: 68px; height: 68px; border-radius: 50%;
+      filter: blur(18px);
+      animation: glowPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes glowPulse {
+      0%,100% { opacity: 0.35; transform: scale(0.9); }
+      50%      { opacity: 0.75; transform: scale(1.2); }
+    }
+    .wc-icon {
+      font-size: 3.2rem; line-height: 1;
+      position: relative; z-index: 2;
+      animation: iconFloat 3.5s ease-in-out infinite;
+    }
+    @keyframes iconFloat {
+      0%,100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(-5px) scale(1.06); }
+    }
+
+    /* Temperature */
+    .wc-temp-row { display: flex; align-items: flex-start; gap: 1px; }
+    .wc-temp {
+      font-size: 2.6rem; font-weight: 900; line-height: 1;
+      color: var(--gold); letter-spacing: -2px;
+      font-family: 'Nunito', sans-serif;
+      text-shadow: 0 0 24px rgba(255,191,0,0.45);
+    }
+    .wc-unit {
+      font-size: 1rem; font-weight: 700; color: rgba(255,191,0,0.65);
+      margin-top: 5px; font-family: 'Nunito', sans-serif;
+    }
+    .wc-condition {
+      font-size: 12px; font-weight: 700; color: var(--blue);
+      letter-spacing: 0.5px; margin-top: 3px;
+    }
+    .wc-feel {
+      font-size: 10px; color: rgba(255,255,255,0.35);
+      margin-top: 2px; letter-spacing: 0.3px; text-align: center;
+    }
+
+    /* Rain drops */
+    .rain-drop {
+      position: absolute; width: 1.5px; border-radius: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(91,200,255,0.65));
+      animation: rainFall linear infinite;
+    }
+    @keyframes rainFall {
+      from { transform: translateY(-20px); opacity: 0; }
+      15%  { opacity: 1; }
+      to   { transform: translateY(180px); opacity: 0; }
+    }
+
+    /* Snow flakes */
+    .snow-flake {
+      position: absolute; color: rgba(210,235,255,0.65);
+      animation: snowFall linear infinite;
+    }
+    @keyframes snowFall {
+      from { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+      15%  { opacity: 0.8; }
+      to   { transform: translateY(190px) rotate(360deg); opacity: 0; }
+    }
+
+    /* Sun rays */
+    .sun-ray {
+      position: absolute; height: 2px; border-radius: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,191,0,0.45), transparent);
+      transform-origin: left center;
+      animation: rayPulse 3s ease-in-out infinite;
+    }
+    @keyframes rayPulse {
+      0%,100% { opacity: 0.2; width: 28px; }
+      50%      { opacity: 0.55; width: 38px; }
+    }
+
+    /* No data */
+    .wc-no-data {
+      font-size: 11px; color: rgba(255,255,255,0.25);
+      text-align: center; padding: 12px;
+      position: relative; z-index: 1;
+      letter-spacing: 0.5px; line-height: 1.7;
+    }
+
+    /* Hide on tiny screens */
+    @media (max-width: 380px) { .weather-card { display: none; } }
+
+    /* ── responsive ── */
+    @media (max-height: 640px) {
+      .main-top { padding-top: calc(var(--safe-top) + 56px); }
+      .hero-title { font-size: 2.4rem; }
+      .main-bottom { gap: 10px; padding-bottom: calc(16px + var(--safe-bot)); }
+      .cta-btn { padding: 15px; font-size: 17px; }
+    }
+    @media (max-height: 560px) {
+      .hero-eyebrow { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="confetti-wrap" id="confetti"></div>
+<div id="toast"></div>
+
+<!-- ══════════════════════ 主屏幕 ══════════════════════ -->
+<div id="screen-main">
+
+  <!-- 标题区 -->
+  <div class="main-top">
+    <!-- 语言切换 -->
+    <div class="nav-bar">
+      <div></div>
+      <div class="lang-row">
+        <button class="lang-btn active" id="btnZH" onclick="setLang('zh')">中文</button>
+        <button class="lang-btn" id="btnEN" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+
+    <div class="title-weather-row">
+      <div class="title-group">
+        <div class="hero-eyebrow" id="heroEyebrow">TODAY'S DESTINY</div>
+        <div class="hero-title" id="heroTitle">
+          今天<br>吃什么<span class="mark">？</span>
+        </div>
+      </div>
+
+      <!-- 天气卡片 -->
+      <div class="weather-card" id="weatherCard">
+        <div class="wc-bg"></div>
+        <div class="wc-loading" id="wcLoading">
+          <div class="wc-orb"></div>
+          <div class="wc-load-text" id="wcLoadText">定位中…</div>
+        </div>
+        <div class="wc-content" id="wcContent">
+          <div class="wc-icon-wrap">
+            <div class="wc-glow" id="wcGlow"></div>
+            <div class="wc-icon" id="wcIcon">☀️</div>
+          </div>
+          <div class="wc-temp-row">
+            <span class="wc-temp" id="wcTemp">--</span>
+            <span class="wc-unit">°C</span>
+          </div>
+          <div class="wc-condition" id="wcCondition">--</div>
+          <div class="wc-feel" id="wcFeel"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 角色区 -->
+  <div class="character-zone">
+    <img
+      class="monsters-img"
+      src="./monsters.jpg"
+      alt="今天吃什么角色"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+    />
+    <div class="monsters-fallback" style="display:none;">🧑‍🍳&nbsp;🍳</div>
+  </div>
+
+  <!-- 底部控制区 -->
+  <div class="main-bottom">
+    <div class="channel-row">
+      <button class="channel-chip" id="btnFeast"    onclick="setChannel('feast')">大吃一顿</button>
+      <button class="channel-chip active" id="btnSimple"   onclick="setChannel('simple')">简单吃吃</button>
+      <button class="channel-chip" id="btnBeverage" onclick="setChannel('beverage')">喝点什么</button>
+    </div>
+    <button class="cta-btn" id="startBtn" onclick="goToWheel()">开始！</button>
+  </div>
+</div>
+
+<!-- ══════════════════════ 转盘屏幕 ══════════════════════ -->
+<div id="screen-wheel">
+  <div class="wheel-top-zone">
+    <div class="nav-bar">
+      <button class="nav-pill" onclick="goToMain()">← 返回</button>
+      <div></div>
+    </div>
+    <div class="wheel-eyebrow" id="wheelEyebrow">让命运决定</div>
+    <div class="wheel-big-title" id="wheelTitle">转动<br>轮盘！</div>
+  </div>
+  <div class="wheel-bottom-zone">
+    <svg class="pointer-neon" width="48" height="44" viewBox="0 0 48 44">
+      <path d="M24 40 L4 4 L44 4 Z" fill="rgba(192,132,252,0.18)" stroke="#c084fc" stroke-width="3" stroke-linejoin="round"/>
+    </svg>
+    <div class="wheel-frame">
+      <canvas id="wheelCanvas"></canvas>
+      <button class="spin-btn" id="spinBtn" onclick="spin()">转！</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ 结果屏幕 ══════════════════════ -->
+<div id="screen-result">
+  <div class="result-top" id="resultTop">
+    <div class="nav-bar">
+      <button class="nav-pill" onclick="goToMain()">← 返回</button>
+      <button class="nav-pill" onclick="goToWheel()">再抽</button>
+    </div>
+    <div class="result-eyebrow">
+      <span>✦ 命运已定</span><span>今日推荐</span>
+    </div>
+    <div class="result-food-name" id="rName">火锅</div>
+    <div class="result-desc" id="rDesc"></div>
+    <div class="tags-row" id="tagsRow"></div>
+    <div class="result-action-row" id="actionRow">
+      <button class="action-chip" id="chipMap"      onclick="togglePanel('mapPanel','chipMap')">🗺 附近搜索</button>
+      <button class="action-chip" id="chipDelivery" onclick="togglePanel('deliveryPanel','chipDelivery')">🛵 外卖点餐</button>
+      <button class="action-chip" id="chipShare"    onclick="doShare()">📤 分享</button>
+    </div>
+    <div class="links-panel" id="mapPanel"></div>
+    <div class="links-panel" id="deliveryPanel"></div>
+    <div id="noMapArea"></div>
+  </div>
+  <div class="result-bottom" id="resultBottom">
+    <div class="result-emoji-display" id="rEmoji">🍲</div>
+    <div class="result-bottom-actions">
+      <button class="again-btn" onclick="goToMain()">再抽一次</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  食物数据
+// ══════════════════════════════════════════════════════
+const foods = [
+  { zh:'烤肉',     en:'BBQ',                  emoji:'🥩', w:5, kw:{zh:'烤肉',      en:'barbecue'},            desc:{zh:'今晚就是你了，牛！',             en:'Smoky & sizzling perfection!'},    mealType:['dinner'],    color:'#FF8C42' },
+  { zh:'日料',     en:'Japanese',             emoji:'🍣', w:4, kw:{zh:'日本料理',  en:'japanese food'},       desc:{zh:'装一次精致的自己吧！',           en:'Elegant & refined flavors!'},      mealType:['all-day'],   color:'#FF6B9D' },
+  { zh:'粤菜',     en:'Cantonese',            emoji:'🦐', w:4, kw:{zh:'粤菜',      en:'cantonese food'},      desc:{zh:'清淡？不，是矜持的鲜！',          en:'Fresh & delicate Guangdong!'},     mealType:['all-day'],   color:'#F4A261' },
+  { zh:'东北菜',   en:'NE Chinese',           emoji:'🥘', w:4, kw:{zh:'东北菜',    en:'northeast chinese'},   desc:{zh:'份量大到老板以为你带了全家！',     en:'Hearty portions, warm your soul!'}, mealType:['all-day'],  color:'#E76F51' },
+  { zh:'砂锅',     en:'Clay Pot',             emoji:'🍚', w:4, kw:{zh:'砂锅',      en:'clay pot'},            desc:{zh:'软软糯糯，像胃被人轻轻拥抱！',    en:'Silky smooth & comforting!'},      mealType:['dinner'],    color:'#84A98C' },
+  { zh:'椰子鸡',   en:'Coconut Chicken',      emoji:'🥥', w:4, kw:{zh:'椰子鸡',    en:'coconut chicken'},     desc:{zh:'鸡：我本来想去海边的……',         en:'Fragrant coconut & tender chicken!'},mealType:['dinner'],  color:'#52B788' },
+  { zh:'麻辣烫',   en:'Malatang',             emoji:'🌶️', w:5, kw:{zh:'麻辣烫',    en:'malatang'},            desc:{zh:'自选地狱，主打一个心甘情愿！',    en:'Numbing, spicy & addictive!'},     mealType:['all-day'],   color:'#E63946' },
+  { zh:'螺蛳粉',   en:'Snail Noodles',        emoji:'🍜', w:4, kw:{zh:'螺蛳粉',    en:'luosifen noodles'},    desc:{zh:'那股味儿，是你今天的试炼！',       en:'Stinky & irresistible!'},          mealType:['all-day'],   color:'#F77F00' },
+  { zh:'KFC',      en:'KFC',                  emoji:'🍗', w:4, kw:{zh:'KFC肯德基', en:'KFC'},                 desc:{zh:'炸鸡没有感情，但你有！',          en:'Crispy chicken, double the joy!'}, mealType:['all-day'],   color:'#D62828' },
+  { zh:'麦当劳',   en:"McDonald's",           emoji:'🍔', w:4, kw:{zh:'麦当劳',    en:"mcdonald's"},          desc:{zh:'我就喜欢！',                     en:"I'm lovin' it!"},                  mealType:['all-day'],   color:'#F4A261' },
+  { zh:'羊肉串',   en:'Lamb Skewers',         emoji:'🍢', w:4, kw:{zh:'羊肉串',    en:'lamb skewers'},        desc:{zh:'撸串，社交货币开始结算！',        en:'Charred & fragrant skewers!'},     mealType:['all-day'],   color:'#BF4E30' },
+  { zh:'轻食沙拉', en:'Salad Bowl',           emoji:'🥗', w:8, kw:{zh:'轻食沙拉',  en:'salad healthy food'},  desc:{zh:'肌肉在向你招手，脂肪在跟你拜拜！', en:'Low-cal, high-protein, abs!'},    mealType:['lunch'],     color:'#52B788' },
+  { zh:'简餐',     en:'Simple Meal',          emoji:'🥙', w:4, kw:{zh:'简餐轻食',  en:'simple meal'},         desc:{zh:'别人吃龙虾，你在感悟人生！',       en:'Simple but satisfying!'},          mealType:['lunch'],     color:'#84A98C' },
+  { zh:'煲仔饭',   en:'Claypot Rice',         emoji:'🍱', w:4, kw:{zh:'煲仔饭',    en:'claypot rice'},        desc:{zh:'锅底那层焦饭，才是精华所在！',    en:'Wok-charred & fragrant!'},         mealType:['lunch'],     color:'#CA6702' },
+  { zh:'包子',     en:'Steamed Buns',         emoji:'🥟', w:3, kw:{zh:'包子',      en:'baozi'},               desc:{zh:'热乎乎的包子，童年最美的记忆！',   en:'Fluffy warm buns, so satisfying!'}, mealType:['breakfast'], color:'#ADB5BD' },
+  { zh:'河粉',     en:'Rice Noodles',         emoji:'🍝', w:4, kw:{zh:'河粉',      en:'rice noodles'},        desc:{zh:'滑进去了，烦恼也一起溜走了！',    en:'Silky smooth Vietnamese vibes!'},  mealType:['all-day'],   color:'#A8C4A2' },
+  { zh:'肠粉',     en:'Rice Roll',            emoji:'🌯', w:4, kw:{zh:'肠粉',      en:'cheung fun'},          desc:{zh:'一秒变广州人，撑肠拄腹！',        en:'Silky rice rolls, classic!'},      mealType:['all-day'],   color:'#B5C4B1' },
+  { zh:'海鲜砂锅粥',en:'Seafood Congee',      emoji:'🦞', w:4, kw:{zh:'海鲜砂锅粥',en:'seafood congee'},      desc:{zh:'海鲜：今晚我们光荣牺牲了！',      en:'Ocean-fresh goodness in a pot!'}, mealType:['all-day'],    color:'#4A90D9' },
+  { zh:'川菜',     en:'Sichuan',              emoji:'🥵', w:4, kw:{zh:'川菜',      en:'sichuan food'},        desc:{zh:'辣到明天还能感受到今天！',        en:'Bold, spicy & mouthwatering!'},    mealType:['all-day'],   color:'#C0392B' },
+  { zh:'湘菜',     en:'Hunan',                emoji:'🫑', w:4, kw:{zh:'湘菜',      en:'hunan food'},          desc:{zh:'辣椒：我们是认真的，非常认真！',   en:'Pure spicy, Hunan-style heat!'},   mealType:['all-day'],   color:'#27AE60' },
+  { zh:'杭帮菜',   en:'Hangzhou',             emoji:'🍃', w:4, kw:{zh:'杭帮菜',    en:'hangzhou food'},       desc:{zh:'西湖醋鱼：优雅地酸一下！',        en:'Delicate & elegant Jiangnan!'},    mealType:['all-day'],   color:'#1ABC9C' },
+  { zh:'烤鸭',     en:'Roast Duck',           emoji:'🦆', w:4, kw:{zh:'烤鸭',      en:'roast duck'},          desc:{zh:'脆皮是信仰，蘸酱是仪式！',        en:'Crispy skin, juicy Beijing duck!'}, mealType:['dinner'],   color:'#D4622A' },
+  { zh:'煎饼果子', en:'Jianbing',             emoji:'🫔', w:3, kw:{zh:'煎饼果子',  en:'jianbing crepe'},      desc:{zh:'一张饼里包住整个早晨！',          en:'King of street breakfast!'},       mealType:['breakfast'], color:'#F39C12' },
+  { zh:'拉面',     en:'Ramen',                emoji:'🍜', w:4, kw:{zh:'拉面',      en:'ramen noodles'},       desc:{zh:'用一碗拉面代替心灵SPA！',         en:'Chewy noodles, rich broth!'},      mealType:['all-day'],   color:'#8E44AD' },
+  { zh:'肉夹馍',   en:'Chinese Burger',       emoji:'🥪', w:4, kw:{zh:'肉夹馍',    en:'roujiamo'},            desc:{zh:'西安汉堡，早出现两千年！',        en:"Xi'an's legendary sandwich!"},     mealType:['all-day'],   color:'#E67E22' },
+  { zh:'凉皮',     en:'Liangpi',              emoji:'🥒', w:4, kw:{zh:'凉皮',      en:'liangpi'},             desc:{zh:'透心凉，心飞扬！',               en:'Cool, chewy & refreshing!'},       mealType:['all-day'],   color:'#16A085' },
+  { zh:'自助餐',   en:'Buffet',               emoji:'🍽️', w:3, kw:{zh:'自助餐',    en:'buffet restaurant'},   desc:{zh:'今天开始要回本，先原地热身！',     en:'All-you-can-eat, maximize value!'}, mealType:['dinner'],   color:'#2980B9' },
+  { zh:'小龙虾',   en:'Crayfish',             emoji:'🦞', w:5, kw:{zh:'小龙虾',    en:'crayfish'},            desc:{zh:'手指染红，快乐翻倍！',            en:'Summer night essential!'},         mealType:['dinner'],    color:'#E74C3C' },
+  { zh:'烤鱼',     en:'Grilled Fish',         emoji:'🐟', w:5, kw:{zh:'烤鱼',      en:'grilled fish'},        desc:{zh:'鱼在翻滚，你在微笑！',            en:'Spicy, tender & irresistible!'},   mealType:['dinner'],    color:'#2471A3' },
+  { zh:'串串香',   en:'Skewer Hot Pot',       emoji:'🍡', w:5, kw:{zh:'串串香',    en:'chuanchuan hotpot'},   desc:{zh:'每一签都是艰难的选择！',          en:'Every skewer is happiness!'},      mealType:['dinner'],    color:'#E67E22' },
+  { zh:'酸菜鱼',   en:'Sauerkraut Fish',      emoji:'🐠', w:5, kw:{zh:'酸菜鱼',    en:'sauerkraut fish'},     desc:{zh:'鱼在酸菜里，你在幸福里！',        en:'Tangy, tender & rice-killer!'},    mealType:['dinner'],    color:'#117A65' },
+  { zh:'炸鸡',     en:'Fried Chicken',        emoji:'🍗', w:5, kw:{zh:'炸鸡',      en:'fried chicken'},       desc:{zh:'今天不需要理由，只需要炸鸡！',     en:'Crispy outside, juicy inside!'},   mealType:['dinner'],    color:'#D35400' },
+  { zh:'披萨',     en:'Pizza',                emoji:'🍕', w:4, kw:{zh:'披萨',      en:'pizza'},               desc:{zh:'芝士就是正义！',                 en:'Cheesy pull, life is good!'},      mealType:['all-day'],   color:'#CB4335' },
+  { zh:'黄焖鸡米饭',en:'Braised Chicken',     emoji:'🍛', w:5, kw:{zh:'黄焖鸡米饭',en:'braised chicken rice'}, desc:{zh:'国民外卖扛把子！',              en:"China's most ordered delivery!"}, mealType:['lunch'],      color:'#CA6702' },
+  { zh:'盖浇饭',   en:'Rice with Topping',    emoji:'🍚', w:4, kw:{zh:'盖浇饭',    en:'rice with topping'},   desc:{zh:'往饭上一盖，问题都解决了！',      en:'One pour, all problems solved!'},  mealType:['lunch'],     color:'#A04000' },
+  { zh:'麻辣香锅', en:'Mala Dry Pot',         emoji:'🌶️', w:4, kw:{zh:'麻辣香锅',  en:'mala dry pot'},        desc:{zh:'干锅不干，麻辣到底！',            en:'Dry pot, wet your appetite!'},     mealType:['dinner'],    color:'#B03A2E' },
+  { zh:'重庆火锅', en:'Chongqing Hotpot',     emoji:'🌶️', w:5, kw:{zh:'重庆火锅',  en:'chongqing hotpot'},    desc:{zh:'九宫格里的人生百味，辣到飞升！',  en:'Nine-grid inferno!'},              mealType:['dinner'],    color:'#922B21' },
+  { zh:'牛排',     en:'Steak',                emoji:'🥩', w:4, kw:{zh:'牛排西餐',  en:'steak western food'},  desc:{zh:'几分熟？这是今晚最重要的问题！',  en:"How well done? Tonight's big Q!"},  mealType:['all-day'],   color:'#7B241C' },
+  { zh:'广式早茶', en:'Dim Sum',              emoji:'🫖', w:4, kw:{zh:'广式早茶点心',en:'dim sum cantonese'},  desc:{zh:'一盅两件，人生最美好的上午！',     en:'Dim sum & tea, perfect morning!'}, mealType:['breakfast'],  color:'#A04000' },
+  { zh:'小笼包',   en:'Xiaolongbao',          emoji:'🥟', w:5, kw:{zh:'小笼包',    en:'xiaolongbao'},         desc:{zh:'先开窗再吸汤，别烫嘴！',          en:'Soup dumplings, sip slowly!'},     mealType:['breakfast'], color:'#CCD1D1' },
+  { zh:'热干面',   en:'Hot Dry Noodles',      emoji:'🍜', w:4, kw:{zh:'热干面',    en:'hot dry noodles'},     desc:{zh:'武汉人：没吃这碗，这天没开始！',  en:"Wuhan's iconic noodles!"},         mealType:['breakfast'], color:'#935116' },
+  { zh:'刀削面',   en:'Knife-cut Noodles',    emoji:'🍜', w:4, kw:{zh:'刀削面',    en:'knife cut noodles'},   desc:{zh:'每一刀都是师傅的情绪价值！',      en:'Hand-shaved, silky & chewy!'},     mealType:['all-day'],   color:'#7D6608' },
+  { zh:'炒菜',     en:'Stir-fry',             emoji:'🍳', w:4, kw:{zh:'家常炒菜',  en:'stir fry'},            desc:{zh:'厨师用锅气告诉你，今晚有爱！',    en:'Homestyle comfort food!'},         mealType:['lunch'],     color:'#1E8449' },
+  { zh:'生煎包',   en:'Pan-fried Buns',       emoji:'🥟', w:4, kw:{zh:'生煎包',    en:'pan fried buns'},      desc:{zh:'底部那层脆，是上海的骄傲！',      en:'Crispy bottom, juicy burst!'},     mealType:['breakfast'], color:'#B7950B' },
+  { zh:'钵钵鸡',   en:'Bocbo Chicken',        emoji:'🍡', w:4, kw:{zh:'钵钵鸡',    en:'bocbo chicken'},       desc:{zh:'签签都选不完，快乐没有边界！',    en:'Numbing & spicy skewered!'},       mealType:['all-day'],   color:'#784212' },
+  { zh:'酸辣粉',   en:'Sour Spicy Noodles',   emoji:'🌶️', w:4, kw:{zh:'酸辣粉',    en:'sour spicy noodles'},  desc:{zh:'酸到皱眉，辣到流泪，还要再来！',   en:'Sour, spicy & addictive!'},        mealType:['all-day'],   color:'#922B21' },
+  { zh:'炸酱面',   en:'Zhajiangmian',         emoji:'🍜', w:4, kw:{zh:'炸酱面',    en:'zhajiang noodles'},    desc:{zh:'老北京炸酱面，胡同里的记忆！',    en:"Beijing's saucy noodles!"},        mealType:['all-day'],   color:'#6E2F1A' },
+  { zh:'水饺',     en:'Dumplings',            emoji:'🥢', w:4, kw:{zh:'水饺',      en:'dumplings'},           desc:{zh:'一口咬下去，里面全是幸福！',       en:'Thin skin, big filling, bliss!'}, mealType:['all-day'],    color:'#2E86C1' },
+  // 饮品
+  { zh:'奶茶',     en:'Milk Tea',             emoji:'🧋', w:3, kw:{zh:'奶茶',      en:'milk tea'},            desc:{zh:'下午茶的灵魂！',                 en:'Afternoon essential!'},            mealType:['all-day'],   color:'#7D6608' },
+  { zh:'水果茶',   en:'Fruit Tea',            emoji:'🍵', w:3, kw:{zh:'水果茶',    en:'fruit tea'},           desc:{zh:'酸酸甜甜，就像人生的调味！',      en:'Sweet & tangy life flavoring!'},   mealType:['all-day'],   color:'#E74C3C' },
+  { zh:'咖啡',     en:'Coffee',               emoji:'☕', w:3, kw:{zh:'咖啡',      en:'coffee'},              desc:{zh:'早起的秘诀，就藏在这一杯里！',    en:'Morning magic in a cup!'},         mealType:['all-day'],   color:'#6E2F1A' },
+  { zh:'柠檬茶',   en:'Lemon Tea',            emoji:'🍋', w:3, kw:{zh:'柠檬茶',    en:'lemon tea'},           desc:{zh:'一口柠檬，夏天就被治愈了！',      en:'One sip, summer solved!'},         mealType:['all-day'],   color:'#F4D03F' },
+  { zh:'果汁',     en:'Juice',                emoji:'🧃', w:3, kw:{zh:'果汁',      en:'juice'},               desc:{zh:'鲜果一榨，维C直接补充！',         en:'Fresh squeeze, instant wellness!'}, mealType:['all-day'],  color:'#E67E22' },
+  { zh:'气泡水',   en:'Sparkling Water',      emoji:'✨', w:3, kw:{zh:'气泡水',    en:'sparkling water'},     desc:{zh:'无糖无卡，健身人士的福音！',      en:'Zero guilt, pure fizz!'},          mealType:['all-day'],   color:'#2E86C1' },
+  { zh:'豆浆',     en:'Soy Milk',             emoji:'🥛', w:3, kw:{zh:'豆浆',      en:'soy milk'},            desc:{zh:'早餐标配，豆香四溢！',            en:'Breakfast staple, bean perfect!'}, mealType:['breakfast'],  color:'#F5CBA7' },
+  { zh:'杨枝甘露', en:'Mango Pomelo Sago',    emoji:'🌴', w:3, kw:{zh:'杨枝甘露',  en:'mango pomelo sago'},   desc:{zh:'港式甜品，一口就是满足！',        en:'Cantonese sweet perfection!'},     mealType:['all-day'],   color:'#F7DC6F' },
+  { zh:'碳酸饮料', en:'Soft Drink',           emoji:'🥤', w:3, kw:{zh:'碳酸饮料',  en:'soft drink'},          desc:{zh:'嘶啦啦，少女的快乐！',            en:'Fizzy girl energy!'},              mealType:['all-day'],   color:'#1ABC9C' },
+  { zh:'白开水',   en:'Plain Water',          emoji:'💧', w:75, kw:null,           desc:{zh:'最便宜的养生，最朴素的智慧！',    en:'Simplest wellness, pure wisdom!'}, mealType:['all-day'],   color:'#5DADE2' },
+  { zh:'饿着',     en:'Skip It',              emoji:'😤', w:2,  kw:null,           desc:{zh:'这叫"间歇性进化"，不叫没吃！',   en:'Save money, embrace the fast...'}, mealType:['all-day'],   color:'#6C757D' },
+  { zh:'不吃',     en:"Don't Eat",            emoji:'🙅', w:2,  kw:null,           desc:{zh:'今天辟谷，明天少一克脂肪，值了！', en:'Fasting today, virtue +1'},       mealType:['all-day'],   color:'#495057' },
+];
+
+const beverageStart = 47;
+const simpleIdx = new Set([1,2,4,6,7,8,9,11,12,13,14,15,16,18,22,23,24,25,33,38,40,42,43,44,45,46]);
+const feastIdx  = new Set([0,1,2,3,5,8,9,17,18,19,20,21,27,28,29,30,31,35,36,37,26,32]);
+const sharedIdx = new Set([1,2,8,9,18,23,24,38]);
+
+// ══════════════════════════════════════════════════════
+//  i18n
+// ══════════════════════════════════════════════════════
+const I18N = {
+  zh: {
+    eyebrow: "TODAY'S DESTINY",
+    title: '今天<br>吃什么<span class="mark">？</span>',
+    titleFlat: '今天，吃什么？',
+    sub: '轻食沙拉概率加权最高，为你的健康加油',
+    spin: '转！', respun: '再转', spinning: '…',
+    wheelEyebrow: '让命运决定', wheelTitle: '转动<br>轮盘！',
+    amap: n => `高德·搜附近「${n}」`,
+    gmap: n => `Google Maps·「${n}」`,
+    dianping: n => `大众点评·「${n}」`,
+    taobao: n => `饿了么·「${n}」`,
+    meituan: n => `美团外卖·「${n}」`,
+    jd: n => `京东秒送·「${n}」`,
+    share: '分享给朋友',
+    skip1: '✦ 省下的都是赚到的 ✦',
+    skip2: '✦ 今日断食，清心寡欲 ✦',
+    breakfast: '🌅 早餐推荐', lunch: '☀️ 午餐推荐', dinner: '🌙 晚餐推荐',
+    mapSection: '🗺 附近搜索', deliverySection: '🛵 外卖点餐',
+    weatherRainy: '☔ 雨天 · 汤类更适合', weatherHot: '🥵 炎热 · 清淡更舒服',
+    weatherCold: '🥶 寒冷 · 热汤暖胃', weatherClear: '☀️ 晴天',
+    weatherPartly: '🌤️ 多云', weatherOvercast: '☁️ 阴天',
+    weatherFog: '🌫️ 有雾', weatherDrizzle: '🌦️ 毛毛雨',
+    weatherRainDesc: '🌧️ 下雨', weatherSnow: '❄️ 下雪', weatherThunder: '⛈️ 雷暴',
+    startBtn: '开始！',
+  },
+  en: {
+    eyebrow: "WHAT'S FOR DINNER?",
+    title: 'What to<br>eat <span class="mark">today?</span>',
+    titleFlat: 'What to eat today?',
+    sub: 'Salad Bowl has higher weight — stay healthy!',
+    spin: 'Spin!', respun: 'Again', spinning: '…',
+    wheelEyebrow: 'Let fate decide', wheelTitle: 'Spin<br>the wheel!',
+    amap: n => `Amap · "${n}" nearby`,
+    gmap: n => `Google Maps · "${n}"`,
+    dianping: n => `Dianping · "${n}"`,
+    taobao: n => `Eleme · "${n}"`,
+    meituan: n => `Meituan · "${n}"`,
+    jd: n => `JD · "${n}"`,
+    share: 'Share with Friends',
+    skip1: '✦ Money saved is money earned ✦',
+    skip2: '✦ Fasting today, virtue +1 ✦',
+    breakfast: '🌅 Breakfast', lunch: '☀️ Lunch', dinner: '🌙 Dinner',
+    mapSection: '🗺 Nearby Search', deliverySection: '🛵 Food Delivery',
+    weatherRainy: '☔ Rainy - soup is perfect', weatherHot: '🥵 Hot day - go light',
+    weatherCold: '🥶 Cold - warm soup', weatherClear: '☀️ Sunny',
+    weatherPartly: '🌤️ Partly Cloudy', weatherOvercast: '☁️ Overcast',
+    weatherFog: '🌫️ Foggy', weatherDrizzle: '🌦️ Drizzle',
+    weatherRainDesc: '🌧️ Rainy', weatherSnow: '❄️ Snowy', weatherThunder: '⛈️ Thunder',
+    startBtn: "Let's Go!",
+  },
+};
+
+let lang = 'zh';
+let currentWeather = null;
+let animating = false;
+let currentFood = null;
+let currentSeg = null;
+let currentChannel = 'simple';
+const t = () => I18N[lang];
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('btnZH').classList.toggle('active', l === 'zh');
+  document.getElementById('btnEN').classList.toggle('active', l === 'en');
+  applyLang();
+  if (typeof rotation !== 'undefined') drawWheel(rotation);
+}
+
+function applyLang() {
+  const tx = t();
+  document.getElementById('heroEyebrow').textContent = tx.eyebrow;
+  document.getElementById('heroTitle').innerHTML = tx.title;
+  document.getElementById('startBtn').textContent = tx.startBtn;
+  document.getElementById('wheelEyebrow').textContent = tx.wheelEyebrow;
+  document.getElementById('wheelTitle').innerHTML = tx.wheelTitle;
+  const btn = document.getElementById('spinBtn');
+  if (!animating) btn.textContent = btn.dataset.spun ? tx.respun : tx.spin;
+  if (currentFood) { rerenderResult(); }
+  if (currentWeather) displayWeather(currentWeather);
+  else document.getElementById('wcLoadText').textContent = lang === 'zh' ? '定位中…' : 'Locating…';
+}
+
+// ── Weather display ──
+function getWeatherInfo(code, temp) {
+  const isZh = lang === 'zh';
+  if (code === 0) return {
+    icon: '☀️', type: 'sunny',
+    label: isZh ? '晴天' : 'Sunny',
+    feel:  isZh ? (temp > 32 ? '骄阳似火，记得防晒' : temp < 10 ? '晴冷，注意保暖' : '天朗气清，正好出行') : (temp > 32 ? 'Hot & sunny!' : 'Clear skies!'),
+    glow: 'rgba(255,191,0,0.28)',
+  };
+  if ([1,2,3].includes(code)) return {
+    icon: code === 1 ? '🌤️' : code === 2 ? '⛅' : '🌥️', type: 'cloudy',
+    label: isZh ? '多云' : 'Partly Cloudy',
+    feel:  isZh ? '云淡风轻，适合散步' : 'Nice & breezy',
+    glow: 'rgba(180,210,255,0.2)',
+  };
+  if ([45,48].includes(code)) return {
+    icon: '🌫️', type: 'cloudy',
+    label: isZh ? '有雾' : 'Foggy',
+    feel:  isZh ? '雾气朦胧，出行留意能见度' : 'Low visibility, take care',
+    glow: 'rgba(200,200,200,0.15)',
+  };
+  if ([51,53,55,61,63,65,80,81,82].includes(code)) return {
+    icon: [51,53,55].includes(code) ? '🌦️' : '🌧️', type: 'rainy',
+    label: isZh ? ([51,53,55].includes(code) ? '细雨' : '下雨') : ([51,53,55].includes(code) ? 'Drizzle' : 'Rainy'),
+    feel:  isZh ? '雨天适合热汤热锅' : 'Perfect day for hot soup!',
+    glow: 'rgba(91,200,255,0.25)',
+  };
+  if ([71,73,75,77,85,86].includes(code)) return {
+    icon: '❄️', type: 'snow',
+    label: isZh ? '下雪' : 'Snowing',
+    feel:  isZh ? '冰天雪地，火锅暖身' : 'Bundle up & stay warm!',
+    glow: 'rgba(190,225,255,0.25)',
+  };
+  if ([95,96,99].includes(code)) return {
+    icon: '⛈️', type: 'storm',
+    label: isZh ? '雷暴' : 'Thunderstorm',
+    feel:  isZh ? '雷雨交加，宅家最佳' : 'Stay safe indoors!',
+    glow: 'rgba(180,130,255,0.3)',
+  };
+  return {
+    icon: '🌥️', type: 'cloudy',
+    label: isZh ? '阴天' : 'Overcast',
+    feel:  isZh ? '阴沉沉的，换个心情吃顿好的' : 'Gloomy? Treat yourself!',
+    glow: 'rgba(180,190,210,0.15)',
+  };
+}
+
+function displayWeather(weather) {
+  if (!weather) return;
+  const card     = document.getElementById('weatherCard');
+  const loading  = document.getElementById('wcLoading');
+  const content  = document.getElementById('wcContent');
+  const iconEl   = document.getElementById('wcIcon');
+  const tempEl   = document.getElementById('wcTemp');
+  const condEl   = document.getElementById('wcCondition');
+  const feelEl   = document.getElementById('wcFeel');
+  const glowEl   = document.getElementById('wcGlow');
+
+  const info = getWeatherInfo(weather.code, weather.temp);
+
+  // Card accent
+  card.className = 'weather-card type-' + info.type;
+  glowEl.style.background = info.glow;
+  iconEl.textContent = info.icon;
+  condEl.textContent  = info.label;
+  feelEl.textContent  = info.feel;
+
+  // Temperature count-up
+  const target = Math.round(weather.temp);
+  const abs = Math.abs(target);
+  const sign = target < 0 ? -1 : 1;
+  let cur = 0;
+  tempEl.textContent = '0';
+  const delay = Math.max(18, Math.round(700 / (abs || 1)));
+  const timer = setInterval(() => {
+    cur++;
+    tempEl.textContent = sign * cur;
+    if (cur >= abs) { tempEl.textContent = target; clearInterval(timer); }
+  }, delay);
+
+  // Clear old particles
+  card.querySelectorAll('.rain-drop,.snow-flake,.sun-ray').forEach(e => e.remove());
+
+  // Weather-specific particles
+  if (info.type === 'rainy') {
+    for (let i = 0; i < 14; i++) {
+      const d = document.createElement('div');
+      d.className = 'rain-drop';
+      d.style.cssText = `left:${Math.random()*100}%;top:0;bottom:0;height:${10+Math.random()*12}px;animation-duration:${0.55+Math.random()*0.45}s;animation-delay:${Math.random()*0.9}s;opacity:${0.3+Math.random()*0.4};`;
+      card.appendChild(d);
+    }
+  } else if (info.type === 'snow') {
+    for (let i = 0; i < 9; i++) {
+      const s = document.createElement('div');
+      s.className = 'snow-flake';
+      s.textContent = ['❄','✦','⁕'][i % 3];
+      s.style.cssText = `left:${8+Math.random()*84}%;font-size:${8+Math.random()*7}px;animation-duration:${2+Math.random()*2.5}s;animation-delay:${Math.random()*2}s;`;
+      card.appendChild(s);
+    }
+  } else if (info.type === 'sunny') {
+    for (let i = 0; i < 8; i++) {
+      const r = document.createElement('div');
+      r.className = 'sun-ray';
+      const a = i * 45;
+      r.style.cssText = `left:50%;top:50%;transform-origin:left center;transform:rotate(${a}deg) translateX(28px);animation-delay:${i*0.18}s;`;
+      card.appendChild(r);
+    }
+  }
+
+  // Show
+  loading.style.display = 'none';
+  content.classList.add('show');
+}
+
+// ══════════════════════════════════════════════════════
+//  天气 & 历史 & 权重
+// ══════════════════════════════════════════════════════
+let weatherCache = null, weatherCacheTime = 0;
+function isRainyWeather(code) {
+  return [51,53,55,61,63,65,71,73,75,77,80,81,82,85,86].includes(code);
+}
+async function getWeather() {
+  const now = Date.now();
+  if (weatherCache && now - weatherCacheTime < 3600000) return weatherCache;
+  try {
+    const pos = await new Promise((res,rej) => navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current=weather_code,temperature_2m&timezone=auto`);
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    weatherCache = { code: d.current.weather_code, temp: d.current.temperature_2m };
+    weatherCacheTime = now;
+    return weatherCache;
+  } catch(e) { return null; }
+}
+function getMealType() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 11) return 'breakfast';
+  if (h >= 11 && h < 15) return 'lunch';
+  return 'dinner';
+}
+let _histCache = null;
+function getHistory() {
+  if (_histCache === null) {
+    try { _histCache = JSON.parse(localStorage.getItem('food-history') || '[]'); }
+    catch { _histCache = []; }
+  }
+  return _histCache;
+}
+function saveHistory(food) {
+  try {
+    const h = getHistory();
+    h.push({ zh: food.zh, ts: Date.now() });
+    _histCache = h.filter(x => x.ts > Date.now() - 7*864e5);
+    localStorage.setItem('food-history', JSON.stringify(_histCache));
+  } catch(e) {}
+}
+function getLastSeen(foodZh) {
+  const now = Date.now(), cutoff = now - 7*864e5;
+  const map = {};
+  getHistory().filter(h => h.ts > cutoff).forEach(h => {
+    const d = Math.floor((now - h.ts) / 864e5);
+    if (!(h.zh in map) || map[h.zh] > d) map[h.zh] = d;
+  });
+  return foodZh in map ? map[foodZh] : null;
+}
+function getWeight(f, mealType = null, weather = null) {
+  let w = f.zh === '轻食沙拉' ? f.w * 6 : f.w;
+  if (!mealType) mealType = getMealType();
+  if (f.mealType) {
+    if (f.mealType.includes(mealType)) w *= 1.5;
+    else if (!f.mealType.includes('all-day')) w *= 0.8;
+  }
+  if (weather) {
+    const kw = f.kw ? (f.kw.zh || '') : '';
+    if (isRainyWeather(weather.code) && (kw.includes('汤')||kw.includes('火锅'))) w *= 1.5;
+    else if (weather.temp > 30 && f.w <= 3) w *= 1.4;
+    else if (weather.temp < 5) w *= 1.3;
+  }
+  return w;
+}
+
+// ══════════════════════════════════════════════════════
+//  Canvas 转盘
+// ══════════════════════════════════════════════════════
+const GRADIENT_PAIRS = [
+  ['#8b5cf6','#06b6d4'],['#10b981','#06b6d4'],['#8b5cf6','#ec4899'],
+  ['#06b6d4','#10b981'],['#ec4899','#8b5cf6'],['#4f46e5','#06b6d4'],
+  ['#10b981','#8b5cf6'],['#06b6d4','#4f46e5'],['#a855f7','#ec4899'],
+  ['#0ea5e9','#10b981'],['#ec4899','#f59e0b'],['#6366f1','#8b5cf6'],
+];
+let canvas, ctx, CX, CY, R, SIZE, segs = [], rotation = 0, activeFoods = [], totalW = 0;
+let _appStarted = false;
+
+function initCanvas() {
+  const iw = window.innerWidth || 375;
+  SIZE = Math.max(240, Math.min(300, iw - 80));
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas = document.getElementById('wheelCanvas');
+  canvas.style.width = SIZE + 'px'; canvas.style.height = SIZE + 'px';
+  canvas.width = SIZE * dpr; canvas.height = SIZE * dpr;
+  ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  CX = SIZE/2; CY = SIZE/2; R = SIZE/2 - 5;
+  rebuildSegs();
+}
+
+const GAP_ANGLE = 0.05;
+const INNER_R = 0.30;
+
+function drawWheel(rot) {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  const inner = R * INNER_R;
+  const bgGrad = ctx.createRadialGradient(CX, CY, 0, CX, CY, R + 6);
+  bgGrad.addColorStop(0, '#1e1b4b'); bgGrad.addColorStop(1, '#0a0a16');
+  ctx.beginPath(); ctx.arc(CX, CY, R + 4, 0, Math.PI * 2);
+  ctx.fillStyle = bgGrad; ctx.fill();
+
+  segs.forEach((seg, i) => {
+    const sa = seg.sa + rot + GAP_ANGLE / 2;
+    const ea = seg.ea + rot - GAP_ANGLE / 2;
+    if (ea - sa < 0.01) return;
+    const mid = (sa + ea) / 2;
+    const pair = GRADIENT_PAIRS[i % GRADIENT_PAIRS.length];
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(CX, CY, inner + 1, sa, ea);
+    ctx.arc(CX, CY, R - 1, ea, sa, true);
+    ctx.closePath();
+    const gx1 = CX + Math.cos(mid) * inner, gy1 = CY + Math.sin(mid) * inner;
+    const gx2 = CX + Math.cos(mid) * R,     gy2 = CY + Math.sin(mid) * R;
+    const grad = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
+    grad.addColorStop(0, pair[0] + 'cc'); grad.addColorStop(0.4, pair[0]); grad.addColorStop(1, pair[1]);
+    ctx.fillStyle = grad; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+    const arc = ea - sa;
+    if (arc < 0.08) return;
+    const tr = inner + (R - inner) * 0.58;
+    const tx2 = CX + Math.cos(mid) * tr, ty2 = CY + Math.sin(mid) * tr;
+    const label = (lang === 'zh' ? seg.zh : seg.en) || seg.zh;
+    ctx.save();
+    ctx.translate(tx2, ty2); ctx.rotate(mid + Math.PI / 2);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(255,255,255,0.6)'; ctx.shadowBlur = 5;
+    if (arc >= 0.38) {
+      ctx.font = `${Math.min(15, arc * 16)}px sans-serif`; ctx.fillText(seg.emoji, 0, -9);
+      ctx.shadowBlur = 0;
+      ctx.font = `bold ${Math.min(10, arc * 11)}px 'PingFang SC',sans-serif`;
+      ctx.fillText(label.length > 5 ? label.slice(0,5) + '…' : label, 0, 8);
+    } else if (arc >= 0.16) {
+      ctx.font = `${Math.min(15, arc * 22)}px sans-serif`; ctx.fillText(seg.emoji, 0, 0);
+    }
+    ctx.restore();
+  });
+
+  ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 5; ctx.stroke();
+
+  const pearl = ctx.createRadialGradient(CX - inner*0.28, CY - inner*0.28, 1, CX, CY, inner);
+  pearl.addColorStop(0,'#ffffff'); pearl.addColorStop(0.25,'#eef0ff');
+  pearl.addColorStop(0.6,'#9fa8da'); pearl.addColorStop(1,'#4a5590');
+  ctx.beginPath(); ctx.arc(CX, CY, inner, 0, Math.PI * 2);
+  ctx.fillStyle = pearl; ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(CX, CY, inner + 3, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 3; ctx.stroke();
+}
+
+function buildSegsWithWeather(mealType, weather) {
+  let acc = 0;
+  totalW = activeFoods.reduce((s,f) => s + getWeight(f, mealType, weather), 0);
+  segs = activeFoods.map(f => {
+    const w = getWeight(f, mealType, weather);
+    const arc = w / totalW * Math.PI * 2;
+    const s = { ...f, w, mealType, weather, sa: acc, ea: acc + arc };
+    acc += arc;
+    return s;
+  });
+}
+
+async function rebuildSegs() {
+  if (currentChannel === 'simple') {
+    activeFoods = foods.filter((_,i) => i < beverageStart && (simpleIdx.has(i) || sharedIdx.has(i)));
+  } else if (currentChannel === 'feast') {
+    activeFoods = foods.filter((_,i) => i < beverageStart && (feastIdx.has(i) || sharedIdx.has(i)));
+  } else {
+    activeFoods = foods.filter((_,i) => i >= beverageStart);
+  }
+  const mealType = getMealType();
+  // Build immediately without weather so UI is responsive
+  buildSegsWithWeather(mealType, null);
+  rotation = 0; drawWheel(0);
+  // Then silently update weights with weather data and show weather card
+  getWeather().then(weather => {
+    if (!weather) {
+      const el = document.getElementById('wcLoadText');
+      if (el) el.textContent = lang === 'zh' ? '无法获取位置' : 'Location unavailable';
+      return;
+    }
+    currentWeather = weather;
+    buildSegsWithWeather(mealType, weather);
+    drawWheel(rotation);
+    displayWeather(weather);
+  });
+}
+
+function setChannel(ch) {
+  if (currentChannel === ch) return;
+  currentChannel = ch;
+  ['btnSimple','btnFeast','btnBeverage'].forEach(id => {
+    document.getElementById(id).classList.toggle('active',
+      (ch==='simple'&&id==='btnSimple')||(ch==='feast'&&id==='btnFeast')||(ch==='beverage'&&id==='btnBeverage'));
+  });
+  const btn = document.getElementById('spinBtn');
+  btn.textContent = t().spin; delete btn.dataset.spun;
+  rebuildSegs();
+}
+
+// ══════════════════════════════════════════════════════
+//  彩带
+// ══════════════════════════════════════════════════════
+function launchConfetti(color) {
+  const wrap = document.getElementById('confetti');
+  const clrs = [color||'#FFBF00','#fff','#FF6B9D','#5BC8FF','#6ab04c','#f0932b'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div'); el.className = 'cp';
+    el.style.cssText = `left:${Math.random()*100}%;width:${6+Math.random()*8}px;height:${8+Math.random()*10}px;border-radius:${Math.random()>.5?'50%':'2px'};background:${clrs[i%clrs.length]};--dx:${(Math.random()-.5)*180}px;--dr:${Math.random()*720-360}deg;animation-duration:${1.6+Math.random()*1.2}s;animation-delay:${Math.random()*.35}s;opacity:1;`;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  旋转
+// ══════════════════════════════════════════════════════
+function weightedPick() {
+  let r = Math.random() * totalW, cum = 0;
+  for (let i = 0; i < activeFoods.length; i++) { cum += getWeight(activeFoods[i]); if (r < cum) return i; }
+  return activeFoods.length - 1;
+}
+function spin() {
+  if (!ctx || !segs || !segs.length) { _appStarted = false; startApp(); setTimeout(spin, 600); return; }
+  if (animating) return;
+  animating = true;
+  const btn = document.getElementById('spinBtn');
+  btn.disabled = true; btn.textContent = t().spinning;
+  const idx = weightedPick();
+  const seg = segs[idx];
+  currentFood = activeFoods[idx]; currentSeg = seg;
+  const pointer = -Math.PI/2, midAngle = (seg.sa+seg.ea)/2, targetBase = pointer - midAngle;
+  const curNorm = ((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+  const tgtNorm = ((targetBase%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+  let delta = tgtNorm - curNorm; if (delta <= 0.01) delta += Math.PI*2;
+  const target = rotation + (5+Math.floor(Math.random()*3))*Math.PI*2 + delta;
+  const startRot = rotation, t0 = performance.now();
+  const easeOut = x => 1 - Math.pow(1-x, 4);
+  requestAnimationFrame(function frame(now) {
+    const prog = Math.min((now - t0) / 4800, 1);
+    rotation = startRot + (target - startRot) * easeOut(prog);
+    drawWheel(rotation);
+    if (prog < 1) { requestAnimationFrame(frame); }
+    else {
+      rotation = target; animating = false;
+      btn.disabled = false; btn.textContent = t().respun; btn.dataset.spun = '1';
+      launchConfetti(currentFood.color);
+      showResult(currentFood);
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  屏幕切换
+// ══════════════════════════════════════════════════════
+function goToWheel() {
+  document.getElementById('screen-main').classList.add('hidden');
+  document.getElementById('screen-result').classList.remove('active');
+  document.getElementById('screen-wheel').classList.add('active');
+}
+function goToMain() {
+  document.getElementById('screen-wheel').classList.remove('active');
+  document.getElementById('screen-result').classList.remove('active');
+  document.getElementById('screen-main').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════════════
+//  结果显示
+// ══════════════════════════════════════════════════════
+function togglePanel(panelId, chipId) {
+  const panel = document.getElementById(panelId);
+  const chip = document.getElementById(chipId);
+  const isOpen = panel.classList.contains('open');
+  document.querySelectorAll('.links-panel').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.action-chip').forEach(c => c.classList.remove('active-chip'));
+  if (!isOpen) { panel.classList.add('open'); chip.classList.add('active-chip'); }
+}
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+function copyKw(kw) {
+  try {
+    const el = document.createElement('textarea');
+    el.value = kw; el.style.cssText = 'position:fixed;top:0;left:0;width:2px;height:2px;opacity:0.01;';
+    document.body.appendChild(el); el.focus(); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+  } catch(e) {}
+}
+function iosOpenApp(scheme, fallback, kw, appName) {
+  if (kw) { copyKw(kw); showToast('「'+kw+'」已复制 ✓'); }
+  let left = false;
+  const mark = () => { left = true; };
+  document.addEventListener('visibilitychange', mark, {once:true});
+  window.addEventListener('blur', mark, {once:true});
+  setTimeout(() => {
+    document.removeEventListener('visibilitychange', mark);
+    window.removeEventListener('blur', mark);
+    if (!left && appName) showToast('请先安装' + appName);
+    else if (!left && fallback) window.location.href = fallback;
+  }, 2000);
+  window.location.href = scheme;
+}
+function openJD(kw) {
+  const ua = navigator.userAgent;
+  const appParams = encodeURIComponent(JSON.stringify({category:'jump',des:'miaosong',keyWord:kw}));
+  copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
+  if (/Android/i.test(ua)) {
+    window.location.href = `intent://virtual?params=${appParams}#Intent;scheme=openapp.jdmobile;package=com.jingdong.app.mall;S.browser_fallback_url=${encodeURIComponent('https://app.jd.com/')};end`;
+  } else {
+    const t2 = setTimeout(() => showToast('请先安装京东App'), 2000);
+    window.addEventListener('blur', () => clearTimeout(t2), {once:true});
+    window.location.href = `openapp.jdmobile://virtual?params=${appParams}`;
+  }
+}
+function openTaobao(kw) {
+  const enc = encodeURIComponent(kw);
+  copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
+  iosOpenApp(`eleme://search?keyword=${enc}`, `https://www.ele.me/`, null, null);
+}
+function openMeituan(kw) {
+  const enc = encodeURIComponent(kw);
+  copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
+  const ua = navigator.userAgent;
+  if (/Android/i.test(ua)) window.location.href = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${enc}`;
+  else iosOpenApp(`meituanwaimai://search?keyword=${enc}`, null, null, '美团外卖App');
+}
+function openDianping(kw) {
+  const enc = encodeURIComponent(kw);
+  copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
+  const ua = navigator.userAgent;
+  if (/Android/i.test(ua)) window.location.href = `https://m.dianping.com/search?keyword=${enc}`;
+  else iosOpenApp(`dianping://search?kw=${enc}`, `https://m.dianping.com/search?keyword=${enc}`, null, null);
+}
+function doShare() {
+  if (!currentFood) return;
+  const name = currentFood[lang] || currentFood.zh;
+  const desc = (currentFood.desc[lang]) || currentFood.desc.zh;
+  const text = `🥘 ${name} - ${desc}`;
+  if (navigator.share) {
+    navigator.share({ title: '今天吃什么', text, url: window.location.href }).catch(()=>{});
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text + '\n' + window.location.href;
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0.01;';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast(lang==='zh'?'分享内容已复制':'Copied to clipboard!'); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+}
+
+const PIN = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+
+function buildMapLinks(food) {
+  const kw = food.kw[lang] || food.kw.zh;
+  const name = food[lang] || food.zh;
+  const tx = t();
+  const amapUrl = `https://www.amap.com/search?query=${encodeURIComponent(kw)}`;
+  const gmapUrl = `https://www.google.com/maps/search/${encodeURIComponent(kw+'附近')}`;
+  document.getElementById('mapPanel').innerHTML = `
+    <div class="link-section-title">${tx.mapSection}</div>
+    <a class="map-btn amap" href="${amapUrl}" target="_blank" rel="noopener">${PIN} ${tx.amap(name)}</a>
+    <a class="map-btn gmap" href="${gmapUrl}" target="_blank" rel="noopener">${PIN} ${tx.gmap(name)}</a>
+    <button class="map-btn dianping" data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openDianping(this.dataset.kw)">${PIN} ${tx.dianping(name)}</button>
+  `;
+  document.getElementById('deliveryPanel').innerHTML = `
+    <div class="link-section-title">${tx.deliverySection}</div>
+    <button class="map-btn taobao"  data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openTaobao(this.dataset.kw)">${PIN}  ${tx.taobao(name)}</button>
+    <button class="map-btn meituan" data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openMeituan(this.dataset.kw)">${PIN} ${tx.meituan(name)}</button>
+    <button class="map-btn jd"      data-kw="${kw.replace(/"/g,'&quot;')}" onclick="openJD(this.dataset.kw)">${PIN}      ${tx.jd(name)}</button>
+  `;
+}
+
+function buildTags(food) {
+  const tx = t();
+  let html = '';
+  const daysAgo = getLastSeen(food.zh);
+  if (daysAgo === 0) {
+    const weekCount = getHistory().filter(h => h.zh === food.zh && h.ts > Date.now()-7*864e5).length - 1;
+    html += `<span class="tag today">今天已出现过${weekCount>0?`，本周第${weekCount+1}次`:''}</span>`;
+  } else if (daysAgo !== null) {
+    html += `<span class="tag past">${daysAgo}天前出现过</span>`;
+  }
+  if (food.mealType) {
+    food.mealType.filter(m => m !== 'all-day').forEach(m => {
+      const label = tx[m];
+      if (label) html += `<span class="tag meal">${label}</span>`;
+    });
+  }
+  if (currentSeg && currentSeg.weather) {
+    const w = currentSeg.weather;
+    function wLabel(code) {
+      if (code===0) return tx.weatherClear;
+      if ([1,2,3].includes(code)) return tx.weatherPartly;
+      if ([45,48].includes(code)) return tx.weatherFog;
+      if ([51,53,55].includes(code)) return tx.weatherDrizzle;
+      if ([61,63,65,71,73,75,77,80,81,82,85,86].includes(code)) return tx.weatherRainDesc;
+      if ([95,96,99].includes(code)) return tx.weatherThunder;
+      return tx.weatherOvercast;
+    }
+    html += `<span class="tag weather">${wLabel(w.code)} ${Math.round(w.temp)}°C</span>`;
+    const kw = food.kw ? (food.kw.zh||'') : '';
+    if (isRainyWeather(w.code) && (kw.includes('汤')||kw.includes('火锅'))) html += `<span class="tag weather">${tx.weatherRainy}</span>`;
+    else if (w.temp > 30) html += `<span class="tag weather">${tx.weatherHot}</span>`;
+    else if (w.temp < 5) html += `<span class="tag weather">${tx.weatherCold}</span>`;
+  }
+  return html;
+}
+
+function rerenderResult() {
+  if (!currentFood) return;
+  const food = currentFood;
+  const name = food[lang] || food.zh;
+  document.getElementById('rName').textContent = name;
+  document.getElementById('rDesc').textContent = food.desc[lang] || food.desc.zh;
+  document.getElementById('tagsRow').innerHTML = buildTags(food);
+  if (food.kw) {
+    buildMapLinks(food);
+    document.getElementById('actionRow').style.display = 'flex';
+    document.getElementById('noMapArea').innerHTML = '';
+  } else {
+    document.getElementById('mapPanel').innerHTML = '';
+    document.getElementById('deliveryPanel').innerHTML = '';
+    document.getElementById('actionRow').style.display = 'none';
+    const tx = t();
+    const tip = (food.zh === '饿着' || food.en === 'Skip It') ? tx.skip1 : tx.skip2;
+    document.getElementById('noMapArea').innerHTML = `<p class="no-map-tip">${tip}</p>`;
+  }
+}
+
+function showResult(food) {
+  saveHistory(food); _histCache = null;
+  document.getElementById('rEmoji').textContent = food.emoji;
+  document.getElementById('resultBottom').style.background = food.color || '#FFBF00';
+  rerenderResult();
+  document.querySelectorAll('.links-panel').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.action-chip').forEach(c => c.classList.remove('active-chip'));
+  document.getElementById('screen-result').classList.add('active');
+  document.getElementById('screen-wheel').classList.remove('active');
+  document.getElementById('screen-main').classList.add('hidden');
+}
+
+// ══════════════════════════════════════════════════════
+//  启动
+// ══════════════════════════════════════════════════════
+function startApp() {
+  if (_appStarted) return;
+  _appStarted = true;
+  try {
+    initCanvas(); applyLang();
+    document.getElementById('spinBtn').textContent = t().spin;
+    setTimeout(() => { if (ctx) drawWheel(0); }, 300);
+  } catch(e) { _appStarted = false; setTimeout(startApp, 150); }
+}
+
+if (document.readyState === 'complete') { setTimeout(startApp, 0); }
+else { window.addEventListener('load', () => setTimeout(startApp, 0)); }
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (ctx) return;
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(6,6,6,0.96)';
+    ov.innerHTML = `<div style="text-align:center;color:#fff;padding:32px;"><div style="font-size:48px;margin-bottom:16px;">🎡</div><div style="font-size:20px;font-weight:700;margin-bottom:8px;color:#FFBF00;">今天吃什么</div><button onclick="this.closest('div[style]').remove();_appStarted=false;startApp();" style="background:#FFBF00;border:none;color:#111;padding:14px 36px;border-radius:50px;font-size:16px;font-weight:800;cursor:pointer;margin-top:16px;">启动</button></div>`;
+    document.body.appendChild(ov);
+  }, 1800);
+});
+</script>
+</body>
+</html>
