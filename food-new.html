@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -112,18 +112,17 @@
     .hero-title {
       font-size: clamp(2.8rem, 13vw, 5rem);
       font-weight: 900;
-      line-height: 1.02;
+      line-height: 1.08;
       color: var(--gold);
-      letter-spacing: -1.5px;
-      /* Cartoon shadow for depth */
+      letter-spacing: 2px;
       text-shadow:
-        2px 3px 0 rgba(0,0,0,0.6),
-        0 0 40px rgba(255,191,0,0.18);
-      font-family: 'Nunito', 'PingFang SC', 'Noto Sans SC', sans-serif;
+        3px 4px 0 rgba(0,0,0,0.7),
+        0 0 40px rgba(255,191,0,0.22);
+      font-family: 'ZCOOL KuaiLe', 'PingFang SC', 'Noto Sans SC', sans-serif;
     }
     .hero-title .mark {
       color: var(--blue);
-      text-shadow: 2px 3px 0 rgba(0,0,0,0.5), 0 0 30px rgba(91,200,255,0.3);
+      text-shadow: 3px 4px 0 rgba(0,0,0,0.6), 0 0 30px rgba(91,200,255,0.35);
     }
 
     /* ── Character image zone ── */
@@ -190,27 +189,71 @@
     }
     .channel-chip {
       flex: 1;
-      padding: 10px 6px;
+      padding: 11px 6px;
       border-radius: 50px;
-      border: 1.5px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.6);
-      font-size: 13px; font-weight: 700;
+      border: 2px solid transparent;
+      font-size: 13px; font-weight: 800;
       cursor: pointer; transition: all 0.22s;
       white-space: nowrap; font-family: inherit;
       text-align: center;
+      letter-spacing: 0.5px;
     }
-    .channel-chip.active {
-      background: var(--gold);
-      border-color: var(--gold);
-      color: #111;
-      font-weight: 800;
-      box-shadow: 0 4px 18px rgba(255,191,0,0.4);
+
+    /* 大吃一顿 — 热烈橙红 */
+    #btnFeast {
+      background: rgba(255, 80, 50, 0.12);
+      border-color: rgba(255, 80, 50, 0.35);
+      color: #FF6B4A;
     }
-    .channel-chip:hover:not(.active) {
-      border-color: rgba(255,255,255,0.32);
-      color: rgba(255,255,255,0.9);
-      background: rgba(255,255,255,0.1);
+    #btnFeast.active {
+      background: linear-gradient(135deg, #FF5032, #FF8C00);
+      border-color: #FF5032;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(255,80,50,0.55);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    #btnFeast:hover:not(.active) {
+      background: rgba(255,80,50,0.22);
+      border-color: rgba(255,80,50,0.6);
+      color: #FF7A5C;
+    }
+
+    /* 简单吃吃 — 清新绿 */
+    #btnSimple {
+      background: rgba(50, 210, 130, 0.1);
+      border-color: rgba(50, 210, 130, 0.32);
+      color: #3DD68C;
+    }
+    #btnSimple.active {
+      background: linear-gradient(135deg, #00C47A, #3DD68C);
+      border-color: #00C47A;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(0,196,122,0.55);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    #btnSimple:hover:not(.active) {
+      background: rgba(50,210,130,0.18);
+      border-color: rgba(50,210,130,0.55);
+      color: #52E8A0;
+    }
+
+    /* 喝点什么 — 活力紫蓝 */
+    #btnBeverage {
+      background: rgba(155, 93, 229, 0.12);
+      border-color: rgba(155, 93, 229, 0.35);
+      color: #B97BF0;
+    }
+    #btnBeverage.active {
+      background: linear-gradient(135deg, #9B5DE5, #C77DFF);
+      border-color: #9B5DE5;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(155,93,229,0.55);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    #btnBeverage:hover:not(.active) {
+      background: rgba(155,93,229,0.22);
+      border-color: rgba(155,93,229,0.6);
+      color: #C990FF;
     }
 
     /* CTA button */
