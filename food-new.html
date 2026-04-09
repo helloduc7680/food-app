@@ -484,8 +484,8 @@
 
     .weather-card {
       flex: 1;
-      min-height: 150px;
-      border-radius: 22px;
+      min-height: 110px;
+      border-radius: 18px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
       position: relative;
@@ -541,7 +541,7 @@
     .wc-content {
       display: none; flex-direction: column;
       align-items: center; gap: 2px;
-      padding: 16px 20px;
+      padding: 10px 14px;
       position: relative; z-index: 1;
       animation: wcContentIn 0.5s ease both;
     }
@@ -568,7 +568,7 @@
       50%      { opacity: 0.75; transform: scale(1.2); }
     }
     .wc-icon {
-      font-size: 3.2rem; line-height: 1;
+      font-size: 2.4rem; line-height: 1;
       position: relative; z-index: 2;
       animation: iconFloat 3.5s ease-in-out infinite;
     }
@@ -580,7 +580,7 @@
     /* Temperature */
     .wc-temp-row { display: flex; align-items: flex-start; gap: 1px; }
     .wc-temp {
-      font-size: 2.6rem; font-weight: 900; line-height: 1;
+      font-size: 2rem; font-weight: 900; line-height: 1;
       color: var(--gold); letter-spacing: -2px;
       font-family: 'Nunito', sans-serif;
       text-shadow: 0 0 24px rgba(255,191,0,0.45);
@@ -662,14 +662,14 @@
 
     /* Mobile portrait adjustments */
     @media (max-width: 480px) {
-      .weather-card { min-height: 120px; border-radius: 16px; }
-      .wc-icon { font-size: 2.4rem; }
-      .wc-temp { font-size: 2rem; letter-spacing: -1.5px; }
-      .wc-unit { font-size: 0.85rem; margin-top: 4px; }
-      .wc-condition { font-size: 11px; }
+      .weather-card { min-height: 90px; border-radius: 14px; }
+      .wc-icon { font-size: 1.9rem; }
+      .wc-temp { font-size: 1.7rem; letter-spacing: -1px; }
+      .wc-unit { font-size: 0.75rem; margin-top: 3px; }
+      .wc-condition { font-size: 10px; }
       .wc-feel { font-size: 9px; }
-      .wc-content { padding: 12px 14px; gap: 1px; }
-      .wc-tap-icon { font-size: 1.6rem; }
+      .wc-content { padding: 8px 10px; gap: 1px; }
+      .wc-tap-icon { font-size: 1.4rem; }
     }
 
     /* ── responsive ── */
