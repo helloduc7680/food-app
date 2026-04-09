@@ -1270,6 +1270,14 @@ function getFiberColor(food) {
 }
 let canvas, ctx, CX, CY, R, SIZE, segs = [], rotation = 0, activeFoods = [], totalW = 0;
 let _appStarted = false;
+let wheelImg = null;
+
+function loadWheelImage() {
+  const img = new Image();
+  img.onload  = () => { wheelImg = img; if (ctx) drawWheel(rotation); };
+  img.onerror = () => { wheelImg = null; };
+  img.src = './wheel.jpg';
+}
 
 function initCanvas() {
   const iw = window.innerWidth || 375;
@@ -1281,6 +1289,7 @@ function initCanvas() {
   ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
   CX = SIZE/2; CY = SIZE/2; R = SIZE/2 - 5;
+  loadWheelImage();
   rebuildSegs();
 }
 
@@ -1336,30 +1345,44 @@ function drawWheel(rot, fast = false) {
   ctx.clearRect(0, 0, SIZE, SIZE);
   const inner = R * INNER_R;
 
-  // ── 扇区（绒线纤维纹理）──
+  // ── 直接使用实物图片旋转 ──
+  if (wheelImg) {
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(rot);
+    ctx.beginPath();
+    ctx.arc(0, 0, R, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(wheelImg, -R, -R, R * 2, R * 2);
+    ctx.restore();
+  } else {
+    // 图片未加载时降级为纤维绘制
+    segs.forEach((seg) => {
+      const sa = seg.sa + rot, ea = seg.ea + rot;
+      if (ea - sa < 0.005) return;
+      drawFibers(sa, ea, inner, R, getFiberColor(seg), fast);
+    });
+  }
+
+  // ── 食物 emoji / 文字叠加 ──
   segs.forEach((seg) => {
     const sa  = seg.sa + rot;
     const ea  = seg.ea + rot;
-    if (ea - sa < 0.005) return;
-    const color = getFiberColor(seg);
-    drawFibers(sa, ea, inner, R, color, fast);
-
-    // emoji / 文字
     const arc = ea - sa;
     if (arc < 0.08) return;
-    const mid = (sa + ea) / 2;
-    const tr  = inner + (R - inner) * 0.62;
+    const mid   = (sa + ea) / 2;
+    const tr    = inner + (R - inner) * 0.62;
     const label = (lang === 'zh' ? seg.zh : seg.en) || seg.zh;
     ctx.save();
     ctx.translate(CX + Math.cos(mid) * tr, CY + Math.sin(mid) * tr);
     ctx.rotate(mid + Math.PI / 2);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.75)'; ctx.shadowBlur = 4;
-    ctx.fillStyle   = 'rgba(255,255,255,0.95)';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 6;
+    ctx.fillStyle   = '#ffffff';
     if (arc >= 0.38) {
       ctx.font = `${Math.min(15, arc * 16)}px sans-serif`;
       ctx.fillText(seg.emoji, 0, -9);
-      ctx.shadowBlur = 3;
+      ctx.shadowBlur = 4;
       ctx.font = `bold ${Math.min(10, arc * 11)}px 'PingFang SC',sans-serif`;
       ctx.fillText(label.length > 5 ? label.slice(0,5)+'…' : label, 0, 8);
     } else if (arc >= 0.16) {
@@ -1369,46 +1392,23 @@ function drawWheel(rot, fast = false) {
     ctx.restore();
   });
 
-  // ── 外缘暗圈（增强轮盘边界感）──
+  // ── 外缘描边 ──
   ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 4; ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 3; ctx.stroke();
 
-  // ── 中心圆顶（奶白色毛绒，参考图风格）──
-  const hubR = inner * 1.10;
-  const hub  = ctx.createRadialGradient(
-    CX - hubR * 0.30, CY - hubR * 0.35, 1,
-    CX, CY, hubR
-  );
+  // ── 中心圆顶（奶白色，与图片风格一致）──
+  const hubR = inner * 1.08;
+  const hub  = ctx.createRadialGradient(CX - hubR*0.3, CY - hubR*0.35, 1, CX, CY, hubR);
   hub.addColorStop(0,    '#fff9f0');
-  hub.addColorStop(0.28, '#f5ead8');
-  hub.addColorStop(0.62, '#dcc8b0');
-  hub.addColorStop(0.88, '#c0aa8a');
+  hub.addColorStop(0.30, '#f5ead8');
+  hub.addColorStop(0.65, '#dcc8b0');
   hub.addColorStop(1,    '#a08868');
   ctx.beginPath(); ctx.arc(CX, CY, hubR, 0, Math.PI * 2);
   ctx.fillStyle = hub; ctx.fill();
-
-  // 圆顶放射纤维
-  if (!fast) {
-    const hf = 28;
-    ctx.globalAlpha = 0.35;
-    for (let i = 0; i < hf; i++) {
-      const a      = (i / hf) * Math.PI * 2;
-      const bright = 0.85 + (i % 3) * 0.14;
-      ctx.beginPath();
-      ctx.moveTo(CX, CY);
-      ctx.lineTo(CX + Math.cos(a) * (hubR - 1), CY + Math.sin(a) * (hubR - 1));
-      ctx.strokeStyle = adjColor('#d4c0a0', bright);
-      ctx.lineWidth   = 1.2;
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  // 圆顶高光环
   ctx.beginPath(); ctx.arc(CX, CY, hubR, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255,248,230,0.65)'; ctx.lineWidth = 2;   ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,248,230,0.7)'; ctx.lineWidth = 2; ctx.stroke();
   ctx.beginPath(); ctx.arc(CX, CY, hubR + 1.5, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(0,0,0,0.35)';       ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 2.5; ctx.stroke();
 }
 
 function buildSegsWithWeather(mealType, weather) {
