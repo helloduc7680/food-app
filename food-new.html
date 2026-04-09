@@ -326,29 +326,44 @@
       filter: drop-shadow(0 0 6px rgba(255,191,0,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.6));
     }
 
-    /* 毛绒外圈 */
+    /* 毛绒外圈 3D */
     .plush-ring {
       border-radius: 50%;
-      padding: 14px;
-      background: conic-gradient(
-        from 30deg,
-        #d4c6e4 0%,   #e6d8f6 10%,
-        #cbbdd8 20%,  #ddd0ee 32%,
-        #c6b8d2 44%,  #e0d4f0 56%,
-        #c2b4ce 68%,  #d8ccec 80%,
-        #cec0de 90%,  #d4c6e4 100%
+      padding: 18px;
+      position: relative;
+      background: radial-gradient(
+        ellipse at 33% 26%,
+        #f2e8ff 0%,
+        #e0d0f6 12%,
+        #cbbde8 25%,
+        #b5a6d4 40%,
+        #a090c2 54%,
+        #b5a6d4 68%,
+        #cbbde8 80%,
+        #ddd0f2 92%
       );
       box-shadow:
-        inset 0 4px 14px rgba(255,255,255,0.18),
-        inset 0 -4px 14px rgba(0,0,0,0.25),
-        0 0 0 3px rgba(210,190,235,0.35),
-        0 22px 60px rgba(0,0,0,0.85),
-        0 0 50px rgba(180,150,220,0.25);
+        inset 12px 12px 32px rgba(255,255,255,0.55),
+        inset -10px -10px 26px rgba(0,0,0,0.52),
+        inset 0 0 40px rgba(120,90,180,0.12),
+        0 0 0 3px rgba(235,218,255,0.28),
+        0 28px 72px rgba(0,0,0,0.92),
+        0 0 60px rgba(160,130,220,0.3);
+    }
+    /* 毛绒表面细纹 */
+    .plush-ring::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      background: repeating-conic-gradient(
+        rgba(255,255,255,0.055) 0deg 2.5deg,
+        transparent 2.5deg 5deg
+      );
+      pointer-events: none;
     }
 
     .wheel-frame {
       position: relative; border-radius: 50%;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.35);
     }
     #wheelCanvas { display: block; border-radius: 50%; }
 
@@ -1251,63 +1266,110 @@ function initCanvas() {
   rebuildSegs();
 }
 
-const GAP_ANGLE = 0.05;
+const GAP_ANGLE = 0;
 const INNER_R = 0.30;
+
+// 颜色亮度调节（factor>1加亮，<1变暗）
+function adjColor(hex, factor) {
+  const n = parseInt(hex.replace('#',''), 16);
+  const r = Math.min(255, Math.round(((n>>16)&255) * factor));
+  const g = Math.min(255, Math.round(((n>>8)&255)  * factor));
+  const b = Math.min(255, Math.round((n&255)        * factor));
+  return `rgba(${r},${g},${b},1)`;
+}
 
 function drawWheel(rot) {
   if (!ctx) return;
   ctx.clearRect(0, 0, SIZE, SIZE);
   const inner = R * INNER_R;
 
+  // ── 扇区（3D 毛绒凸起效果，无分割线）──
   segs.forEach((seg, i) => {
-    const sa = seg.sa + rot + GAP_ANGLE / 2;
-    const ea = seg.ea + rot - GAP_ANGLE / 2;
-    if (ea - sa < 0.01) return;
+    const sa = seg.sa + rot;
+    const ea = seg.ea + rot;
+    if (ea - sa < 0.005) return;
     const mid = (sa + ea) / 2;
     const pair = GRADIENT_PAIRS[i % GRADIENT_PAIRS.length];
+
     ctx.save();
     ctx.beginPath();
-    ctx.arc(CX, CY, inner + 1, sa, ea);
-    ctx.arc(CX, CY, R - 1, ea, sa, true);
+    ctx.arc(CX, CY, inner, sa, ea);
+    ctx.arc(CX, CY, R,     ea, sa, true);
     ctx.closePath();
-    const gx1 = CX + Math.cos(mid) * inner, gy1 = CY + Math.sin(mid) * inner;
-    const gx2 = CX + Math.cos(mid) * R,     gy2 = CY + Math.sin(mid) * R;
-    const grad = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
-    grad.addColorStop(0, pair[0]); grad.addColorStop(1, pair[1]);
-    ctx.fillStyle = grad; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2; ctx.stroke();
+
+    // 径向渐变：段落中心高亮 → 边缘变暗，模拟毛绒鼓起感
+    const midR  = inner + (R - inner) * 0.52;
+    const midX  = CX + Math.cos(mid) * midR;
+    const midY  = CY + Math.sin(mid) * midR;
+    const gradR = (R - inner) * 0.72;
+    const rg = ctx.createRadialGradient(midX, midY, 0, midX, midY, gradR);
+    rg.addColorStop(0,    adjColor(pair[0], 1.45));   // 高光中心
+    rg.addColorStop(0.38, pair[0]);
+    rg.addColorStop(0.75, pair[1]);
+    rg.addColorStop(1,    adjColor(pair[1], 0.60));   // 边缘暗部
+    ctx.fillStyle = rg;
+    ctx.fill();
     ctx.restore();
+
+    // 文字 / emoji
     const arc = ea - sa;
     if (arc < 0.08) return;
-    const tr = inner + (R - inner) * 0.58;
+    const tr = inner + (R - inner) * 0.60;
     const tx2 = CX + Math.cos(mid) * tr, ty2 = CY + Math.sin(mid) * tr;
     const label = (lang === 'zh' ? seg.zh : seg.en) || seg.zh;
     ctx.save();
     ctx.translate(tx2, ty2); ctx.rotate(mid + Math.PI / 2);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#fff'; ctx.shadowColor = 'rgba(255,255,255,0.6)'; ctx.shadowBlur = 5;
+    ctx.shadowColor = 'rgba(0,0,0,0.65)'; ctx.shadowBlur = 4;
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
     if (arc >= 0.38) {
-      ctx.font = `${Math.min(15, arc * 16)}px sans-serif`; ctx.fillText(seg.emoji, 0, -9);
-      ctx.shadowBlur = 0;
+      ctx.font = `${Math.min(15, arc * 16)}px sans-serif`;
+      ctx.fillText(seg.emoji, 0, -9);
+      ctx.shadowBlur = 3;
       ctx.font = `bold ${Math.min(10, arc * 11)}px 'PingFang SC',sans-serif`;
-      ctx.fillText(label.length > 5 ? label.slice(0,5) + '…' : label, 0, 8);
+      ctx.fillText(label.length > 5 ? label.slice(0,5)+'…' : label, 0, 8);
     } else if (arc >= 0.16) {
-      ctx.font = `${Math.min(15, arc * 22)}px sans-serif`; ctx.fillText(seg.emoji, 0, 0);
+      ctx.font = `${Math.min(16, arc * 24)}px sans-serif`;
+      ctx.fillText(seg.emoji, 0, 0);
     }
     ctx.restore();
   });
 
+  // ── 球面高光叠加（让整个轮盘呈现3D弧面感）──
+  const sph = ctx.createRadialGradient(
+    CX - R * 0.22, CY - R * 0.28, 0,
+    CX,            CY,            R
+  );
+  sph.addColorStop(0,    'rgba(255,255,255,0.32)');
+  sph.addColorStop(0.30, 'rgba(255,255,255,0.10)');
+  sph.addColorStop(0.60, 'rgba(0,0,0,0.0)');
+  sph.addColorStop(1,    'rgba(0,0,0,0.26)');
   ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = sph; ctx.fill();
 
-  const pearl = ctx.createRadialGradient(CX - inner*0.28, CY - inner*0.28, 1, CX, CY, inner);
-  pearl.addColorStop(0,'#ffffff'); pearl.addColorStop(0.25,'#eef0ff');
-  pearl.addColorStop(0.6,'#9fa8da'); pearl.addColorStop(1,'#4a5590');
-  ctx.beginPath(); ctx.arc(CX, CY, inner, 0, Math.PI * 2);
-  ctx.fillStyle = pearl; ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.beginPath(); ctx.arc(CX, CY, inner + 3, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 3; ctx.stroke();
+  // ── 外缘暗边（增加厚度感）──
+  ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 4; ctx.stroke();
+
+  // ── 中心旋钮（金属质感）──
+  const hubR = inner * 1.08;
+  const hub = ctx.createRadialGradient(
+    CX - hubR * 0.30, CY - hubR * 0.35, 1,
+    CX, CY, hubR
+  );
+  hub.addColorStop(0,    '#ffffff');
+  hub.addColorStop(0.18, '#f8f0ff');
+  hub.addColorStop(0.50, '#c8b8f0');
+  hub.addColorStop(0.80, '#8868c8');
+  hub.addColorStop(1,    '#3c2870');
+  ctx.beginPath(); ctx.arc(CX, CY, hubR, 0, Math.PI * 2);
+  ctx.fillStyle = hub; ctx.fill();
+  // 旋钮高光环
+  ctx.beginPath(); ctx.arc(CX, CY, hubR, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2; ctx.stroke();
+  // 旋钮外圈阴影
+  ctx.beginPath(); ctx.arc(CX, CY, hubR + 2, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 3; ctx.stroke();
 }
 
 function buildSegsWithWeather(mealType, weather) {
