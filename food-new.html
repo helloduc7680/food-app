@@ -597,8 +597,36 @@
       letter-spacing: 0.5px; line-height: 1.7;
     }
 
+    /* Tap-to-activate state */
+    .wc-tap {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      cursor: pointer; padding: 8px 12px;
+    }
+    .wc-tap-icon { font-size: 2rem; opacity: 0.55; animation: iconFloat 3.5s ease-in-out infinite; }
+    .wc-tap-hint {
+      font-size: 11px; color: rgba(255,255,255,0.3);
+      letter-spacing: 1px; font-weight: 600;
+      text-align: center; line-height: 1.5;
+    }
+    .wc-tap:hover .wc-tap-hint { color: rgba(255,255,255,0.55); }
+    .wc-tap:hover .wc-tap-icon { opacity: 0.8; }
+
     /* Hide on tiny screens */
-    @media (max-width: 380px) { .weather-card { display: none; } }
+    @media (max-width: 340px) { .weather-card { display: none; } }
+
+    /* Mobile portrait adjustments */
+    @media (max-width: 480px) {
+      .weather-card { min-height: 120px; border-radius: 16px; }
+      .wc-icon { font-size: 2.4rem; }
+      .wc-temp { font-size: 2rem; letter-spacing: -1.5px; }
+      .wc-unit { font-size: 0.85rem; margin-top: 4px; }
+      .wc-condition { font-size: 11px; }
+      .wc-feel { font-size: 9px; }
+      .wc-content { padding: 12px 14px; gap: 1px; }
+      .wc-tap-icon { font-size: 1.6rem; }
+    }
 
     /* ── responsive ── */
     @media (max-height: 640px) {
@@ -640,12 +668,19 @@
       </div>
 
       <!-- 天气卡片 -->
-      <div class="weather-card" id="weatherCard">
+      <div class="weather-card" id="weatherCard" onclick="onWeatherCardTap()">
         <div class="wc-bg"></div>
-        <div class="wc-loading" id="wcLoading">
+        <!-- 初始：点击获取 -->
+        <div class="wc-tap" id="wcTap">
+          <div class="wc-tap-icon">🌤️</div>
+          <div class="wc-tap-hint" id="wcTapHint">点击获取<br>当前天气</div>
+        </div>
+        <!-- 加载中 -->
+        <div class="wc-loading" id="wcLoading" style="display:none">
           <div class="wc-orb"></div>
           <div class="wc-load-text" id="wcLoadText">定位中…</div>
         </div>
+        <!-- 天气内容 -->
         <div class="wc-content" id="wcContent">
           <div class="wc-icon-wrap">
             <div class="wc-glow" id="wcGlow"></div>
@@ -891,7 +926,7 @@ function applyLang() {
   if (!animating) btn.textContent = btn.dataset.spun ? tx.respun : tx.spin;
   if (currentFood) { rerenderResult(); }
   if (currentWeather) displayWeather(currentWeather);
-  else document.getElementById('wcLoadText').textContent = lang === 'zh' ? '定位中…' : 'Locating…';
+  else document.getElementById('wcTapHint').innerHTML = lang === 'zh' ? '点击获取<br>当前天气' : 'Tap for<br>weather';
 }
 
 // ── Weather display ──
@@ -939,6 +974,29 @@ function getWeatherInfo(code, temp) {
     feel:  isZh ? '阴沉沉的，换个心情吃顿好的' : 'Gloomy? Treat yourself!',
     glow: 'rgba(180,190,210,0.15)',
   };
+}
+
+function onWeatherCardTap() {
+  if (currentWeather) return; // already loaded, clicking does nothing
+  const tap     = document.getElementById('wcTap');
+  const loading = document.getElementById('wcLoading');
+  tap.style.display = 'none';
+  loading.style.display = 'flex';
+  document.getElementById('wcLoadText').textContent = lang === 'zh' ? '定位中…' : 'Locating…';
+
+  getWeather().then(weather => {
+    loading.style.display = 'none';
+    if (!weather) {
+      // restore tap state with failure message
+      document.getElementById('wcTapHint').innerHTML = lang === 'zh' ? '获取失败<br>点击重试' : 'Failed<br>tap to retry';
+      tap.style.display = 'flex';
+      return;
+    }
+    currentWeather = weather;
+    buildSegsWithWeather(getMealType(), weather);
+    drawWheel(rotation);
+    displayWeather(weather);
+  });
 }
 
 function displayWeather(weather) {
@@ -1187,18 +1245,7 @@ async function rebuildSegs() {
   // Build immediately without weather so UI is responsive
   buildSegsWithWeather(mealType, null);
   rotation = 0; drawWheel(0);
-  // Then silently update weights with weather data and show weather card
-  getWeather().then(weather => {
-    if (!weather) {
-      const el = document.getElementById('wcLoadText');
-      if (el) el.textContent = lang === 'zh' ? '无法获取位置' : 'Location unavailable';
-      return;
-    }
-    currentWeather = weather;
-    buildSegsWithWeather(mealType, weather);
-    drawWheel(rotation);
-    displayWeather(weather);
-  });
+  // Weather fetched only when user taps the card (see onWeatherCardTap)
 }
 
 function setChannel(ch) {
