@@ -1353,7 +1353,13 @@ function drawWheel(rot, fast = false) {
     ctx.beginPath();
     ctx.arc(0, 0, R, 0, Math.PI * 2);
     ctx.clip();
-    ctx.drawImage(wheelImg, -R, -R, R * 2, R * 2);
+    // 居中正方形裁切，避免非正方形图片被拉伸
+    const iw = wheelImg.naturalWidth  || wheelImg.width;
+    const ih = wheelImg.naturalHeight || wheelImg.height;
+    const sq = Math.min(iw, ih);
+    const sx = (iw - sq) / 2;
+    const sy = (ih - sq) / 2;
+    ctx.drawImage(wheelImg, sx, sy, sq, sq, -R, -R, R * 2, R * 2);
     ctx.restore();
   } else {
     // 图片未加载时降级为纤维绘制
