@@ -326,39 +326,10 @@
       filter: drop-shadow(0 0 6px rgba(255,191,0,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.6));
     }
 
-    /* 毛绒外圈 — 奶白色（参考图风格）*/
     .plush-ring {
       border-radius: 50%;
-      padding: 20px;
       position: relative;
-      background: radial-gradient(
-        ellipse at 36% 28%,
-        #ffffff 0%,
-        #f8f0e4 14%,
-        #e8d8c4 30%,
-        #d4c4ac 46%,
-        #bfad96 60%,
-        #d4c4ac 74%,
-        #e8d8c4 86%,
-        #f8f0e4 96%
-      );
-      box-shadow:
-        inset 14px 14px 32px rgba(255,255,255,0.80),
-        inset -10px -10px 24px rgba(100,75,40,0.38),
-        0 0 0 3px rgba(255,248,235,0.40),
-        0 30px 80px rgba(0,0,0,0.95),
-        0 0 55px rgba(200,175,130,0.30);
-    }
-    /* 绒面细纹 */
-    .plush-ring::before {
-      content: '';
-      position: absolute; inset: 0;
-      border-radius: 50%;
-      background: repeating-conic-gradient(
-        rgba(255,255,255,0.08) 0deg 2deg,
-        transparent 2deg 4deg
-      );
-      pointer-events: none;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.85);
     }
 
     .wheel-frame {
@@ -1281,7 +1252,7 @@ function loadWheelImage() {
 
 function initCanvas() {
   const iw = window.innerWidth || 375;
-  SIZE = Math.max(220, Math.min(270, iw - 110));
+  SIZE = Math.max(260, Math.min(340, iw - 36));
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   canvas = document.getElementById('wheelCanvas');
   canvas.style.width = SIZE + 'px'; canvas.style.height = SIZE + 'px';
@@ -1345,57 +1316,11 @@ function drawWheel(rot, fast = false) {
   ctx.clearRect(0, 0, SIZE, SIZE);
   const inner = R * INNER_R;
 
-  // ── 直接使用实物图片旋转 ──
-  if (wheelImg) {
-    ctx.save();
-    ctx.translate(CX, CY);
-    ctx.rotate(rot);
-    ctx.beginPath();
-    ctx.arc(0, 0, R, 0, Math.PI * 2);
-    ctx.clip();
-    // 居中正方形裁切，避免非正方形图片被拉伸
-    const iw = wheelImg.naturalWidth  || wheelImg.width;
-    const ih = wheelImg.naturalHeight || wheelImg.height;
-    const sq = Math.min(iw, ih);
-    const sx = (iw - sq) / 2;
-    const sy = (ih - sq) / 2;
-    ctx.drawImage(wheelImg, sx, sy, sq, sq, -R, -R, R * 2, R * 2);
-    ctx.restore();
-  } else {
-    // 图片未加载时降级为纤维绘制
-    segs.forEach((seg) => {
-      const sa = seg.sa + rot, ea = seg.ea + rot;
-      if (ea - sa < 0.005) return;
-      drawFibers(sa, ea, inner, R, getFiberColor(seg), fast);
-    });
-  }
-
-  // ── 食物 emoji / 文字叠加 ──
+  // ── 按食物权重绘制纤维色块 ──
   segs.forEach((seg) => {
-    const sa  = seg.sa + rot;
-    const ea  = seg.ea + rot;
-    const arc = ea - sa;
-    if (arc < 0.08) return;
-    const mid   = (sa + ea) / 2;
-    const tr    = inner + (R - inner) * 0.62;
-    const label = (lang === 'zh' ? seg.zh : seg.en) || seg.zh;
-    ctx.save();
-    ctx.translate(CX + Math.cos(mid) * tr, CY + Math.sin(mid) * tr);
-    ctx.rotate(mid + Math.PI / 2);
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 6;
-    ctx.fillStyle   = '#ffffff';
-    if (arc >= 0.38) {
-      ctx.font = `${Math.min(15, arc * 16)}px sans-serif`;
-      ctx.fillText(seg.emoji, 0, -9);
-      ctx.shadowBlur = 4;
-      ctx.font = `bold ${Math.min(10, arc * 11)}px 'PingFang SC',sans-serif`;
-      ctx.fillText(label.length > 5 ? label.slice(0,5)+'…' : label, 0, 8);
-    } else if (arc >= 0.16) {
-      ctx.font = `${Math.min(16, arc * 24)}px sans-serif`;
-      ctx.fillText(seg.emoji, 0, 0);
-    }
-    ctx.restore();
+    const sa = seg.sa + rot, ea = seg.ea + rot;
+    if (ea - sa < 0.005) return;
+    drawFibers(sa, ea, inner, R, getFiberColor(seg), fast);
   });
 
   // ── 外缘描边 ──
