@@ -326,38 +326,37 @@
       filter: drop-shadow(0 0 6px rgba(255,191,0,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.6));
     }
 
-    /* 毛绒外圈 3D */
+    /* 毛绒外圈 — 奶白色（参考图风格）*/
     .plush-ring {
       border-radius: 50%;
-      padding: 18px;
+      padding: 20px;
       position: relative;
       background: radial-gradient(
-        ellipse at 33% 26%,
-        #f2e8ff 0%,
-        #e0d0f6 12%,
-        #cbbde8 25%,
-        #b5a6d4 40%,
-        #a090c2 54%,
-        #b5a6d4 68%,
-        #cbbde8 80%,
-        #ddd0f2 92%
+        ellipse at 36% 28%,
+        #ffffff 0%,
+        #f8f0e4 14%,
+        #e8d8c4 30%,
+        #d4c4ac 46%,
+        #bfad96 60%,
+        #d4c4ac 74%,
+        #e8d8c4 86%,
+        #f8f0e4 96%
       );
       box-shadow:
-        inset 12px 12px 32px rgba(255,255,255,0.55),
-        inset -10px -10px 26px rgba(0,0,0,0.52),
-        inset 0 0 40px rgba(120,90,180,0.12),
-        0 0 0 3px rgba(235,218,255,0.28),
-        0 28px 72px rgba(0,0,0,0.92),
-        0 0 60px rgba(160,130,220,0.3);
+        inset 14px 14px 32px rgba(255,255,255,0.80),
+        inset -10px -10px 24px rgba(100,75,40,0.38),
+        0 0 0 3px rgba(255,248,235,0.40),
+        0 30px 80px rgba(0,0,0,0.95),
+        0 0 55px rgba(200,175,130,0.30);
     }
-    /* 毛绒表面细纹 */
+    /* 绒面细纹 */
     .plush-ring::before {
       content: '';
       position: absolute; inset: 0;
       border-radius: 50%;
       background: repeating-conic-gradient(
-        rgba(255,255,255,0.055) 0deg 2.5deg,
-        transparent 2.5deg 5deg
+        rgba(255,255,255,0.08) 0deg 2deg,
+        transparent 2deg 4deg
       );
       pointer-events: none;
     }
@@ -372,23 +371,23 @@
       transform: translate(-50%, -50%);
       width: 68px; height: 68px; border-radius: 50%;
       background: radial-gradient(circle at 36% 32%,
-        #ffffff 0%, #f5f0ff 25%, #c8bfe8 60%, #8878c0 100%);
+        #fff9f0 0%, #f0e4d0 30%, #dcc8b0 65%, #b8a484 100%);
       border: none; cursor: pointer;
-      font-size: 13px; font-weight: 900; color: #2a1a4e;
+      font-size: 13px; font-weight: 900; color: #4a3010;
       font-family: 'ZCOOL KuaiLe', inherit; letter-spacing: 0.5px;
       box-shadow:
-        0 4px 20px rgba(0,0,0,0.5),
-        inset 0 2px 4px rgba(255,255,255,0.9),
-        inset 0 -2px 4px rgba(0,0,0,0.2),
-        0 0 0 2px rgba(255,255,255,0.2);
+        0 4px 20px rgba(0,0,0,0.55),
+        inset 0 3px 6px rgba(255,255,255,0.85),
+        inset 0 -3px 6px rgba(80,50,10,0.3),
+        0 0 0 2px rgba(255,240,210,0.4);
       transition: transform 0.15s, box-shadow 0.15s;
       z-index: 5;
     }
     .spin-btn:hover:not(:disabled) {
       transform: translate(-50%, -50%) scale(1.08);
-      box-shadow: 0 8px 28px rgba(180,150,220,0.6),
-        inset 0 2px 4px rgba(255,255,255,0.9),
-        0 0 0 2px rgba(255,255,255,0.3);
+      box-shadow: 0 8px 28px rgba(160,120,60,0.5),
+        inset 0 3px 6px rgba(255,255,255,0.9),
+        0 0 0 2px rgba(255,240,210,0.6);
     }
     .spin-btn:active:not(:disabled) { transform: translate(-50%, -50%) scale(0.94); }
     .spin-btn:disabled { opacity: 0.55; cursor: default; }
@@ -1236,20 +1235,39 @@ function getWeight(f, mealType = null, weather = null) {
 // ══════════════════════════════════════════════════════
 //  Canvas 转盘
 // ══════════════════════════════════════════════════════
-const GRADIENT_PAIRS = [
-  ['#FF7F7F','#FF5555'],  // 软红
-  ['#FFB07A','#FF8C45'],  // 暖橙
-  ['#FFE066','#FFD020'],  // 阳光黄
-  ['#7DD98A','#4EC45C'],  // 嫩绿
-  ['#5ED8CE','#2DBDB3'],  // 薄荷青
-  ['#7EC8FF','#4AABFF'],  // 天蓝
-  ['#B8AAFF','#8F7EFF'],  // 薰衣草紫
-  ['#FF9EC4','#FF6DA0'],  // 粉红
-  ['#FFD98A','#FFC050'],  // 金黄
-  ['#FF9A80','#FF6B55'],  // 珊瑚橙
-  ['#72F0C8','#3DDBA8'],  // 薄荷绿
-  ['#90E8E8','#55D0D0'],  // 浅青
+// 参考图6色系（按食物分类）
+const FIBER_COLORS = [
+  '#DC2626',  // 0 红 — 辣/烤/热
+  '#EA580C',  // 1 橙 — 快餐/面点/小吃
+  '#D97706',  // 2 黄 — 面/饭/主食
+  '#16A34A',  // 3 绿 — 健康/清淡
+  '#1D4ED8',  // 4 蓝 — 海鲜/精致
+  '#0891B2',  // 5 青 — 汤/锅/饮品
 ];
+
+function getFiberColor(food) {
+  const z = food.zh;
+  // 红：辣/烤/炸/串
+  if (['烤肉','麻辣烫','螺蛳粉','KFC','川菜','湘菜','羊肉串','钵钵鸡','酸辣粉','烤羊腿',
+       '小龙虾','串串香','麻辣香锅','重庆火锅','炸鸡','牛排','烤鱼'].includes(z))
+    return FIBER_COLORS[0];
+  // 橙：快餐/面包/肉夹
+  if (['麦当劳','煎饼果子','烤冷面','肉夹馍','羊肉泡馍','烤鸭','黄焖鸡米饭','炸酱面',
+       '盖浇饭','披萨','广式早茶','生煎包','热干面'].includes(z))
+    return FIBER_COLORS[1];
+  // 黄：面/饭/包
+  if (['拉面','板面','扬州炒饭','煲仔饭','包子','河粉','肠粉','刀削面',
+       '水饺','简餐','小笼包','炒菜'].includes(z))
+    return FIBER_COLORS[2];
+  // 绿：健康/蔬菜/清淡
+  if (['轻食沙拉','凉皮','杭帮菜','东北菜','酸菜鱼'].includes(z))
+    return FIBER_COLORS[3];
+  // 蓝：海鲜/精致菜系
+  if (['日料','粤菜','海鲜砂锅粥','椰子鸡','砂锅','铁锅炖','徽菜','自助餐'].includes(z))
+    return FIBER_COLORS[4];
+  // 青：汤/锅/饮品/其他
+  return FIBER_COLORS[5];
+}
 let canvas, ctx, CX, CY, R, SIZE, segs = [], rotation = 0, activeFoods = [], totalW = 0;
 let _appStarted = false;
 
@@ -1267,61 +1285,77 @@ function initCanvas() {
 }
 
 const GAP_ANGLE = 0;
-const INNER_R = 0.30;
+const INNER_R = 0.28;
 
-// 颜色亮度调节（factor>1加亮，<1变暗）
+// 颜色亮度调节
 function adjColor(hex, factor) {
   const n = parseInt(hex.replace('#',''), 16);
   const r = Math.min(255, Math.round(((n>>16)&255) * factor));
   const g = Math.min(255, Math.round(((n>>8)&255)  * factor));
   const b = Math.min(255, Math.round((n&255)        * factor));
-  return `rgba(${r},${g},${b},1)`;
+  return `rgb(${r},${g},${b})`;
 }
 
-function drawWheel(rot) {
+// 绘制绒线纤维（放射状细线，批量描绘提高性能）
+function drawFibers(sa, ea, inner, outer, color, fast) {
+  // 底色填充
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(CX, CY, inner, sa, ea);
+  ctx.arc(CX, CY, outer, ea, sa, true);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.restore();
+
+  if (fast) return; // 旋转中只填底色，停止后才画纤维
+
+  const arcLen = (ea - sa) * outer;
+  const num = Math.max(3, Math.floor(arcLen / 1.9));
+  // 3档亮度分批绘制（减少 strokeStyle 切换次数）
+  [[0, 0.82], [1, 1.05], [2, 1.28]].forEach(([off, bright]) => {
+    ctx.beginPath();
+    for (let i = off; i <= num; i += 3) {
+      const angle = sa + (ea - sa) * (i / num);
+      const wob   = Math.sin(i * 7.13 + angle * 4) * 0.010;
+      const r1    = inner + 1;
+      const r2    = outer - 2 - Math.abs(Math.cos(i * 3.7)) * 4;
+      ctx.moveTo(CX + Math.cos(angle + wob) * r1, CY + Math.sin(angle + wob) * r1);
+      ctx.lineTo(CX + Math.cos(angle)       * r2, CY + Math.sin(angle)       * r2);
+    }
+    ctx.strokeStyle = adjColor(color, bright);
+    ctx.lineWidth   = 1.7;
+    ctx.globalAlpha = 0.55;
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+}
+
+function drawWheel(rot, fast = false) {
   if (!ctx) return;
   ctx.clearRect(0, 0, SIZE, SIZE);
   const inner = R * INNER_R;
 
-  // ── 扇区（3D 毛绒凸起效果，无分割线）──
-  segs.forEach((seg, i) => {
-    const sa = seg.sa + rot;
-    const ea = seg.ea + rot;
+  // ── 扇区（绒线纤维纹理）──
+  segs.forEach((seg) => {
+    const sa  = seg.sa + rot;
+    const ea  = seg.ea + rot;
     if (ea - sa < 0.005) return;
-    const mid = (sa + ea) / 2;
-    const pair = GRADIENT_PAIRS[i % GRADIENT_PAIRS.length];
+    const color = getFiberColor(seg);
+    drawFibers(sa, ea, inner, R, color, fast);
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(CX, CY, inner, sa, ea);
-    ctx.arc(CX, CY, R,     ea, sa, true);
-    ctx.closePath();
-
-    // 径向渐变：段落中心高亮 → 边缘变暗，模拟毛绒鼓起感
-    const midR  = inner + (R - inner) * 0.52;
-    const midX  = CX + Math.cos(mid) * midR;
-    const midY  = CY + Math.sin(mid) * midR;
-    const gradR = (R - inner) * 0.72;
-    const rg = ctx.createRadialGradient(midX, midY, 0, midX, midY, gradR);
-    rg.addColorStop(0,    adjColor(pair[0], 1.45));   // 高光中心
-    rg.addColorStop(0.38, pair[0]);
-    rg.addColorStop(0.75, pair[1]);
-    rg.addColorStop(1,    adjColor(pair[1], 0.60));   // 边缘暗部
-    ctx.fillStyle = rg;
-    ctx.fill();
-    ctx.restore();
-
-    // 文字 / emoji
+    // emoji / 文字
     const arc = ea - sa;
     if (arc < 0.08) return;
-    const tr = inner + (R - inner) * 0.60;
-    const tx2 = CX + Math.cos(mid) * tr, ty2 = CY + Math.sin(mid) * tr;
+    const mid = (sa + ea) / 2;
+    const tr  = inner + (R - inner) * 0.62;
     const label = (lang === 'zh' ? seg.zh : seg.en) || seg.zh;
     ctx.save();
-    ctx.translate(tx2, ty2); ctx.rotate(mid + Math.PI / 2);
+    ctx.translate(CX + Math.cos(mid) * tr, CY + Math.sin(mid) * tr);
+    ctx.rotate(mid + Math.PI / 2);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.65)'; ctx.shadowBlur = 4;
-    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.shadowColor = 'rgba(0,0,0,0.75)'; ctx.shadowBlur = 4;
+    ctx.fillStyle   = 'rgba(255,255,255,0.95)';
     if (arc >= 0.38) {
       ctx.font = `${Math.min(15, arc * 16)}px sans-serif`;
       ctx.fillText(seg.emoji, 0, -9);
@@ -1335,41 +1369,46 @@ function drawWheel(rot) {
     ctx.restore();
   });
 
-  // ── 球面高光叠加（让整个轮盘呈现3D弧面感）──
-  const sph = ctx.createRadialGradient(
-    CX - R * 0.22, CY - R * 0.28, 0,
-    CX,            CY,            R
-  );
-  sph.addColorStop(0,    'rgba(255,255,255,0.32)');
-  sph.addColorStop(0.30, 'rgba(255,255,255,0.10)');
-  sph.addColorStop(0.60, 'rgba(0,0,0,0.0)');
-  sph.addColorStop(1,    'rgba(0,0,0,0.26)');
+  // ── 外缘暗圈（增强轮盘边界感）──
   ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2);
-  ctx.fillStyle = sph; ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 4; ctx.stroke();
 
-  // ── 外缘暗边（增加厚度感）──
-  ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 4; ctx.stroke();
-
-  // ── 中心旋钮（金属质感）──
-  const hubR = inner * 1.08;
-  const hub = ctx.createRadialGradient(
+  // ── 中心圆顶（奶白色毛绒，参考图风格）──
+  const hubR = inner * 1.10;
+  const hub  = ctx.createRadialGradient(
     CX - hubR * 0.30, CY - hubR * 0.35, 1,
     CX, CY, hubR
   );
-  hub.addColorStop(0,    '#ffffff');
-  hub.addColorStop(0.18, '#f8f0ff');
-  hub.addColorStop(0.50, '#c8b8f0');
-  hub.addColorStop(0.80, '#8868c8');
-  hub.addColorStop(1,    '#3c2870');
+  hub.addColorStop(0,    '#fff9f0');
+  hub.addColorStop(0.28, '#f5ead8');
+  hub.addColorStop(0.62, '#dcc8b0');
+  hub.addColorStop(0.88, '#c0aa8a');
+  hub.addColorStop(1,    '#a08868');
   ctx.beginPath(); ctx.arc(CX, CY, hubR, 0, Math.PI * 2);
   ctx.fillStyle = hub; ctx.fill();
-  // 旋钮高光环
+
+  // 圆顶放射纤维
+  if (!fast) {
+    const hf = 28;
+    ctx.globalAlpha = 0.35;
+    for (let i = 0; i < hf; i++) {
+      const a      = (i / hf) * Math.PI * 2;
+      const bright = 0.85 + (i % 3) * 0.14;
+      ctx.beginPath();
+      ctx.moveTo(CX, CY);
+      ctx.lineTo(CX + Math.cos(a) * (hubR - 1), CY + Math.sin(a) * (hubR - 1));
+      ctx.strokeStyle = adjColor('#d4c0a0', bright);
+      ctx.lineWidth   = 1.2;
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // 圆顶高光环
   ctx.beginPath(); ctx.arc(CX, CY, hubR, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2; ctx.stroke();
-  // 旋钮外圈阴影
-  ctx.beginPath(); ctx.arc(CX, CY, hubR + 2, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,248,230,0.65)'; ctx.lineWidth = 2;   ctx.stroke();
+  ctx.beginPath(); ctx.arc(CX, CY, hubR + 1.5, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';       ctx.lineWidth = 2.5; ctx.stroke();
 }
 
 function buildSegsWithWeather(mealType, weather) {
@@ -1452,7 +1491,7 @@ function spin() {
   requestAnimationFrame(function frame(now) {
     const prog = Math.min((now - t0) / 4800, 1);
     rotation = startRot + (target - startRot) * easeOut(prog);
-    drawWheel(rotation);
+    drawWheel(rotation, true);   // 旋转中快速渲染
     if (prog < 1) { requestAnimationFrame(frame); }
     else {
       rotation = target; animating = false;
