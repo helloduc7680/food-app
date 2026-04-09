@@ -279,11 +279,12 @@
     .cta-btn:active { transform: translateY(1px);  box-shadow: 0 3px 12px rgba(255,191,0,0.35); }
 
     /* ─────────────────────────────────────────────
-       WHEEL SCREEN  (retained from original)
+       WHEEL SCREEN
     ───────────────────────────────────────────── */
     #screen-wheel {
       position: fixed; inset: 0;
       display: flex; flex-direction: column;
+      background: var(--bg);
       opacity: 0; pointer-events: none;
       transition: opacity 0.4s;
       z-index: 50;
@@ -291,75 +292,88 @@
     #screen-wheel.active { opacity: 1; pointer-events: auto; }
 
     .wheel-top-zone {
-      background: var(--bg);
-      flex: 0 0 44%;
+      background: transparent;
+      flex: 0 0 auto;
       position: relative;
-      display: flex; flex-direction: column;
-      justify-content: flex-end;
-      padding: 0 24px 24px;
+      padding: calc(var(--safe-top) + 58px) 28px 16px;
     }
     .wheel-eyebrow {
-      font-size: 11px; color: rgba(255,255,255,0.38);
-      letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 8px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 6px; opacity: 0.85;
     }
     .wheel-big-title {
-      font-size: clamp(2.4rem, 9vw, 3.8rem);
+      font-size: clamp(1.8rem, 7vw, 2.6rem);
       font-weight: 900; line-height: 1.1;
-      font-family: 'Nunito', 'PingFang SC', sans-serif;
+      font-family: 'ZCOOL KuaiLe', 'PingFang SC', 'Noto Sans SC', sans-serif;
       color: var(--gold);
+      letter-spacing: 2px;
+      text-shadow: 3px 4px 0 rgba(0,0,0,0.7), 0 0 40px rgba(255,191,0,0.22);
     }
 
     .wheel-bottom-zone {
       flex: 1;
-      background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a16 100%);
+      background: transparent;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 14px;
-      padding-bottom: calc(20px + var(--safe-bot));
-      position: relative; overflow: hidden;
-    }
-    .wheel-bottom-zone::before {
-      content: '';
-      position: absolute; width: 120%; height: 120%;
-      background: radial-gradient(ellipse at center,
-        rgba(139,92,246,0.12) 0%, rgba(6,182,212,0.08) 40%, transparent 70%);
-      pointer-events: none;
+      gap: 10px;
+      padding-bottom: calc(24px + var(--safe-bot));
     }
 
-    .pointer-neon {
+    .pointer-gold {
       position: relative; z-index: 2;
-      filter: drop-shadow(0 0 8px #c084fc) drop-shadow(0 0 20px #a855f7);
+      filter: drop-shadow(0 0 6px rgba(255,191,0,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.6));
     }
+
+    /* 毛绒外圈 */
+    .plush-ring {
+      border-radius: 50%;
+      padding: 14px;
+      background: conic-gradient(
+        from 30deg,
+        #d4c6e4 0%,   #e6d8f6 10%,
+        #cbbdd8 20%,  #ddd0ee 32%,
+        #c6b8d2 44%,  #e0d4f0 56%,
+        #c2b4ce 68%,  #d8ccec 80%,
+        #cec0de 90%,  #d4c6e4 100%
+      );
+      box-shadow:
+        inset 0 4px 14px rgba(255,255,255,0.18),
+        inset 0 -4px 14px rgba(0,0,0,0.25),
+        0 0 0 3px rgba(210,190,235,0.35),
+        0 22px 60px rgba(0,0,0,0.85),
+        0 0 50px rgba(180,150,220,0.25);
+    }
+
     .wheel-frame {
       position: relative; border-radius: 50%;
-      box-shadow:
-        0 0 0 2px rgba(139,92,246,0.3),
-        0 0 40px rgba(139,92,246,0.2),
-        0 16px 48px rgba(0,0,0,0.6);
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.35);
     }
     #wheelCanvas { display: block; border-radius: 50%; }
 
     .spin-btn {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 72px; height: 72px; border-radius: 50%;
-      background: radial-gradient(circle at 38% 35%,
-        #ffffff 0%, #e8eaf6 30%, #9fa8da 70%, #5c6bc0 100%);
+      width: 68px; height: 68px; border-radius: 50%;
+      background: radial-gradient(circle at 36% 32%,
+        #ffffff 0%, #f5f0ff 25%, #c8bfe8 60%, #8878c0 100%);
       border: none; cursor: pointer;
-      font-size: 13px; font-weight: 900; color: #1a1a3e;
-      font-family: inherit; letter-spacing: 0.5px;
+      font-size: 13px; font-weight: 900; color: #2a1a4e;
+      font-family: 'ZCOOL KuaiLe', inherit; letter-spacing: 0.5px;
       box-shadow:
         0 4px 20px rgba(0,0,0,0.5),
-        inset 0 1px 3px rgba(255,255,255,0.8),
-        0 0 0 2px rgba(255,255,255,0.15);
+        inset 0 2px 4px rgba(255,255,255,0.9),
+        inset 0 -2px 4px rgba(0,0,0,0.2),
+        0 0 0 2px rgba(255,255,255,0.2);
       transition: transform 0.15s, box-shadow 0.15s;
       z-index: 5;
     }
     .spin-btn:hover:not(:disabled) {
       transform: translate(-50%, -50%) scale(1.08);
-      box-shadow: 0 8px 28px rgba(139,92,246,0.5),
-        inset 0 1px 3px rgba(255,255,255,0.9),
-        0 0 0 2px rgba(255,255,255,0.25);
+      box-shadow: 0 8px 28px rgba(180,150,220,0.6),
+        inset 0 2px 4px rgba(255,255,255,0.9),
+        0 0 0 2px rgba(255,255,255,0.3);
     }
     .spin-btn:active:not(:disabled) { transform: translate(-50%, -50%) scale(0.94); }
     .spin-btn:disabled { opacity: 0.55; cursor: default; }
@@ -771,15 +785,17 @@
       <div></div>
     </div>
     <div class="wheel-eyebrow" id="wheelEyebrow">让命运决定</div>
-    <div class="wheel-big-title" id="wheelTitle">转动<br>轮盘！</div>
+    <div class="wheel-big-title" id="wheelTitle">转动轮盘！</div>
   </div>
   <div class="wheel-bottom-zone">
-    <svg class="pointer-neon" width="48" height="44" viewBox="0 0 48 44">
-      <path d="M24 40 L4 4 L44 4 Z" fill="rgba(192,132,252,0.18)" stroke="#c084fc" stroke-width="3" stroke-linejoin="round"/>
+    <svg class="pointer-gold" width="36" height="32" viewBox="0 0 36 32">
+      <path d="M18 28 L3 3 L33 3 Z" fill="#FFBF00" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
     </svg>
-    <div class="wheel-frame">
-      <canvas id="wheelCanvas"></canvas>
-      <button class="spin-btn" id="spinBtn" onclick="spin()">转！</button>
+    <div class="plush-ring">
+      <div class="wheel-frame">
+        <canvas id="wheelCanvas"></canvas>
+        <button class="spin-btn" id="spinBtn" onclick="spin()">转！</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1206,17 +1222,25 @@ function getWeight(f, mealType = null, weather = null) {
 //  Canvas 转盘
 // ══════════════════════════════════════════════════════
 const GRADIENT_PAIRS = [
-  ['#8b5cf6','#06b6d4'],['#10b981','#06b6d4'],['#8b5cf6','#ec4899'],
-  ['#06b6d4','#10b981'],['#ec4899','#8b5cf6'],['#4f46e5','#06b6d4'],
-  ['#10b981','#8b5cf6'],['#06b6d4','#4f46e5'],['#a855f7','#ec4899'],
-  ['#0ea5e9','#10b981'],['#ec4899','#f59e0b'],['#6366f1','#8b5cf6'],
+  ['#FF7F7F','#FF5555'],  // 软红
+  ['#FFB07A','#FF8C45'],  // 暖橙
+  ['#FFE066','#FFD020'],  // 阳光黄
+  ['#7DD98A','#4EC45C'],  // 嫩绿
+  ['#5ED8CE','#2DBDB3'],  // 薄荷青
+  ['#7EC8FF','#4AABFF'],  // 天蓝
+  ['#B8AAFF','#8F7EFF'],  // 薰衣草紫
+  ['#FF9EC4','#FF6DA0'],  // 粉红
+  ['#FFD98A','#FFC050'],  // 金黄
+  ['#FF9A80','#FF6B55'],  // 珊瑚橙
+  ['#72F0C8','#3DDBA8'],  // 薄荷绿
+  ['#90E8E8','#55D0D0'],  // 浅青
 ];
 let canvas, ctx, CX, CY, R, SIZE, segs = [], rotation = 0, activeFoods = [], totalW = 0;
 let _appStarted = false;
 
 function initCanvas() {
   const iw = window.innerWidth || 375;
-  SIZE = Math.max(240, Math.min(300, iw - 80));
+  SIZE = Math.max(220, Math.min(270, iw - 110));
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   canvas = document.getElementById('wheelCanvas');
   canvas.style.width = SIZE + 'px'; canvas.style.height = SIZE + 'px';
@@ -1234,10 +1258,6 @@ function drawWheel(rot) {
   if (!ctx) return;
   ctx.clearRect(0, 0, SIZE, SIZE);
   const inner = R * INNER_R;
-  const bgGrad = ctx.createRadialGradient(CX, CY, 0, CX, CY, R + 6);
-  bgGrad.addColorStop(0, '#1e1b4b'); bgGrad.addColorStop(1, '#0a0a16');
-  ctx.beginPath(); ctx.arc(CX, CY, R + 4, 0, Math.PI * 2);
-  ctx.fillStyle = bgGrad; ctx.fill();
 
   segs.forEach((seg, i) => {
     const sa = seg.sa + rot + GAP_ANGLE / 2;
@@ -1253,9 +1273,9 @@ function drawWheel(rot) {
     const gx1 = CX + Math.cos(mid) * inner, gy1 = CY + Math.sin(mid) * inner;
     const gx2 = CX + Math.cos(mid) * R,     gy2 = CY + Math.sin(mid) * R;
     const grad = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
-    grad.addColorStop(0, pair[0] + 'cc'); grad.addColorStop(0.4, pair[0]); grad.addColorStop(1, pair[1]);
+    grad.addColorStop(0, pair[0]); grad.addColorStop(1, pair[1]);
     ctx.fillStyle = grad; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2; ctx.stroke();
     ctx.restore();
     const arc = ea - sa;
     if (arc < 0.08) return;
@@ -1278,7 +1298,7 @@ function drawWheel(rot) {
   });
 
   ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 5; ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 3; ctx.stroke();
 
   const pearl = ctx.createRadialGradient(CX - inner*0.28, CY - inner*0.28, 1, CX, CY, inner);
   pearl.addColorStop(0,'#ffffff'); pearl.addColorStop(0.25,'#eef0ff');
