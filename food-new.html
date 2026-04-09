@@ -1120,9 +1120,34 @@ function isRainyWeather(code) {
 async function getWeather() {
   const now = Date.now();
   if (weatherCache && now - weatherCacheTime < 3600000) return weatherCache;
+
+  let lat, lon;
+
+  // 1. 先尝试 GPS
   try {
-    const pos = await new Promise((res,rej) => navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
-    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current=weather_code,temperature_2m&timezone=auto`);
+    const pos = await new Promise((res, rej) =>
+      navigator.geolocation.getCurrentPosition(res, rej, { timeout: 6000 })
+    );
+    lat = pos.coords.latitude;
+    lon = pos.coords.longitude;
+  } catch(e) {
+    // 2. GPS 失败，改用 IP 定位兜底
+    try {
+      const loadEl = document.getElementById('wcLoadText');
+      if (loadEl) loadEl.textContent = lang === 'zh' ? 'IP定位中…' : 'IP locating…';
+      const ipRes = await fetch('https://ipwho.is/');
+      const ipData = await ipRes.json();
+      if (ipData.success && ipData.latitude) {
+        lat = ipData.latitude;
+        lon = ipData.longitude;
+      }
+    } catch(e2) { return null; }
+  }
+
+  if (!lat || !lon) return null;
+
+  try {
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,temperature_2m&timezone=auto`);
     if (!r.ok) throw new Error();
     const d = await r.json();
     weatherCache = { code: d.current.weather_code, temp: d.current.temperature_2m };
