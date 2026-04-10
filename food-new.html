@@ -2025,7 +2025,7 @@ function openDianping(kw) {
   const enc = encodeURIComponent(kw);
   copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
   const ua = navigator.userAgent;
-  const h5Url = `https://www.dianping.com/search/keyword/${enc}`;
+  const h5Url = `https://www.dianping.com/search/keyword/0/10/${enc}`;
   if (isWechat()) { showWxGuide(); return; }
   if (/Android/i.test(ua)) {
     /* 安卓直接跳手机版，冷唤醒不稳定；关键词已复制可在App内粘贴 */
