@@ -563,6 +563,12 @@
     .tag.past    { background: rgba(255,165,2,0.15);  color: #ffa502; border-color: rgba(255,165,2,0.3); }
     .tag.meal    { background: rgba(76,175,80,0.15);  color: #66bb6a; border-color: rgba(76,175,80,0.3); }
     .tag.weather { background: rgba(100,200,255,0.1); color: #64c8ff; border-color: rgba(100,200,255,0.25); }
+    .tag.weather-rec { font-family: 'ZCOOL KuaiLe', sans-serif; font-size: 12px; letter-spacing: 0.5px; }
+    .tag.weather-rec.score5 { background: rgba(255,191,0,0.15); color: #FFD700; border-color: rgba(255,191,0,0.4); }
+    .tag.weather-rec.score4 { background: rgba(76,217,100,0.12); color: #4CD964; border-color: rgba(76,217,100,0.35); }
+    .tag.weather-rec.score3 { background: rgba(180,180,180,0.1); color: #aaa; border-color: rgba(180,180,180,0.25); }
+    .tag.weather-rec.score2 { background: rgba(255,149,0,0.12); color: #FF9500; border-color: rgba(255,149,0,0.35); }
+    .tag.weather-rec.score1 { background: rgba(255,59,48,0.12); color: #FF6B6B; border-color: rgba(255,59,48,0.35); }
 
     .result-action-row { display: flex; gap: 10px; margin-bottom: 12px; }
     .action-chip {
@@ -1455,6 +1461,54 @@ let weatherCache = null, weatherCacheTime = 0;
 function isRainyWeather(code) {
   return [51,53,55,61,63,65,71,73,75,77,80,81,82,85,86].includes(code);
 }
+
+function getWeatherRecScore(food) {
+  const w = currentWeather;
+  if (!w) return null;
+  const { code, temp } = w;
+  const isRainy  = isRainyWeather(code);
+  const isSnowy  = [71,73,75,77,85,86].includes(code);
+  const isStorm  = [95,96,99].includes(code);
+  const isHot    = temp > 30;
+  const isComfort= temp >= 14 && temp <= 26;
+  const isCool   = temp >= 5 && temp < 14;
+  const isCold   = temp < 5;
+
+  const nameText = food.isCooking
+    ? (food.dishes||[]).map(d => d.name).join('')
+    : (food.zh||'') + (food.kw ? (food.kw.zh||'') : '');
+
+  const isWarmFood = /汤|火锅|热锅|红烧|炖|煮|焖|涮|暖/.test(nameText);
+  const isCoolFood = /凉拌|冷|冰|沙拉|刺身|寿司/.test(nameText);
+  const isLight   = /清炒|蔬菜|素|轻食|沙拉|豆腐|清/.test(nameText);
+
+  let score, label, emoji;
+
+  if (isHot) {
+    if (isCoolFood || isLight) { score=5; label='消暑绝配'; emoji='☀️'; }
+    else if (isWarmFood)       { score=1; label='高温不宜'; emoji='🌡️'; }
+    else                       { score=3; label='天气尚可'; emoji='☀️'; }
+  } else if (isRainy || isStorm) {
+    if (isWarmFood)   { score=5; label='雨天绝配'; emoji='🌧️'; }
+    else if (isCoolFood) { score=2; label='雨天欠佳'; emoji='🌧️'; }
+    else              { score=4; label='雨天适合'; emoji='🌦️'; }
+  } else if (isSnowy || isCold) {
+    if (isWarmFood)   { score=5; label='驱寒首选'; emoji='❄️'; }
+    else if (isCoolFood) { score=1; label='寒天不宜'; emoji='🥶'; }
+    else              { score=3; label='寒天一般'; emoji='❄️'; }
+  } else if (isCool) {
+    if (isWarmFood)   { score=4; label='凉爽适配'; emoji='🍃'; }
+    else              { score=3; label='天气适中'; emoji='🌤️'; }
+  } else if (isComfort) {
+    if (isCoolFood)   { score=4; label='天气推荐'; emoji='🌈'; }
+    else              { score=5; label='天气绝配'; emoji='😊'; }
+  } else {
+                        score=3; label='天气一般'; emoji='🌥️';
+  }
+
+  const stars = '★'.repeat(score) + '☆'.repeat(5-score);
+  return { score, label, emoji, stars };
+}
 async function getWeather() {
   const now = Date.now();
   if (weatherCache && now - weatherCacheTime < 3600000) return weatherCache;
@@ -1896,22 +1950,12 @@ function buildTags(food) {
       if (label) html += `<span class="tag meal">${label}</span>`;
     });
   }
-  if (currentSeg && currentSeg.weather) {
+  const rec = getWeatherRecScore(food);
+  if (rec) {
+    html += `<span class="tag weather-rec score${rec.score}">${rec.emoji} ${rec.stars} ${rec.label}</span>`;
+  } else if (currentSeg && currentSeg.weather) {
     const w = currentSeg.weather;
-    function wLabel(code) {
-      if (code===0) return tx.weatherClear;
-      if ([1,2,3].includes(code)) return tx.weatherPartly;
-      if ([45,48].includes(code)) return tx.weatherFog;
-      if ([51,53,55].includes(code)) return tx.weatherDrizzle;
-      if ([61,63,65,71,73,75,77,80,81,82,85,86].includes(code)) return tx.weatherRainDesc;
-      if ([95,96,99].includes(code)) return tx.weatherThunder;
-      return tx.weatherOvercast;
-    }
-    html += `<span class="tag weather">${wLabel(w.code)} ${Math.round(w.temp)}°C</span>`;
-    const kw = food.kw ? (food.kw.zh||'') : '';
-    if (isRainyWeather(w.code) && (kw.includes('汤')||kw.includes('火锅'))) html += `<span class="tag weather">${tx.weatherRainy}</span>`;
-    else if (w.temp > 30) html += `<span class="tag weather">${tx.weatherHot}</span>`;
-    else if (w.temp < 5) html += `<span class="tag weather">${tx.weatherCold}</span>`;
+    html += `<span class="tag weather">🌤️ ${Math.round(w.temp)}°C</span>`;
   }
   return html;
 }
@@ -1926,7 +1970,9 @@ function rerenderResult() {
   if (food.isCooking && food.dishes) {
     // 菜谱模式
     document.getElementById('rDesc').textContent = '';
-    document.getElementById('tagsRow').innerHTML = `<span class="tag meal">🍳 自己动手</span><span class="tag meal">⏱ ${currentCookTime}分钟</span>`;
+    const cookRec = getWeatherRecScore(food);
+    const recTag = cookRec ? `<span class="tag weather-rec score${cookRec.score}">${cookRec.emoji} ${cookRec.stars} ${cookRec.label}</span>` : '';
+    document.getElementById('tagsRow').innerHTML = `<span class="tag meal">🍳 自己动手</span><span class="tag meal">⏱ ${currentCookTime}分钟</span>${recTag}`;
     document.getElementById('actionRow').style.display = 'none';
     document.getElementById('mapPanel').innerHTML = '';
     document.getElementById('deliveryPanel').innerHTML = '';
