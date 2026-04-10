@@ -1269,17 +1269,33 @@ async function getWeather() {
     lat = pos.coords.latitude;
     lon = pos.coords.longitude;
   } catch(e) {
-    // 2. GPS 失败，改用 IP 定位兜底
-    try {
-      const loadEl = document.getElementById('wcLoadText');
-      if (loadEl) loadEl.textContent = lang === 'zh' ? 'IP定位中…' : 'IP locating…';
-      const ipRes = await fetch('https://ipwho.is/');
-      const ipData = await ipRes.json();
-      if (ipData.success && ipData.latitude) {
-        lat = ipData.latitude;
-        lon = ipData.longitude;
-      }
-    } catch(e2) { return null; }
+    // 2. GPS 失败，依次尝试多个 IP 定位服务
+    const loadEl = document.getElementById('wcLoadText');
+    if (loadEl) loadEl.textContent = lang === 'zh' ? 'IP定位中…' : 'IP locating…';
+    const ipServices = [
+      async () => {
+        const r = await fetch('https://ip-api.com/json/?fields=lat,lon,status', { signal: AbortSignal.timeout(5000) });
+        const d = await r.json();
+        if (d.status === 'success') return { lat: d.lat, lon: d.lon };
+      },
+      async () => {
+        const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
+        const d = await r.json();
+        if (d.latitude) return { lat: d.latitude, lon: d.longitude };
+      },
+      async () => {
+        const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(5000) });
+        const d = await r.json();
+        if (d.success && d.latitude) return { lat: d.latitude, lon: d.longitude };
+      },
+    ];
+    for (const svc of ipServices) {
+      try {
+        const result = await svc();
+        if (result) { lat = result.lat; lon = result.lon; break; }
+      } catch(e2) { continue; }
+    }
+    if (!lat || !lon) return null;
   }
 
   if (!lat || !lon) return null;
