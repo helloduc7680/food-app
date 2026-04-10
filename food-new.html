@@ -38,6 +38,28 @@
     .cp { position: absolute; top: -20px; animation: cpFall linear forwards; }
     @keyframes cpFall { to { transform: translate(var(--dx), 110vh) rotate(var(--dr)); opacity: 0; } }
 
+    /* ── 微信浏览器引导蒙层 ── */
+    #wx-guide {
+      display: none; position: fixed; inset: 0; z-index: 99999;
+      background: rgba(0,0,0,0.82); align-items: flex-start; justify-content: flex-end;
+    }
+    #wx-guide.show { display: flex; }
+    .wx-guide-box {
+      margin: 14px 18px 0 0; background: #fff; border-radius: 16px;
+      padding: 18px 20px 16px; max-width: 260px; text-align: center; position: relative;
+    }
+    .wx-guide-arrow {
+      position: absolute; top: -22px; right: 28px;
+      font-size: 28px; line-height: 1;
+    }
+    .wx-guide-title { font-size: 15px; font-weight: 700; color: #222; margin-bottom: 8px; }
+    .wx-guide-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
+    .wx-guide-close {
+      display: inline-block; background: #07c160; color: #fff;
+      border: none; border-radius: 20px; padding: 8px 28px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+
     /* ── Toast ── */
     #toast {
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
@@ -858,6 +880,16 @@
 
 <div class="confetti-wrap" id="confetti"></div>
 <div id="toast"></div>
+
+<!-- 微信浏览器引导蒙层 -->
+<div id="wx-guide" onclick="document.getElementById('wx-guide').classList.remove('show')">
+  <div class="wx-guide-box" onclick="event.stopPropagation()">
+    <div class="wx-guide-arrow">↗️</div>
+    <div class="wx-guide-title">请在浏览器中打开</div>
+    <div class="wx-guide-desc">微信内置浏览器无法直接跳转到其他 App<br>请点击右上角「…」→「在浏览器中打开」</div>
+    <button class="wx-guide-close" onclick="document.getElementById('wx-guide').classList.remove('show')">知道了</button>
+  </div>
+</div>
 
 <!-- ══════════════════════ 主屏幕 ══════════════════════ -->
 <div id="screen-main">
@@ -1904,8 +1936,14 @@ function iosOpenApp(scheme, fallback, kw, appName) {
   }, 2000);
   window.location.href = scheme;
 }
-/* Android 冷唤醒兼容方案：先尝试 intent，超时后自动跳 H5 */
+/* 检测受限浏览器 */
+function isWechat() { return /MicroMessenger/i.test(navigator.userAgent); }
+function isQQBrowser() { return /MQQBrowser/i.test(navigator.userAgent) && !/MicroMessenger/i.test(navigator.userAgent); }
+function showWxGuide() { document.getElementById('wx-guide').classList.add('show'); }
+
+/* Android 冷唤醒兼容方案：intent 失败后自动跳 H5 */
 function androidOpenApp(intentUrl, h5Url) {
+  if (isWechat()) { showWxGuide(); return; }
   let left = false;
   const mark = () => { left = true; };
   document.addEventListener('visibilitychange', mark, {once:true});
@@ -1914,7 +1952,7 @@ function androidOpenApp(intentUrl, h5Url) {
     document.removeEventListener('visibilitychange', mark);
     window.removeEventListener('blur', mark);
     if (!left && h5Url) window.location.href = h5Url;
-  }, 2000);
+  }, 1800);
   window.location.href = intentUrl;
 }
 function openJD(kw) {
@@ -1922,6 +1960,7 @@ function openJD(kw) {
   const enc = encodeURIComponent(kw);
   const searchParams = encodeURIComponent(JSON.stringify({category:'jump',des:'search',keyWord:kw}));
   copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
+  if (isWechat()) { showWxGuide(); return; }
   if (/Android/i.test(ua)) {
     const fbUrl = encodeURIComponent(`https://so.m.jd.com/ware/search.action?keyword=${enc}`);
     window.location.href = `intent://virtual?params=${searchParams}#Intent;scheme=openapp.jdmobile;package=com.jingdong.app.mall;S.browser_fallback_url=${fbUrl};end`;
@@ -1935,6 +1974,7 @@ function openTaobao(kw) {
   const ua = navigator.userAgent;
   const enc = encodeURIComponent(kw);
   copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
+  if (isWechat()) { showWxGuide(); return; }
   const fbUrl = `https://h5.ele.me/msite/search/?query=${enc}`;
   if (/Android/i.test(ua)) {
     const fb = encodeURIComponent(fbUrl);
@@ -1948,12 +1988,10 @@ function openMeituan(kw) {
   copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
   const ua = navigator.userAgent;
   const h5Url = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${enc}`;
+  if (isWechat()) { showWxGuide(); return; }
   if (/Android/i.test(ua)) {
-    const fb = encodeURIComponent(h5Url);
-    androidOpenApp(
-      `intent://search?keyword=${enc}#Intent;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;scheme=meituanwaimai;package=com.sankuai.meituan.takeoutnew;S.browser_fallback_url=${fb};end`,
-      h5Url
-    );
+    /* 安卓直接跳手机版，冷唤醒不稳定；关键词已复制可在App内粘贴 */
+    window.location.href = h5Url;
   } else {
     iosOpenApp(`meituanwaimai://search?keyword=${enc}`, h5Url, null, '美团外卖App');
   }
@@ -1963,12 +2001,10 @@ function openDianping(kw) {
   copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
   const ua = navigator.userAgent;
   const h5Url = `https://m.dianping.com/search?keyword=${enc}`;
+  if (isWechat()) { showWxGuide(); return; }
   if (/Android/i.test(ua)) {
-    const fb = encodeURIComponent(h5Url);
-    androidOpenApp(
-      `intent://search?kw=${enc}#Intent;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;scheme=dianping;package=com.dianping.v1;S.browser_fallback_url=${fb};end`,
-      h5Url
-    );
+    /* 安卓直接跳手机版，冷唤醒不稳定；关键词已复制可在App内粘贴 */
+    window.location.href = h5Url;
   } else {
     iosOpenApp(`dianping://search?kw=${enc}`, h5Url, null, null);
   }
