@@ -256,6 +256,92 @@
       color: #7DDBFF;
     }
 
+    /* 自己动手 — 草绿 */
+    #btnCooking {
+      background: rgba(76,217,100,0.1);
+      border-color: rgba(76,217,100,0.28);
+      color: rgba(76,217,100,0.8);
+    }
+    #btnCooking.active {
+      background: linear-gradient(135deg, #2ECC71, #4CD964);
+      border-color: #2ECC71;
+      color: #001a08;
+      font-weight: 900;
+      box-shadow: 0 4px 22px rgba(46,204,113,0.5);
+    }
+    #btnCooking:hover:not(.active) {
+      background: rgba(76,217,100,0.18);
+      border-color: rgba(76,217,100,0.5);
+      color: #4CD964;
+    }
+
+    /* 时长子选择器 */
+    .cooking-time-row {
+      display: none; gap: 8px; justify-content: center;
+      margin-top: 10px;
+    }
+    .cooking-time-row.show { display: flex; }
+    .time-chip {
+      flex: 1; padding: 9px 4px; border-radius: 20px;
+      border: 2px solid transparent;
+      font-size: 12px; font-weight: 800;
+      cursor: pointer; transition: all 0.22s;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
+      text-align: center;
+      background: rgba(76,217,100,0.07);
+      border-color: rgba(76,217,100,0.2);
+      color: rgba(76,217,100,0.6);
+    }
+    .time-chip.active {
+      background: linear-gradient(135deg, #2ECC71, #4CD964);
+      border-color: #2ECC71;
+      color: #001a08;
+      font-weight: 900;
+      box-shadow: 0 3px 14px rgba(46,204,113,0.4);
+    }
+
+    /* 菜谱展示区（结果页） */
+    .recipe-area { display: none; flex-direction: column; gap: 12px; margin-top: 10px; }
+    .recipe-area.show { display: flex; }
+    .dish-block {
+      background: rgba(255,255,255,0.05);
+      border-radius: 14px; padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,0.09);
+    }
+    .dish-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .dish-type-badge {
+      font-size: 10px; font-weight: 900; padding: 2px 9px; border-radius: 10px;
+      font-family: 'ZCOOL KuaiLe', sans-serif; letter-spacing: 0.5px;
+    }
+    .dish-type-badge.meat { background: rgba(255,107,53,0.2); color: #ff7a50; }
+    .dish-type-badge.veg  { background: rgba(76,217,100,0.2); color: #4cd964; }
+    .dish-name-h {
+      font-size: 16px; font-weight: 900; color: var(--gold);
+      font-family: 'ZCOOL KuaiLe', sans-serif;
+    }
+    .dish-section-label {
+      font-size: 10px; color: rgba(255,255,255,0.32); letter-spacing: 1px;
+      font-weight: 700; margin-bottom: 3px;
+      font-family: 'ZCOOL KuaiLe', sans-serif; text-transform: uppercase;
+    }
+    .dish-ingredients {
+      font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.65;
+      margin-bottom: 10px; font-family: 'ZCOOL KuaiLe', sans-serif;
+    }
+    .dish-steps { display: flex; flex-direction: column; gap: 5px; }
+    .dish-step { display: flex; gap: 8px; align-items: flex-start; }
+    .step-num {
+      flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+      background: rgba(255,191,0,0.18); color: var(--gold);
+      font-size: 10px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito', sans-serif; margin-top: 2px;
+    }
+    .step-text {
+      font-size: 12px; color: rgba(255,255,255,0.58); line-height: 1.55;
+      font-family: 'ZCOOL KuaiLe', sans-serif;
+    }
+
     /* CTA button */
     .cta-btn {
       width: 100%;
@@ -840,6 +926,12 @@
       <button class="channel-chip" id="btnFeast"    onclick="setChannel('feast')">大吃一顿</button>
       <button class="channel-chip active" id="btnSimple"   onclick="setChannel('simple')">简单吃吃</button>
       <button class="channel-chip" id="btnBeverage" onclick="setChannel('beverage')">喝点什么</button>
+      <button class="channel-chip" id="btnCooking"  onclick="setChannel('cooking')">🍳自己动手</button>
+    </div>
+    <div class="cooking-time-row" id="cookingTimeRow">
+      <button class="time-chip active" id="time10" onclick="setCookTime('10')">⚡10分钟</button>
+      <button class="time-chip" id="time20" onclick="setCookTime('20')">🔥20分钟</button>
+      <button class="time-chip" id="time30" onclick="setCookTime('30')">⏱30分钟</button>
     </div>
     <button class="cta-btn" id="startBtn" onclick="goToGacha()">开始！</button>
   </div>
@@ -882,6 +974,7 @@
     <div class="result-food-name" id="rName">火锅</div>
     <div class="result-desc" id="rDesc"></div>
     <div class="tags-row" id="tagsRow"></div>
+    <div class="recipe-area" id="recipeArea"></div>
     <div class="result-action-row" id="actionRow">
       <button class="action-chip" id="chipMap"      onclick="togglePanel('mapPanel','chipMap')">🗺 附近搜索</button>
       <button class="action-chip" id="chipDelivery" onclick="togglePanel('deliveryPanel','chipDelivery')">🛵 外卖点餐</button>
@@ -1092,6 +1185,114 @@ let animating = false;
 let currentFood = null;
 let currentSeg = null;
 let currentChannel = 'simple';
+let currentCookTime = '10';
+
+// ══════════════════════════════════════════════════════
+//  自己动手菜谱数据
+// ══════════════════════════════════════════════════════
+const COOKING_SETS = {
+  '10': [
+    { zh:'番茄炒蛋套餐', emoji:'🍳', color:'#FF6B35',
+      dishes:[
+        {type:'荤',name:'番茄炒蛋',ing:'番茄2个、鸡蛋2个、盐1小勺、糖半勺、葱花少许、油1勺',steps:['番茄切块，鸡蛋打散加少许盐搅匀','热锅倒油，倒入蛋液炒至凝固盛出','同锅下番茄翻炒至出汁，加糖中和酸味','倒入鸡蛋加盐翻炒均匀，撒葱花出锅']},
+        {type:'素',name:'清炒土豆丝',ing:'土豆1个、盐1小勺、醋1勺、蒜末少许、油1勺',steps:['土豆切细丝，清水冲洗掉淀粉','热锅倒油，下蒜末爆香','倒入土豆丝快速翻炒2-3分钟至变透明','加盐、醋翻炒均匀出锅']}
+      ]},
+    { zh:'青椒炒肉套餐', emoji:'🌶️', color:'#E8334A',
+      dishes:[
+        {type:'荤',name:'青椒炒肉',ing:'猪肉100g、青椒2个、蒜末少许、盐1小勺、生抽1勺、油1勺',steps:['猪肉切片，青椒去籽切块','热锅倒油，下蒜末爆香，倒入猪肉片炒至变色','加入青椒翻炒2-3分钟至变软','加盐、生抽翻炒均匀出锅']},
+        {type:'素',name:'蒜蓉油麦菜',ing:'油麦菜1小把、蒜末少许、盐半勺、油1勺、生抽几滴',steps:['油麦菜洗净切段','热锅倒油，下蒜末爆香','倒入油麦菜快速翻炒1分钟至变软','加盐、几滴生抽翻炒均匀出锅']}
+      ]},
+    { zh:'香煎鸡胸套餐', emoji:'🍗', color:'#FF9500',
+      dishes:[
+        {type:'荤',name:'香煎鸡胸肉',ing:'鸡胸肉1块、盐半勺、黑胡椒少许、油1勺、生抽1勺',steps:['鸡胸拍平，加盐、黑胡椒、生抽腌3分钟','热锅倒油，中小火煎3分钟','翻面再煎3分钟至两面金黄','切块即可食用']},
+        {type:'素',name:'清炒西兰花',ing:'西兰花1小颗、盐1小勺、蒜末少许、油1勺、清水少许',steps:['西兰花掰小朵洗净','热锅倒油，下蒜末爆香','倒入西兰花翻炒1分钟，加少许水盖盖焖2分钟','加盐翻炒均匀出锅']}
+      ]},
+    { zh:'芹菜炒牛肉套餐', emoji:'🥩', color:'#8B4513',
+      dishes:[
+        {type:'荤',name:'芹菜炒牛肉',ing:'牛肉100g、芹菜1小把、小米辣1个、蒜末少许、生抽1勺、盐半勺、油1勺',steps:['牛肉切片加生抽淀粉腌2分钟','芹菜切段，小米辣切圈','热锅倒油，下蒜末爆香，倒入牛肉片炒至变色','加芹菜、小米辣、盐、生抽翻炒2分钟出锅']},
+        {type:'素',name:'酸辣土豆丝',ing:'土豆1个、盐1小勺、醋1.5勺、小米辣1个、蒜末少许、油1勺',steps:['土豆切细丝，清水冲洗掉淀粉','热锅倒油，下蒜末、小米辣爆香','倒入土豆丝快速翻炒2-3分钟至变透明','加盐、醋翻炒均匀出锅']}
+      ]},
+    { zh:'木耳炒肉套餐', emoji:'🍄', color:'#5C4033',
+      dishes:[
+        {type:'荤',name:'木耳炒肉',ing:'猪肉100g、干木耳1小把、青椒1个、蒜末少许、盐1小勺、生抽1勺、油1勺',steps:['干木耳泡发去蒂，猪肉切片，青椒切块','热锅倒油，下蒜末爆香，倒入猪肉炒至变色','加入木耳、青椒翻炒2-3分钟','加盐、生抽翻炒均匀出锅']},
+        {type:'素',name:'清炒藕片',ing:'莲藕1节、盐1小勺、醋1勺、蒜末少许、油1勺、清水少许',steps:['莲藕去皮切片，清水浸泡5分钟','热锅倒油，下蒜末爆香','倒入藕片翻炒2分钟，加少许水再炒1分钟','加盐、醋翻炒均匀出锅']}
+      ]},
+    { zh:'韭菜炒蛋套餐', emoji:'🥚', color:'#7DC243',
+      dishes:[
+        {type:'荤',name:'韭菜炒鸡蛋',ing:'韭菜1小把、鸡蛋2个、盐1小勺、油1勺、生抽少许',steps:['韭菜洗净切段，鸡蛋打散加盐搅匀','热锅倒油，倒入蛋液炒至凝固盛出','同锅下韭菜翻炒1分钟','倒入鸡蛋加盐、生抽翻炒均匀出锅']},
+        {type:'素',name:'清炒西葫芦',ing:'西葫芦1根、盐1小勺、蒜末少许、油1勺',steps:['西葫芦去皮切片','热锅倒油，下蒜末爆香','倒入西葫芦片翻炒2-3分钟至变软','加盐翻炒均匀出锅']}
+      ]},
+    { zh:'洋葱炒牛肉套餐', emoji:'🧅', color:'#C47C2A',
+      dishes:[
+        {type:'荤',name:'洋葱炒牛肉',ing:'牛肉100g、洋葱1个、青椒1个、蒜末少许、生抽1勺、盐半勺、油1勺',steps:['牛肉切片加生抽淀粉腌2分钟，洋葱青椒切块','热锅倒油，下蒜末爆香，倒入牛肉片炒至变色','加入洋葱、青椒翻炒','加盐、生抽翻炒2分钟出锅']},
+        {type:'素',name:'蒜蓉生菜',ing:'生菜1小把、蒜末少许、盐半勺、油1勺、生抽几滴',steps:['生菜洗净撕小块','热锅倒油，下蒜末爆香','倒入生菜快速翻炒1分钟至变软','加盐、几滴生抽翻炒均匀出锅']}
+      ]},
+    { zh:'丝瓜炒肉套餐', emoji:'🥒', color:'#5BAD6F',
+      dishes:[
+        {type:'荤',name:'丝瓜炒肉片',ing:'猪肉100g、丝瓜1根、蒜末少许、盐1小勺、生抽1勺、油1勺',steps:['猪肉切片，丝瓜去皮切片','热锅倒油，下蒜末爆香，倒入猪肉炒至变色','加入丝瓜翻炒2-3分钟至变软','加盐、生抽翻炒均匀出锅']},
+        {type:'素',name:'香菇青菜',ing:'青菜1小把、干香菇3-4朵、蒜末少许、盐1小勺、油1勺',steps:['干香菇泡发切片，青菜洗净切段','热锅倒油，下蒜末爆香，倒入香菇翻炒1分钟','加入青菜翻炒2分钟至变软','加盐翻炒均匀出锅']}
+      ]},
+    { zh:'小炒牛肉套餐', emoji:'🌶️', color:'#E84040',
+      dishes:[
+        {type:'荤',name:'小炒黄牛肉',ing:'黄牛肉150g、小米辣2个、青椒1个、蒜末少许、生抽1勺、盐半勺、油1勺',steps:['牛肉切片加生抽淀粉腌2分钟，青椒小米辣切圈','热锅倒油，下蒜末爆香，倒入牛肉片快速炒至变色','加入青椒、小米辣翻炒','加盐、生抽翻炒1分钟出锅']},
+        {type:'素',name:'凉拌西红柿',ing:'西红柿2个、白糖1小勺、蒜末少许、生抽几滴',steps:['西红柿划十字，开水烫后去皮切块装盘','撒白糖、蒜末','滴几滴生抽','搅拌均匀即可']}
+      ]},
+    { zh:'麻婆豆腐套餐', emoji:'🫕', color:'#CC3700',
+      dishes:[
+        {type:'荤',name:'肉末麻婆豆腐',ing:'猪肉末100g、嫩豆腐1块、豆瓣酱1勺、蒜末少许、盐半勺、生抽1勺、油1勺',steps:['豆腐切块用开水烫一下捞出','热锅倒油，下蒜末、豆瓣酱爆香，倒入肉末炒至变色','加少许水，倒入豆腐小火煮2分钟','加盐、生抽翻炒均匀出锅']},
+        {type:'素',name:'蒜蓉油麦菜',ing:'油麦菜1小把、蒜末少许、盐半勺、油1勺、生抽几滴',steps:['油麦菜洗净切段','热锅倒油，下蒜末爆香','倒入油麦菜快速翻炒1分钟至变软','加盐、几滴生抽翻炒均匀出锅']}
+      ]}
+  ],
+  '20': [
+    { zh:'鱼香肉丝套餐', emoji:'🐷', color:'#FF6B9D',
+      dishes:[
+        {type:'荤',name:'鱼香肉丝',ing:'猪肉100g、胡萝卜1根、青椒1个、木耳1小把、蒜末少许、鱼香肉丝调料包1包、油1勺、淀粉少许',steps:['猪肉切丝加淀粉抓匀，胡萝卜青椒木耳切丝','热锅倒油，下蒜末爆香，倒入猪肉丝炒至变色','加入胡萝卜、青椒、木耳翻炒2分钟','倒入调料包加少许水翻炒3分钟出锅']},
+        {type:'素',name:'蒜蓉娃娃菜',ing:'娃娃菜1颗、蒜末少许、盐1小勺、油1勺、生抽1勺',steps:['娃娃菜洗净切4瓣','热锅倒油，下蒜末爆香','倒入娃娃菜翻炒2分钟，加少许水盖盖焖1分钟','加盐、生抽翻炒均匀出锅']}
+      ]},
+    { zh:'宫保鸡丁套餐', emoji:'🐔', color:'#FF8C00',
+      dishes:[
+        {type:'荤',name:'宫保鸡丁',ing:'鸡胸肉1块、黄瓜1根、胡萝卜1根、花生米1小把、宫保鸡丁调料包1包、油1勺、淀粉少许',steps:['鸡胸肉切丁加淀粉抓匀，黄瓜胡萝卜切丁','热锅倒油，下花生米炸至金黄捞出','同锅下鸡胸炒至变色，加入黄瓜胡萝卜翻炒2分钟','倒入调料包加少许水翻炒3分钟，倒入花生米拌匀']},
+        {type:'素',name:'清炒上海青',ing:'上海青1小把、蒜末少许、盐半勺、油1勺、生抽几滴',steps:['上海青洗净切段','热锅倒油，下蒜末爆香','倒入上海青快速翻炒1分钟','加盐、几滴生抽翻炒均匀出锅']}
+      ]},
+    { zh:'香菇滑鸡套餐', emoji:'🍗', color:'#A0522D',
+      dishes:[
+        {type:'荤',name:'香菇滑鸡',ing:'鸡腿1个、干香菇3-4朵、蒜末少许、盐1小勺、生抽1勺、油1勺、淀粉少许',steps:['鸡腿去皮去骨切块，加盐生抽淀粉腌5分钟，香菇泡发切片','热锅倒油，下蒜末爆香，倒入鸡块炒至变色','加入香菇，加少许水盖盖焖5分钟','翻炒均匀出锅']},
+        {type:'素',name:'红烧豆腐',ing:'老豆腐1块、生抽1勺、老抽半勺、盐半勺、油1勺、葱花少许',steps:['豆腐切块，热锅倒油煎至两面金黄','加入生抽、老抽、少许水翻炒均匀','小火煮2分钟，加盐翻炒均匀','撒葱花出锅']}
+      ]},
+    { zh:'清蒸鲈鱼套餐', emoji:'🐟', color:'#4682B4',
+      dishes:[
+        {type:'荤',name:'清蒸鲈鱼',ing:'鲈鱼1条约300g、姜片3-4片、葱段1段、盐1小勺、生抽1勺、料酒1勺、油1勺',steps:['鲈鱼划几刀，加盐料酒姜片腌5分钟','蒸锅烧开，放入鲈鱼大火蒸8分钟','取出倒掉盘中水，撒葱段淋生抽','热油烧至冒烟，淋在葱段上即可']},
+        {type:'素',name:'番茄豆腐',ing:'番茄1个、嫩豆腐1块、盐半勺、蒜末少许、油1勺、葱花少许',steps:['番茄切块，豆腐切小块','热锅倒油，下蒜末爆香，倒入番茄炒至出汁','加入豆腐加少许水小火煮2分钟','加盐翻炒均匀撒葱花出锅']}
+      ]},
+    { zh:'蒜香排骨套餐', emoji:'🦴', color:'#8B6914',
+      dishes:[
+        {type:'荤',name:'蒜香排骨',ing:'排骨200g、蒜末1勺、盐1小勺、生抽1勺、料酒1勺、油1勺、淀粉少许',steps:['排骨切段加盐生抽料酒淀粉蒜末腌10分钟','热锅倒油，放入排骨中小火煎5分钟','翻面再煎3分钟','加少许水盖盖焖2分钟，大火收汁出锅']},
+        {type:'素',name:'清炒菠菜',ing:'菠菜1小把、蒜末少许、盐半勺、油1勺、生抽几滴',steps:['菠菜洗净切段','热锅倒油，下蒜末爆香','倒入菠菜快速翻炒1分钟至变软','加盐、几滴生抽翻炒均匀出锅']}
+      ]},
+    { zh:'冬瓜丸子汤套餐', emoji:'🍲', color:'#5B8F5B',
+      dishes:[
+        {type:'荤',name:'冬瓜丸子汤',ing:'猪肉末150g、冬瓜1块、姜片2片、盐1小勺、生抽1勺、淀粉少许、葱花少许',steps:['猪肉末加盐生抽淀粉顺时针搅匀，搓成小丸子','冬瓜去皮切片','锅中加水放姜片烧开，下丸子煮5分钟至浮起','加入冬瓜煮3分钟，加盐撒葱花出锅']},
+        {type:'素',name:'炒手撕包菜',ing:'包菜1小颗、蒜末少许、盐1小勺、醋1勺、油1勺、小米辣少许',steps:['包菜洗净撕成小块','热锅倒油，下蒜末、小米辣爆香','倒入包菜快速翻炒2-3分钟','加盐、醋翻炒均匀出锅']}
+      ]},
+    { zh:'红烧鸡翅套餐', emoji:'🍗', color:'#8B2000',
+      dishes:[
+        {type:'荤',name:'红烧鸡翅',ing:'鸡翅6-8个、姜片3-4片、生抽1勺、老抽半勺、盐1小勺、油1勺、料酒1勺',steps:['鸡翅划两刀加料酒姜片腌5分钟','热锅倒油，放入鸡翅煎至两面金黄','加入生抽、老抽翻炒均匀加适量水','大火烧开转小火煮15分钟，加盐大火收汁']},
+        {type:'素',name:'清炒豆芽',ing:'豆芽1小把、盐半勺、蒜末少许、油1勺、醋几滴',steps:['豆芽洗净沥干','热锅倒油，下蒜末爆香','倒入豆芽快速翻炒2-3分钟','加盐、几滴醋翻炒均匀出锅']}
+      ]}
+  ],
+  '30': [
+    { zh:'可乐鸡翅套餐', emoji:'🥤', color:'#8B1A1A',
+      dishes:[
+        {type:'荤',name:'可乐鸡翅',ing:'鸡翅6-8个、可乐半瓶、姜片3-4片、生抽1勺、盐半勺、油1勺、料酒1勺',steps:['鸡翅划两刀加料酒姜片腌5分钟','热锅倒油，放入鸡翅煎至两面金黄','倒入可乐没过鸡翅，加生抽大火烧开','转小火煮15分钟，加盐大火收汁']},
+        {type:'素',name:'凉拌黄瓜',ing:'黄瓜1根、盐半勺、蒜末少许、醋1勺、香油几滴、小米辣少许',steps:['黄瓜洗净拍碎切块装盘','加入蒜末、盐、醋、香油','喜欢吃辣可加小米辣','搅拌均匀即可']}
+      ]},
+    { zh:'红烧鸡腿套餐', emoji:'🍖', color:'#7B3A00',
+      dishes:[
+        {type:'荤',name:'红烧鸡腿',ing:'鸡腿2个、姜片3-4片、葱段1段、生抽1勺、老抽半勺、盐1小勺、油1勺、料酒1勺',steps:['鸡腿划两刀加料酒姜片腌5分钟','热锅倒油，放入鸡腿煎至两面金黄','加姜葱爆香，淋生抽老抽加适量水','大火烧开转小火煮18分钟，加盐大火收汁']},
+        {type:'素',name:'清炒豆芽',ing:'豆芽1小把、盐半勺、蒜末少许、油1勺、醋几滴',steps:['豆芽洗净沥干','热锅倒油，下蒜末爆香','倒入豆芽快速翻炒2-3分钟','加盐、几滴醋翻炒均匀出锅']}
+      ]}
+  ]
+};
 const t = () => I18N[lang];
 
 function setLang(l) {
@@ -1376,7 +1577,14 @@ function buildSegsWithWeather(mealType, weather) {
 }
 
 async function rebuildSegs() {
-  if (currentChannel === 'simple') {
+  if (currentChannel === 'cooking') {
+    const sets = COOKING_SETS[currentCookTime] || [];
+    activeFoods = sets.map(s => ({
+      ...s, channel: 'cooking', isCooking: true,
+      en: s.zh, desc: { zh: s.dishes.map(d=>d.name).join(' + '), en: s.dishes.map(d=>d.name).join(' + ') },
+      kw: null, weight: 1
+    }));
+  } else if (currentChannel === 'simple') {
     activeFoods = foods.filter(f => f.channel === 'simple' || f.channel === 'shared');
   } else if (currentChannel === 'feast') {
     activeFoods = foods.filter(f => f.channel === 'feast' || f.channel === 'shared');
@@ -1384,21 +1592,35 @@ async function rebuildSegs() {
     activeFoods = foods.filter(f => f.channel === 'beverage');
   }
   const mealType = getMealType();
-  // Build immediately without weather so UI is responsive
   buildSegsWithWeather(mealType, null);
-  // Weather fetched only when user taps the card (see onWeatherCardTap)
 }
 
 function setChannel(ch) {
   if (currentChannel === ch) return;
   currentChannel = ch;
-  ['btnSimple','btnFeast','btnBeverage'].forEach(id => {
+  ['btnSimple','btnFeast','btnBeverage','btnCooking'].forEach(id => {
     document.getElementById(id).classList.toggle('active',
-      (ch==='simple'&&id==='btnSimple')||(ch==='feast'&&id==='btnFeast')||(ch==='beverage'&&id==='btnBeverage'));
+      (ch==='simple'&&id==='btnSimple')||(ch==='feast'&&id==='btnFeast')||
+      (ch==='beverage'&&id==='btnBeverage')||(ch==='cooking'&&id==='btnCooking'));
+  });
+  document.getElementById('cookingTimeRow').classList.toggle('show', ch === 'cooking');
+  const btn = document.getElementById('spinBtn');
+  if (btn) { btn.textContent = '转！'; delete btn.dataset.spun; }
+  rebuildSegs();
+}
+
+function setCookTime(t) {
+  if (currentCookTime === t) return;
+  currentCookTime = t;
+  ['10','20','30'].forEach(v => {
+    document.getElementById('time'+v).classList.toggle('active', v === t);
   });
   const btn = document.getElementById('spinBtn');
   if (btn) { btn.textContent = '转！'; delete btn.dataset.spun; }
   rebuildSegs();
+  if (document.getElementById('screen-gacha').classList.contains('active')) {
+    setTimeout(buildWheel, 60);
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1699,26 +1921,62 @@ function rerenderResult() {
   const food = currentFood;
   const name = food[lang] || food.zh;
   document.getElementById('rName').textContent = name;
-  document.getElementById('rDesc').textContent = food.desc[lang] || food.desc.zh;
-  document.getElementById('tagsRow').innerHTML = buildTags(food);
-  if (food.kw) {
-    buildMapLinks(food);
-    document.getElementById('actionRow').style.display = 'flex';
-    document.getElementById('noMapArea').innerHTML = '';
-  } else {
+
+  const recipeArea = document.getElementById('recipeArea');
+  if (food.isCooking && food.dishes) {
+    // 菜谱模式
+    document.getElementById('rDesc').textContent = '';
+    document.getElementById('tagsRow').innerHTML = `<span class="tag meal">🍳 自己动手</span><span class="tag meal">⏱ ${currentCookTime}分钟</span>`;
+    document.getElementById('actionRow').style.display = 'none';
     document.getElementById('mapPanel').innerHTML = '';
     document.getElementById('deliveryPanel').innerHTML = '';
-    document.getElementById('actionRow').style.display = 'none';
-    const tx = t();
-    const tip = (food.zh === '饿着' || food.en === 'Skip It') ? tx.skip1 : tx.skip2;
-    document.getElementById('noMapArea').innerHTML = `<p class="no-map-tip">${tip}</p>`;
+    document.getElementById('noMapArea').innerHTML = '';
+    recipeArea.innerHTML = food.dishes.map(d => `
+      <div class="dish-block">
+        <div class="dish-header">
+          <span class="dish-type-badge ${d.type==='荤'?'meat':'veg'}">${d.type==='荤'?'🥩 荤菜':'🥬 素菜'}</span>
+          <span class="dish-name-h">${d.name}</span>
+        </div>
+        <div class="dish-section-label">食材</div>
+        <div class="dish-ingredients">${d.ing}</div>
+        <div class="dish-section-label">步骤</div>
+        <div class="dish-steps">${d.steps.map((s,i)=>`
+          <div class="dish-step">
+            <div class="step-num">${i+1}</div>
+            <div class="step-text">${s}</div>
+          </div>`).join('')}
+        </div>
+      </div>`).join('');
+    recipeArea.classList.add('show');
+  } else {
+    recipeArea.classList.remove('show');
+    recipeArea.innerHTML = '';
+    document.getElementById('rDesc').textContent = food.desc[lang] || food.desc.zh;
+    document.getElementById('tagsRow').innerHTML = buildTags(food);
+    if (food.kw) {
+      buildMapLinks(food);
+      document.getElementById('actionRow').style.display = 'flex';
+      document.getElementById('noMapArea').innerHTML = '';
+    } else {
+      document.getElementById('mapPanel').innerHTML = '';
+      document.getElementById('deliveryPanel').innerHTML = '';
+      document.getElementById('actionRow').style.display = 'none';
+      const tx = t();
+      const tip = (food.zh === '饿着' || food.en === 'Skip It') ? tx.skip1 : tx.skip2;
+      document.getElementById('noMapArea').innerHTML = `<p class="no-map-tip">${tip}</p>`;
+    }
   }
 }
 
 function showResult(food) {
   saveHistory(food); _histCache = null;
-  document.getElementById('rEmoji').textContent = food.emoji;
+  document.getElementById('rEmoji').textContent = food.emoji || '🍳';
   document.getElementById('resultBottom').style.background = food.color || '#FFBF00';
+  // 结果页眉：烹饪模式特殊文案
+  const eyebrow = document.querySelector('#screen-result .result-eyebrow');
+  if (eyebrow) eyebrow.innerHTML = food.isCooking
+    ? '<span>🍳 今日菜谱</span><span>自己动手做</span>'
+    : '<span>✦ 命运已定</span><span>今日推荐</span>';
   rerenderResult();
   document.querySelectorAll('.links-panel').forEach(p => p.classList.remove('open'));
   document.querySelectorAll('.action-chip').forEach(c => c.classList.remove('active-chip'));
