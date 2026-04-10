@@ -1600,7 +1600,7 @@ function getWeatherRecScore(food) {
 }
 async function getWeather() {
   const now = Date.now();
-  if (weatherCache && now - weatherCacheTime < 3600000) return weatherCache;
+  if (weatherCache && now - weatherCacheTime < 86400000) return weatherCache;  // 缓存 24 小时
 
   let lat, lon;
 
