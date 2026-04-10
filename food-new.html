@@ -64,7 +64,7 @@
       background: rgba(255,255,255,0.1); border: none;
       color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 600;
       cursor: pointer; transition: background 0.2s;
-      font-family: inherit;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
     }
     .nav-pill:hover { background: rgba(255,255,255,0.18); }
 
@@ -269,7 +269,7 @@
       font-weight: 900;
       cursor: pointer;
       letter-spacing: 1.5px;
-      font-family: 'Nunito', inherit;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
       box-shadow:
         0 6px 24px rgba(255,191,0,0.45),
         0 2px 6px rgba(0,0,0,0.3);
@@ -279,89 +279,161 @@
     .cta-btn:active { transform: translateY(1px);  box-shadow: 0 3px 12px rgba(255,191,0,0.35); }
 
     /* ─────────────────────────────────────────────
-       WHEEL SCREEN
+       SPIN WHEEL SCREEN
     ───────────────────────────────────────────── */
-    #screen-wheel {
+    #screen-gacha {
       position: fixed; inset: 0;
-      display: flex; flex-direction: column;
-      background: var(--bg);
+      display: flex; flex-direction: column; align-items: center;
+      background: radial-gradient(ellipse at 50% 0%, #3a0080 0%, #1a0044 50%, #060018 100%);
       opacity: 0; pointer-events: none;
       transition: opacity 0.4s;
       z-index: 50;
+      overflow-y: auto; overflow-x: hidden;
     }
-    #screen-wheel.active { opacity: 1; pointer-events: auto; }
+    #screen-gacha.active { opacity: 1; pointer-events: auto; }
 
-    .wheel-top-zone {
-      background: transparent;
-      flex: 0 0 auto;
-      position: relative;
-      padding: calc(var(--safe-top) + 58px) 28px 16px;
-    }
-    .wheel-eyebrow {
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 3px; text-transform: uppercase;
-      color: var(--blue);
-      margin-bottom: 6px; opacity: 0.85;
-    }
-    .wheel-big-title {
-      font-size: clamp(1.8rem, 7vw, 2.6rem);
-      font-weight: 900; line-height: 1.1;
-      font-family: 'ZCOOL KuaiLe', 'PingFang SC', 'Noto Sans SC', sans-serif;
-      color: var(--gold);
-      letter-spacing: 2px;
-      text-shadow: 3px 4px 0 rgba(0,0,0,0.7), 0 0 40px rgba(255,191,0,0.22);
+    /* Wheel nav */
+    .wheel-nav {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: calc(var(--safe-top) + 52px);
+      display: flex; align-items: flex-end; padding: 0 16px 8px;
+      z-index: 20;
     }
 
-    .wheel-bottom-zone {
-      flex: 1;
-      background: transparent;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 10px;
-      padding-bottom: calc(24px + var(--safe-bot));
+    /* Wheel screen body */
+    .wheel-body {
+      width: 100%;
+      display: flex; flex-direction: column; align-items: center;
+      margin-top: calc(var(--safe-top) + 56px);
+      padding-bottom: 40px;
+      gap: 0;
     }
 
-    .pointer-gold {
-      position: relative; z-index: 2;
-      filter: drop-shadow(0 0 6px rgba(255,191,0,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+    /* Title banner */
+    .wheel-banner {
+      font-family: 'ZCOOL KuaiLe', sans-serif;
+      font-size: 20px; letter-spacing: 3px;
+      color: #FFE566;
+      text-shadow: 2px 3px 0 #7a3800, 0 0 20px rgba(255,200,0,0.5);
+      margin-bottom: 10px;
     }
 
-    .plush-ring {
-      border-radius: 50%;
-      position: relative;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.85);
+    /* Pointer */
+    .wheel-pointer-wrap {
+      position: relative; z-index: 10;
+      margin-bottom: -2px;
+    }
+    .wheel-pointer {
+      width: 0; height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-top: 36px solid #FF3B30;
+      filter: drop-shadow(0 4px 0 #880000) drop-shadow(0 0 10px rgba(255,59,48,0.8));
     }
 
+    /* Outer carnival ring */
     .wheel-frame {
-      position: relative; border-radius: 50%;
-    }
-    #wheelCanvas { display: block; border-radius: 50%; }
-
-    .spin-btn {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 68px; height: 68px; border-radius: 50%;
-      background: radial-gradient(circle at 36% 32%,
-        #fff9f0 0%, #f0e4d0 30%, #dcc8b0 65%, #b8a484 100%);
-      border: none; cursor: pointer;
-      font-size: 13px; font-weight: 900; color: #4a3010;
-      font-family: 'ZCOOL KuaiLe', inherit; letter-spacing: 0.5px;
+      position: relative;
+      border-radius: 50%;
+      padding: 10px;
+      background: conic-gradient(
+        #FF3B30 0deg, #FF3B30 45deg,
+        #FF9500 45deg, #FF9500 90deg,
+        #FFCC00 90deg, #FFCC00 135deg,
+        #34C759 135deg, #34C759 180deg,
+        #00C7BE 180deg, #00C7BE 225deg,
+        #007AFF 225deg, #007AFF 270deg,
+        #AF52DE 270deg, #AF52DE 315deg,
+        #FF2D55 315deg, #FF2D55 360deg
+      );
       box-shadow:
-        0 4px 20px rgba(0,0,0,0.55),
-        inset 0 3px 6px rgba(255,255,255,0.85),
-        inset 0 -3px 6px rgba(80,50,10,0.3),
-        0 0 0 2px rgba(255,240,210,0.4);
-      transition: transform 0.15s, box-shadow 0.15s;
+        0 0 0 4px rgba(255,255,255,0.9),
+        0 12px 50px rgba(0,0,0,0.7),
+        0 0 80px rgba(180,80,255,0.25);
+    }
+    /* Stars on outer ring */
+    .wheel-frame::after {
+      content: '★ ★ ★ ★ ★ ★ ★ ★';
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; color: rgba(255,255,255,0.0);
+      border-radius: 50%;
+      background: transparent;
+    }
+    .wheel-inner {
+      border-radius: 50%;
+      background: #0a0022;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #wheelCanvas {
+      display: block;
+      border-radius: 50%;
+    }
+
+    /* Center spin button */
+    .spin-center-btn {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.9);
+      background: radial-gradient(circle at 38% 32%, #ff7070, #FF3B30 55%, #aa1100);
+      box-shadow:
+        0 5px 0 #6a0000,
+        0 8px 24px rgba(255,59,48,0.7),
+        inset 0 3px 6px rgba(255,255,255,0.35);
+      font-family: 'Nunito', 'ZCOOL KuaiLe', sans-serif;
+      font-size: 17px; font-weight: 900;
+      color: #fff;
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
+      letter-spacing: 1px;
+      cursor: pointer;
       z-index: 5;
+      transition: transform 0.1s, box-shadow 0.1s;
     }
-    .spin-btn:hover:not(:disabled) {
-      transform: translate(-50%, -50%) scale(1.08);
-      box-shadow: 0 8px 28px rgba(160,120,60,0.5),
-        inset 0 3px 6px rgba(255,255,255,0.9),
-        0 0 0 2px rgba(255,240,210,0.6);
+    .spin-center-btn:not(:disabled):active {
+      transform: translate(-50%, -47%) scale(0.95);
+      box-shadow: 0 2px 0 #6a0000, 0 4px 14px rgba(255,59,48,0.6), inset 0 3px 6px rgba(255,255,255,0.35);
     }
-    .spin-btn:active:not(:disabled) { transform: translate(-50%, -50%) scale(0.94); }
-    .spin-btn:disabled { opacity: 0.55; cursor: default; }
+    .spin-center-btn:disabled { opacity: 0.65; cursor: default; }
+
+    /* Result bar */
+    .wheel-result-bar {
+      margin-top: 16px;
+      width: min(340px, 92vw);
+      background: rgba(255,255,255,0.07);
+      border: 2px solid rgba(255,255,255,0.14);
+      border-radius: 22px;
+      padding: 16px 20px 18px;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      opacity: 0; transform: translateY(14px);
+      transition: opacity 0.4s, transform 0.4s;
+    }
+    .wheel-result-bar.visible { opacity: 1; transform: translateY(0); }
+
+    .wheel-result-food {
+      font-family: 'ZCOOL KuaiLe', sans-serif;
+      font-size: clamp(1.6rem, 7vw, 2.2rem);
+      color: #FFE566;
+      text-shadow: 2px 2px 0 #7a3800;
+      letter-spacing: 2px;
+    }
+    .wheel-result-actions { display: flex; gap: 10px; }
+    .wheel-action {
+      padding: 9px 20px; border-radius: 30px;
+      font-family: 'ZCOOL KuaiLe', sans-serif;
+      font-size: 14px; font-weight: 900; letter-spacing: 0.5px;
+      cursor: pointer; border: 2px solid; transition: transform 0.1s;
+    }
+    .wheel-action:active { transform: scale(0.95); }
+    .wheel-action.primary { background: var(--gold); color: #fff; border-color: var(--gold-dk); padding: 12px 28px; font-size: 16px; }
+    .wheel-action.secondary {
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8);
+      border-color: rgba(255,255,255,0.25);
+    }
 
     /* ─────────────────────────────────────────────
        RESULT SCREEN  (retained from original)
@@ -386,17 +458,19 @@
       font-size: 11px; color: rgba(255,255,255,0.38);
       letter-spacing: 2px; margin-bottom: 6px;
       display: flex; align-items: center; gap: 10px;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
     }
     .result-food-name {
       font-size: clamp(3rem, 13vw, 5.5rem);
       font-weight: 900; line-height: 1;
-      font-family: 'Nunito', 'PingFang SC', serif;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
       margin-bottom: 8px;
       word-break: break-all;
     }
     .result-desc {
       font-size: 14px; color: rgba(255,255,255,0.5);
       line-height: 1.5; margin-bottom: 12px;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
     }
     .tags-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
     .tag { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1.5px solid; }
@@ -413,7 +487,7 @@
       color: rgba(255,255,255,0.7);
       font-size: 12px; font-weight: 600;
       cursor: pointer; transition: all 0.2s;
-      text-align: center; font-family: inherit;
+      text-align: center; font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
     }
     .action-chip:hover { background: rgba(255,255,255,0.1); color: #fff; }
     .action-chip.active-chip { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.25); }
@@ -428,7 +502,7 @@
       color: #fff; text-decoration: none;
       font-size: 13px; font-weight: 600;
       cursor: pointer; border: none;
-      font-family: inherit;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
       transition: transform 0.2s, filter 0.2s;
     }
     .map-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
@@ -465,7 +539,7 @@
       border-radius: 14px; border: none;
       background: rgba(0,0,0,0.7); color: #fff;
       font-size: 16px; font-weight: 700;
-      cursor: pointer; font-family: inherit;
+      cursor: pointer; font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
       transition: opacity 0.2s, transform 0.15s;
     }
     .again-btn:hover { opacity: 0.85; transform: translateY(-1px); }
@@ -474,16 +548,17 @@
        WEATHER CARD
     ───────────────────────────────────────────── */
     .title-weather-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
       margin-top: 4px;
     }
     .title-group { flex: 0 0 auto; }
 
+    .weather-strip {
+      padding: 10px 28px 0;
+    }
+
     .weather-card {
-      flex: 1;
-      min-height: 110px;
+      width: 100%;
+      min-height: 74px;
       border-radius: 18px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
@@ -496,7 +571,7 @@
       transition: border-color 0.6s;
     }
     @keyframes wcSlideIn {
-      from { opacity: 0; transform: translateX(22px) scale(0.93); }
+      from { opacity: 0; transform: translateY(-10px) scale(0.97); }
       to   { opacity: 1; transform: none; }
     }
     .weather-card.type-sunny  { border-color: rgba(255,191,0,0.22); }
@@ -538,13 +613,17 @@
 
     /* Content */
     .wc-content {
-      display: none; flex-direction: column;
-      align-items: center; gap: 2px;
-      padding: 10px 14px;
+      display: none; flex-direction: row;
+      align-items: center; gap: 12px;
+      padding: 10px 18px;
+      width: 100%;
       position: relative; z-index: 1;
       animation: wcContentIn 0.5s ease both;
     }
     .wc-content.show { display: flex; }
+    .wc-text-group {
+      display: flex; flex-direction: column; gap: 1px;
+    }
     @keyframes wcContentIn {
       from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: none; }
@@ -594,7 +673,7 @@
     }
     .wc-feel {
       font-size: 10px; color: rgba(255,255,255,0.35);
-      margin-top: 2px; letter-spacing: 0.3px; text-align: center;
+      margin-top: 2px; letter-spacing: 0.3px; text-align: left;
     }
 
     /* Rain drops */
@@ -643,15 +722,16 @@
     /* Tap-to-activate state */
     .wc-tap {
       position: relative; z-index: 1;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 8px;
-      cursor: pointer; padding: 8px 12px;
+      display: flex; flex-direction: row;
+      align-items: center; gap: 10px;
+      cursor: pointer; padding: 10px 18px;
+      width: 100%;
     }
-    .wc-tap-icon { font-size: 2rem; opacity: 0.55; animation: iconFloat 3.5s ease-in-out infinite; }
+    .wc-tap-icon { font-size: 1.8rem; opacity: 0.55; animation: iconFloat 3.5s ease-in-out infinite; flex-shrink: 0; }
     .wc-tap-hint {
-      font-size: 11px; color: rgba(255,255,255,0.3);
-      letter-spacing: 1px; font-weight: 600;
-      text-align: center; line-height: 1.5;
+      font-size: 12px; color: rgba(255,255,255,0.3);
+      letter-spacing: 0.5px; font-weight: 600;
+      text-align: left; line-height: 1.5;
     }
     .wc-tap:hover .wc-tap-hint { color: rgba(255,255,255,0.55); }
     .wc-tap:hover .wc-tap-icon { opacity: 0.8; }
@@ -661,7 +741,7 @@
 
     /* Mobile portrait adjustments */
     @media (max-width: 480px) {
-      .weather-card { min-height: 90px; border-radius: 14px; }
+      .weather-card { min-height: 74px; border-radius: 14px; }
       .wc-icon { font-size: 1.9rem; }
       .wc-temp { font-size: 1.7rem; letter-spacing: -1px; }
       .wc-unit { font-size: 0.75rem; margin-top: 3px; }
@@ -709,26 +789,30 @@
           今天<br>吃什么<span class="mark">？</span>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- 天气卡片 -->
-      <div class="weather-card" id="weatherCard" onclick="onWeatherCardTap()">
-        <div class="wc-bg"></div>
-        <!-- 初始：点击获取 -->
-        <div class="wc-tap" id="wcTap">
-          <div class="wc-tap-icon">🌤️</div>
-          <div class="wc-tap-hint" id="wcTapHint">点击获取<br>当前天气</div>
+  <!-- 天气卡片 -->
+  <div class="weather-strip">
+    <div class="weather-card" id="weatherCard" onclick="onWeatherCardTap()">
+      <div class="wc-bg"></div>
+      <!-- 初始：点击获取 -->
+      <div class="wc-tap" id="wcTap">
+        <div class="wc-tap-icon">🌤️</div>
+        <div class="wc-tap-hint" id="wcTapHint">点击获取<br>当前天气</div>
+      </div>
+      <!-- 加载中 -->
+      <div class="wc-loading" id="wcLoading" style="display:none">
+        <div class="wc-orb"></div>
+        <div class="wc-load-text" id="wcLoadText">定位中…</div>
+      </div>
+      <!-- 天气内容 -->
+      <div class="wc-content" id="wcContent">
+        <div class="wc-icon-wrap">
+          <div class="wc-glow" id="wcGlow"></div>
+          <div class="wc-icon" id="wcIcon">☀️</div>
         </div>
-        <!-- 加载中 -->
-        <div class="wc-loading" id="wcLoading" style="display:none">
-          <div class="wc-orb"></div>
-          <div class="wc-load-text" id="wcLoadText">定位中…</div>
-        </div>
-        <!-- 天气内容 -->
-        <div class="wc-content" id="wcContent">
-          <div class="wc-icon-wrap">
-            <div class="wc-glow" id="wcGlow"></div>
-            <div class="wc-icon" id="wcIcon">☀️</div>
-          </div>
+        <div class="wc-text-group">
           <div class="wc-temp-row">
             <span class="wc-temp" id="wcTemp">--</span>
             <span class="wc-unit">°C</span>
@@ -758,28 +842,29 @@
       <button class="channel-chip active" id="btnSimple"   onclick="setChannel('simple')">简单吃吃</button>
       <button class="channel-chip" id="btnBeverage" onclick="setChannel('beverage')">喝点什么</button>
     </div>
-    <button class="cta-btn" id="startBtn" onclick="goToWheel()">开始！</button>
+    <button class="cta-btn" id="startBtn" onclick="goToGacha()">开始！</button>
   </div>
 </div>
 
 <!-- ══════════════════════ 转盘屏幕 ══════════════════════ -->
-<div id="screen-wheel">
-  <div class="wheel-top-zone">
-    <div class="nav-bar">
-      <button class="nav-pill" onclick="goToMain()">← 返回</button>
-      <div></div>
-    </div>
-    <div class="wheel-eyebrow" id="wheelEyebrow">让命运决定</div>
-    <div class="wheel-big-title" id="wheelTitle">转动轮盘！</div>
+<div id="screen-gacha">
+  <div class="wheel-nav">
+    <button class="nav-pill" onclick="goToMain()">← 返回</button>
   </div>
-  <div class="wheel-bottom-zone">
-    <svg class="pointer-gold" width="36" height="32" viewBox="0 0 36 32">
-      <path d="M18 28 L3 3 L33 3 Z" fill="#FFBF00" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
-    </svg>
-    <div class="plush-ring">
+  <div class="wheel-body">
+    <div class="wheel-wrap" style="position:relative;display:flex;flex-direction:column;align-items:center;">
+      <div class="wheel-pointer-wrap"><div class="wheel-pointer"></div></div>
       <div class="wheel-frame">
-        <canvas id="wheelCanvas"></canvas>
-        <button class="spin-btn" id="spinBtn" onclick="spin()">转！</button>
+        <div class="wheel-inner">
+          <canvas id="wheelCanvas"></canvas>
+        </div>
+        <button class="spin-center-btn" id="spinBtn" onclick="doSpin()">转！</button>
+      </div>
+    </div>
+    <div class="wheel-result-bar" id="wheelResultBar">
+      <div class="wheel-result-food" id="wheelFoodLabel"></div>
+      <div class="wheel-result-actions">
+        <button class="wheel-action primary" onclick="wheelViewDetail()">查看详情</button>
       </div>
     </div>
   </div>
@@ -790,7 +875,7 @@
   <div class="result-top" id="resultTop">
     <div class="nav-bar">
       <button class="nav-pill" onclick="goToMain()">← 返回</button>
-      <button class="nav-pill" onclick="goToWheel()">再抽</button>
+      <button class="nav-pill" onclick="goToGacha()">再抽</button>
     </div>
     <div class="result-eyebrow">
       <span>✦ 命运已定</span><span>今日推荐</span>
@@ -810,7 +895,7 @@
   <div class="result-bottom" id="resultBottom">
     <div class="result-emoji-display" id="rEmoji">🍲</div>
     <div class="result-bottom-actions">
-      <button class="again-btn" onclick="goToWheel()">再抽一次</button>
+      <button class="again-btn" onclick="goToGacha()">再抽一次</button>
     </div>
   </div>
 </div>
@@ -820,73 +905,131 @@
 //  食物数据
 // ══════════════════════════════════════════════════════
 const foods = [
-  { zh:'烤肉',     en:'BBQ',                  emoji:'🥩', w:5, kw:{zh:'烤肉',      en:'barbecue'},            desc:{zh:'今晚就是你了，牛！',             en:'Smoky & sizzling perfection!'},    mealType:['dinner'],    color:'#FF8C42' },
-  { zh:'日料',     en:'Japanese',             emoji:'🍣', w:4, kw:{zh:'日本料理',  en:'japanese food'},       desc:{zh:'装一次精致的自己吧！',           en:'Elegant & refined flavors!'},      mealType:['all-day'],   color:'#FF6B9D' },
-  { zh:'粤菜',     en:'Cantonese',            emoji:'🦐', w:4, kw:{zh:'粤菜',      en:'cantonese food'},      desc:{zh:'清淡？不，是矜持的鲜！',          en:'Fresh & delicate Guangdong!'},     mealType:['all-day'],   color:'#F4A261' },
-  { zh:'东北菜',   en:'NE Chinese',           emoji:'🥘', w:4, kw:{zh:'东北菜',    en:'northeast chinese'},   desc:{zh:'份量大到老板以为你带了全家！',     en:'Hearty portions, warm your soul!'}, mealType:['all-day'],  color:'#E76F51' },
-  { zh:'砂锅',     en:'Clay Pot',             emoji:'🍚', w:4, kw:{zh:'砂锅',      en:'clay pot'},            desc:{zh:'软软糯糯，像胃被人轻轻拥抱！',    en:'Silky smooth & comforting!'},      mealType:['dinner'],    color:'#84A98C' },
-  { zh:'椰子鸡',   en:'Coconut Chicken',      emoji:'🥥', w:4, kw:{zh:'椰子鸡',    en:'coconut chicken'},     desc:{zh:'鸡：我本来想去海边的……',         en:'Fragrant coconut & tender chicken!'},mealType:['dinner'],  color:'#52B788' },
-  { zh:'麻辣烫',   en:'Malatang',             emoji:'🌶️', w:5, kw:{zh:'麻辣烫',    en:'malatang'},            desc:{zh:'自选地狱，主打一个心甘情愿！',    en:'Numbing, spicy & addictive!'},     mealType:['all-day'],   color:'#E63946' },
-  { zh:'螺蛳粉',   en:'Snail Noodles',        emoji:'🍜', w:4, kw:{zh:'螺蛳粉',    en:'luosifen noodles'},    desc:{zh:'那股味儿，是你今天的试炼！',       en:'Stinky & irresistible!'},          mealType:['all-day'],   color:'#F77F00' },
-  { zh:'KFC',      en:'KFC',                  emoji:'🍗', w:4, kw:{zh:'KFC肯德基', en:'KFC'},                 desc:{zh:'炸鸡没有感情，但你有！',          en:'Crispy chicken, double the joy!'}, mealType:['all-day'],   color:'#D62828' },
-  { zh:'麦当劳',   en:"McDonald's",           emoji:'🍔', w:4, kw:{zh:'麦当劳',    en:"mcdonald's"},          desc:{zh:'我就喜欢！',                     en:"I'm lovin' it!"},                  mealType:['all-day'],   color:'#F4A261' },
-  { zh:'羊肉串',   en:'Lamb Skewers',         emoji:'🍢', w:4, kw:{zh:'羊肉串',    en:'lamb skewers'},        desc:{zh:'撸串，社交货币开始结算！',        en:'Charred & fragrant skewers!'},     mealType:['all-day'],   color:'#BF4E30' },
-  { zh:'轻食沙拉', en:'Salad Bowl',           emoji:'🥗', w:8, kw:{zh:'轻食沙拉',  en:'salad healthy food'},  desc:{zh:'肌肉在向你招手，脂肪在跟你拜拜！', en:'Low-cal, high-protein, abs!'},    mealType:['lunch'],     color:'#52B788' },
-  { zh:'简餐',     en:'Simple Meal',          emoji:'🥙', w:4, kw:{zh:'简餐轻食',  en:'simple meal'},         desc:{zh:'别人吃龙虾，你在感悟人生！',       en:'Simple but satisfying!'},          mealType:['lunch'],     color:'#84A98C' },
-  { zh:'煲仔饭',   en:'Claypot Rice',         emoji:'🍱', w:4, kw:{zh:'煲仔饭',    en:'claypot rice'},        desc:{zh:'锅底那层焦饭，才是精华所在！',    en:'Wok-charred & fragrant!'},         mealType:['lunch'],     color:'#CA6702' },
-  { zh:'包子',     en:'Steamed Buns',         emoji:'🥟', w:3, kw:{zh:'包子',      en:'baozi'},               desc:{zh:'热乎乎的包子，童年最美的记忆！',   en:'Fluffy warm buns, so satisfying!'}, mealType:['breakfast'], color:'#ADB5BD' },
-  { zh:'河粉',     en:'Rice Noodles',         emoji:'🍝', w:4, kw:{zh:'河粉',      en:'rice noodles'},        desc:{zh:'滑进去了，烦恼也一起溜走了！',    en:'Silky smooth Vietnamese vibes!'},  mealType:['all-day'],   color:'#A8C4A2' },
-  { zh:'肠粉',     en:'Rice Roll',            emoji:'🌯', w:4, kw:{zh:'肠粉',      en:'cheung fun'},          desc:{zh:'一秒变广州人，撑肠拄腹！',        en:'Silky rice rolls, classic!'},      mealType:['all-day'],   color:'#B5C4B1' },
-  { zh:'海鲜砂锅粥',en:'Seafood Congee',      emoji:'🦞', w:4, kw:{zh:'海鲜砂锅粥',en:'seafood congee'},      desc:{zh:'海鲜：今晚我们光荣牺牲了！',      en:'Ocean-fresh goodness in a pot!'}, mealType:['all-day'],    color:'#4A90D9' },
-  { zh:'川菜',     en:'Sichuan',              emoji:'🥵', w:4, kw:{zh:'川菜',      en:'sichuan food'},        desc:{zh:'辣到明天还能感受到今天！',        en:'Bold, spicy & mouthwatering!'},    mealType:['all-day'],   color:'#C0392B' },
-  { zh:'湘菜',     en:'Hunan',                emoji:'🫑', w:4, kw:{zh:'湘菜',      en:'hunan food'},          desc:{zh:'辣椒：我们是认真的，非常认真！',   en:'Pure spicy, Hunan-style heat!'},   mealType:['all-day'],   color:'#27AE60' },
-  { zh:'杭帮菜',   en:'Hangzhou',             emoji:'🍃', w:4, kw:{zh:'杭帮菜',    en:'hangzhou food'},       desc:{zh:'西湖醋鱼：优雅地酸一下！',        en:'Delicate & elegant Jiangnan!'},    mealType:['all-day'],   color:'#1ABC9C' },
-  { zh:'烤鸭',     en:'Roast Duck',           emoji:'🦆', w:4, kw:{zh:'烤鸭',      en:'roast duck'},          desc:{zh:'脆皮是信仰，蘸酱是仪式！',        en:'Crispy skin, juicy Beijing duck!'}, mealType:['dinner'],   color:'#D4622A' },
-  { zh:'煎饼果子', en:'Jianbing',             emoji:'🫔', w:3, kw:{zh:'煎饼果子',  en:'jianbing crepe'},      desc:{zh:'一张饼里包住整个早晨！',          en:'King of street breakfast!'},       mealType:['breakfast'], color:'#F39C12' },
-  { zh:'拉面',     en:'Ramen',                emoji:'🍜', w:4, kw:{zh:'拉面',      en:'ramen noodles'},       desc:{zh:'用一碗拉面代替心灵SPA！',         en:'Chewy noodles, rich broth!'},      mealType:['all-day'],   color:'#8E44AD' },
-  { zh:'肉夹馍',   en:'Chinese Burger',       emoji:'🥪', w:4, kw:{zh:'肉夹馍',    en:'roujiamo'},            desc:{zh:'西安汉堡，早出现两千年！',        en:"Xi'an's legendary sandwich!"},     mealType:['all-day'],   color:'#E67E22' },
-  { zh:'凉皮',     en:'Liangpi',              emoji:'🥒', w:4, kw:{zh:'凉皮',      en:'liangpi'},             desc:{zh:'透心凉，心飞扬！',               en:'Cool, chewy & refreshing!'},       mealType:['all-day'],   color:'#16A085' },
-  { zh:'自助餐',   en:'Buffet',               emoji:'🍽️', w:3, kw:{zh:'自助餐',    en:'buffet restaurant'},   desc:{zh:'今天开始要回本，先原地热身！',     en:'All-you-can-eat, maximize value!'}, mealType:['dinner'],   color:'#2980B9' },
-  { zh:'小龙虾',   en:'Crayfish',             emoji:'🦞', w:5, kw:{zh:'小龙虾',    en:'crayfish'},            desc:{zh:'手指染红，快乐翻倍！',            en:'Summer night essential!'},         mealType:['dinner'],    color:'#E74C3C' },
-  { zh:'烤鱼',     en:'Grilled Fish',         emoji:'🐟', w:5, kw:{zh:'烤鱼',      en:'grilled fish'},        desc:{zh:'鱼在翻滚，你在微笑！',            en:'Spicy, tender & irresistible!'},   mealType:['dinner'],    color:'#2471A3' },
-  { zh:'串串香',   en:'Skewer Hot Pot',       emoji:'🍡', w:5, kw:{zh:'串串香',    en:'chuanchuan hotpot'},   desc:{zh:'每一签都是艰难的选择！',          en:'Every skewer is happiness!'},      mealType:['dinner'],    color:'#E67E22' },
-  { zh:'酸菜鱼',   en:'Sauerkraut Fish',      emoji:'🐠', w:5, kw:{zh:'酸菜鱼',    en:'sauerkraut fish'},     desc:{zh:'鱼在酸菜里，你在幸福里！',        en:'Tangy, tender & rice-killer!'},    mealType:['dinner'],    color:'#117A65' },
-  { zh:'炸鸡',     en:'Fried Chicken',        emoji:'🍗', w:5, kw:{zh:'炸鸡',      en:'fried chicken'},       desc:{zh:'今天不需要理由，只需要炸鸡！',     en:'Crispy outside, juicy inside!'},   mealType:['dinner'],    color:'#D35400' },
-  { zh:'披萨',     en:'Pizza',                emoji:'🍕', w:4, kw:{zh:'披萨',      en:'pizza'},               desc:{zh:'芝士就是正义！',                 en:'Cheesy pull, life is good!'},      mealType:['all-day'],   color:'#CB4335' },
-  { zh:'黄焖鸡米饭',en:'Braised Chicken',     emoji:'🍛', w:5, kw:{zh:'黄焖鸡米饭',en:'braised chicken rice'}, desc:{zh:'国民外卖扛把子！',              en:"China's most ordered delivery!"}, mealType:['lunch'],      color:'#CA6702' },
-  { zh:'盖浇饭',   en:'Rice with Topping',    emoji:'🍚', w:4, kw:{zh:'盖浇饭',    en:'rice with topping'},   desc:{zh:'往饭上一盖，问题都解决了！',      en:'One pour, all problems solved!'},  mealType:['lunch'],     color:'#A04000' },
-  { zh:'麻辣香锅', en:'Mala Dry Pot',         emoji:'🌶️', w:4, kw:{zh:'麻辣香锅',  en:'mala dry pot'},        desc:{zh:'干锅不干，麻辣到底！',            en:'Dry pot, wet your appetite!'},     mealType:['dinner'],    color:'#B03A2E' },
-  { zh:'重庆火锅', en:'Chongqing Hotpot',     emoji:'🌶️', w:5, kw:{zh:'重庆火锅',  en:'chongqing hotpot'},    desc:{zh:'九宫格里的人生百味，辣到飞升！',  en:'Nine-grid inferno!'},              mealType:['dinner'],    color:'#922B21' },
-  { zh:'牛排',     en:'Steak',                emoji:'🥩', w:4, kw:{zh:'牛排西餐',  en:'steak western food'},  desc:{zh:'几分熟？这是今晚最重要的问题！',  en:"How well done? Tonight's big Q!"},  mealType:['all-day'],   color:'#7B241C' },
-  { zh:'广式早茶', en:'Dim Sum',              emoji:'🫖', w:4, kw:{zh:'广式早茶点心',en:'dim sum cantonese'},  desc:{zh:'一盅两件，人生最美好的上午！',     en:'Dim sum & tea, perfect morning!'}, mealType:['breakfast'],  color:'#A04000' },
-  { zh:'小笼包',   en:'Xiaolongbao',          emoji:'🥟', w:5, kw:{zh:'小笼包',    en:'xiaolongbao'},         desc:{zh:'先开窗再吸汤，别烫嘴！',          en:'Soup dumplings, sip slowly!'},     mealType:['breakfast'], color:'#CCD1D1' },
-  { zh:'热干面',   en:'Hot Dry Noodles',      emoji:'🍜', w:4, kw:{zh:'热干面',    en:'hot dry noodles'},     desc:{zh:'武汉人：没吃这碗，这天没开始！',  en:"Wuhan's iconic noodles!"},         mealType:['breakfast'], color:'#935116' },
-  { zh:'刀削面',   en:'Knife-cut Noodles',    emoji:'🍜', w:4, kw:{zh:'刀削面',    en:'knife cut noodles'},   desc:{zh:'每一刀都是师傅的情绪价值！',      en:'Hand-shaved, silky & chewy!'},     mealType:['all-day'],   color:'#7D6608' },
-  { zh:'炒菜',     en:'Stir-fry',             emoji:'🍳', w:4, kw:{zh:'家常炒菜',  en:'stir fry'},            desc:{zh:'厨师用锅气告诉你，今晚有爱！',    en:'Homestyle comfort food!'},         mealType:['lunch'],     color:'#1E8449' },
-  { zh:'生煎包',   en:'Pan-fried Buns',       emoji:'🥟', w:4, kw:{zh:'生煎包',    en:'pan fried buns'},      desc:{zh:'底部那层脆，是上海的骄傲！',      en:'Crispy bottom, juicy burst!'},     mealType:['breakfast'], color:'#B7950B' },
-  { zh:'钵钵鸡',   en:'Bocbo Chicken',        emoji:'🍡', w:4, kw:{zh:'钵钵鸡',    en:'bocbo chicken'},       desc:{zh:'签签都选不完，快乐没有边界！',    en:'Numbing & spicy skewered!'},       mealType:['all-day'],   color:'#784212' },
-  { zh:'酸辣粉',   en:'Sour Spicy Noodles',   emoji:'🌶️', w:4, kw:{zh:'酸辣粉',    en:'sour spicy noodles'},  desc:{zh:'酸到皱眉，辣到流泪，还要再来！',   en:'Sour, spicy & addictive!'},        mealType:['all-day'],   color:'#922B21' },
-  { zh:'炸酱面',   en:'Zhajiangmian',         emoji:'🍜', w:4, kw:{zh:'炸酱面',    en:'zhajiang noodles'},    desc:{zh:'老北京炸酱面，胡同里的记忆！',    en:"Beijing's saucy noodles!"},        mealType:['all-day'],   color:'#6E2F1A' },
-  { zh:'水饺',     en:'Dumplings',            emoji:'🥢', w:4, kw:{zh:'水饺',      en:'dumplings'},           desc:{zh:'一口咬下去，里面全是幸福！',       en:'Thin skin, big filling, bliss!'}, mealType:['all-day'],    color:'#2E86C1' },
-  // 饮品
-  { zh:'奶茶',     en:'Milk Tea',             emoji:'🧋', w:3, kw:{zh:'奶茶',      en:'milk tea'},            desc:{zh:'下午茶的灵魂！',                 en:'Afternoon essential!'},            mealType:['all-day'],   color:'#7D6608' },
-  { zh:'水果茶',   en:'Fruit Tea',            emoji:'🍵', w:3, kw:{zh:'水果茶',    en:'fruit tea'},           desc:{zh:'酸酸甜甜，就像人生的调味！',      en:'Sweet & tangy life flavoring!'},   mealType:['all-day'],   color:'#E74C3C' },
-  { zh:'咖啡',     en:'Coffee',               emoji:'☕', w:3, kw:{zh:'咖啡',      en:'coffee'},              desc:{zh:'早起的秘诀，就藏在这一杯里！',    en:'Morning magic in a cup!'},         mealType:['all-day'],   color:'#6E2F1A' },
-  { zh:'柠檬茶',   en:'Lemon Tea',            emoji:'🍋', w:3, kw:{zh:'柠檬茶',    en:'lemon tea'},           desc:{zh:'一口柠檬，夏天就被治愈了！',      en:'One sip, summer solved!'},         mealType:['all-day'],   color:'#F4D03F' },
-  { zh:'果汁',     en:'Juice',                emoji:'🧃', w:3, kw:{zh:'果汁',      en:'juice'},               desc:{zh:'鲜果一榨，维C直接补充！',         en:'Fresh squeeze, instant wellness!'}, mealType:['all-day'],  color:'#E67E22' },
-  { zh:'气泡水',   en:'Sparkling Water',      emoji:'✨', w:3, kw:{zh:'气泡水',    en:'sparkling water'},     desc:{zh:'无糖无卡，健身人士的福音！',      en:'Zero guilt, pure fizz!'},          mealType:['all-day'],   color:'#2E86C1' },
-  { zh:'豆浆',     en:'Soy Milk',             emoji:'🥛', w:3, kw:{zh:'豆浆',      en:'soy milk'},            desc:{zh:'早餐标配，豆香四溢！',            en:'Breakfast staple, bean perfect!'}, mealType:['breakfast'],  color:'#F5CBA7' },
-  { zh:'杨枝甘露', en:'Mango Pomelo Sago',    emoji:'🌴', w:3, kw:{zh:'杨枝甘露',  en:'mango pomelo sago'},   desc:{zh:'港式甜品，一口就是满足！',        en:'Cantonese sweet perfection!'},     mealType:['all-day'],   color:'#F7DC6F' },
-  { zh:'碳酸饮料', en:'Soft Drink',           emoji:'🥤', w:3, kw:{zh:'碳酸饮料',  en:'soft drink'},          desc:{zh:'嘶啦啦，少女的快乐！',            en:'Fizzy girl energy!'},              mealType:['all-day'],   color:'#1ABC9C' },
-  { zh:'白开水',   en:'Plain Water',          emoji:'💧', w:75, kw:null,           desc:{zh:'最便宜的养生，最朴素的智慧！',    en:'Simplest wellness, pure wisdom!'}, mealType:['all-day'],   color:'#5DADE2' },
-  { zh:'饿着',     en:'Skip It',              emoji:'😤', w:2,  kw:null,           desc:{zh:'这叫"间歇性进化"，不叫没吃！',   en:'Save money, embrace the fast...'}, mealType:['all-day'],   color:'#6C757D' },
-  { zh:'不吃',     en:"Don't Eat",            emoji:'🙅', w:2,  kw:null,           desc:{zh:'今天辟谷，明天少一克脂肪，值了！', en:'Fasting today, virtue +1'},       mealType:['all-day'],   color:'#495057' },
+  // ── 共享菜系 (简单吃吃 & 大吃一顿 同时出现) ─────────────────
+  { channel:'shared',   zh:'日料',      en:'Japanese',             emoji:'🍣', w:4, kw:{zh:'日本料理',    en:'japanese food'},         desc:{zh:'装一次精致的自己吧！',           en:'Elegant & refined flavors!'},      mealType:['all-day'],           color:'#FF6B9D' },
+  { channel:'shared',   zh:'粤菜',      en:'Cantonese',            emoji:'🦐', w:4, kw:{zh:'粤菜',        en:'cantonese food'},        desc:{zh:'清淡？不，是矜持的鲜！',          en:'Fresh & delicate Guangdong!'},     mealType:['all-day'],           color:'#F4A261' },
+  { channel:'shared',   zh:'川菜',      en:'Sichuan',              emoji:'🥵', w:4, kw:{zh:'川菜',        en:'sichuan food'},          desc:{zh:'辣到明天还能感受到今天！',        en:'Bold, spicy & mouthwatering!'},    mealType:['all-day'],           color:'#C0392B' },
+  { channel:'shared',   zh:'云南菜',    en:'Yunnan',               emoji:'🌿', w:4, kw:{zh:'云南菜',      en:'yunnan food'},           desc:{zh:'野性与清新的奇妙碰撞！',          en:'Wild & fresh mountain flavors!'},  mealType:['all-day'],           color:'#27AE60' },
+  { channel:'shared',   zh:'泰国菜',    en:'Thai',                 emoji:'🌶️', w:4, kw:{zh:'泰国菜',      en:'thai food'},             desc:{zh:'酸辣甜咸，一口全来了！',          en:'Sweet, sour, spicy perfection!'}, mealType:['all-day'],           color:'#F39C12' },
+  { channel:'shared',   zh:'鲁菜',      en:'Shandong',             emoji:'🥘', w:3, kw:{zh:'鲁菜',        en:'shandong food'},         desc:{zh:'八大菜系之首，功夫在火候！',       en:'King of Chinese cuisines!'},       mealType:['all-day'],           color:'#D4AC0D' },
+  { channel:'shared',   zh:'徽菜',      en:'Anhui',                emoji:'🍲', w:3, kw:{zh:'徽菜',        en:'anhui food'},            desc:{zh:'古徽州烟火气，藏在每一道菜！',    en:'Ancient & rich Anhui flavors!'},   mealType:['all-day'],           color:'#A04000' },
+  { channel:'shared',   zh:'苏菜',      en:'Jiangsu',              emoji:'🍱', w:3, kw:{zh:'苏菜 江苏菜', en:'jiangsu food'},          desc:{zh:'甜咸适宜，温柔如江南水乡！',      en:'Refined Jiangnan elegance!'},      mealType:['all-day'],           color:'#1E8449' },
+  { channel:'shared',   zh:'韩国料理',  en:'Korean',               emoji:'🥢', w:4, kw:{zh:'韩国料理 韩餐',en:'korean food'},          desc:{zh:'泡菜拌饭，韩剧既视感！',          en:'K-drama food energy!'},            mealType:['all-day'],           color:'#E74C3C' },
+  { channel:'shared',   zh:'贵州菜',    en:'Guizhou',              emoji:'🌶️', w:3, kw:{zh:'贵州菜',      en:'guizhou food'},          desc:{zh:'酸辣鲜香，黔味难忘！',            en:'Sour, spicy & unforgettable!'},    mealType:['all-day'],           color:'#8E44AD' },
+  // ── 简单吃吃 ────────────────────────────────────────────────
+  { channel:'simple',   zh:'螺蛳粉',    en:'Snail Noodles',        emoji:'🍜', w:4, kw:{zh:'螺蛳粉',      en:'luosifen noodles'},      desc:{zh:'那股味儿，是你今天的试炼！',       en:'Stinky & irresistible!'},          mealType:['all-day'],           color:'#F77F00' },
+  { channel:'simple',   zh:'轻食沙拉',  en:'Salad Bowl',           emoji:'🥗', w:8, kw:{zh:'轻食沙拉',    en:'salad healthy food'},    desc:{zh:'脂肪在跟你拜拜，肌肉在招手！',    en:'Low-cal, high-protein, abs!'},     mealType:['lunch'],             color:'#52B788' },
+  { channel:'simple',   zh:'简餐',      en:'Simple Meal',          emoji:'🥙', w:4, kw:{zh:'简餐轻食',    en:'simple meal'},           desc:{zh:'别人吃龙虾，你在感悟人生！',       en:'Simple but satisfying!'},          mealType:['lunch'],             color:'#84A98C' },
+  { channel:'simple',   zh:'煲仔饭',    en:'Claypot Rice',         emoji:'🍱', w:4, kw:{zh:'煲仔饭',      en:'claypot rice'},          desc:{zh:'锅底那层焦饭，才是精华！',         en:'Wok-charred & fragrant!'},         mealType:['lunch'],             color:'#CA6702' },
+  { channel:'simple',   zh:'包子',      en:'Steamed Buns',         emoji:'🥟', w:3, kw:{zh:'包子',        en:'baozi'},                 desc:{zh:'热乎乎的包子，童年最美记忆！',    en:'Fluffy warm buns, so satisfying!'}, mealType:['breakfast'],        color:'#ADB5BD' },
+  { channel:'simple',   zh:'河粉',      en:'Rice Noodles',         emoji:'🍝', w:4, kw:{zh:'河粉',        en:'rice noodles'},          desc:{zh:'滑进去了，烦恼也溜走了！',         en:'Silky smooth Vietnamese vibes!'},  mealType:['all-day'],           color:'#A8C4A2' },
+  { channel:'simple',   zh:'肠粉',      en:'Rice Roll',            emoji:'🌯', w:4, kw:{zh:'肠粉',        en:'cheung fun'},            desc:{zh:'一秒变广州人，撑肠拄腹！',         en:'Silky rice rolls, classic!'},      mealType:['all-day'],           color:'#B5C4B1' },
+  { channel:'simple',   zh:'煎饼果子',  en:'Jianbing',             emoji:'🫔', w:3, kw:{zh:'煎饼果子',    en:'jianbing crepe'},        desc:{zh:'一张饼里包住整个早晨！',           en:'King of street breakfast!'},       mealType:['breakfast'],         color:'#F39C12' },
+  { channel:'simple',   zh:'烤冷面',    en:'Grilled Cold Noodles', emoji:'🍜', w:3, kw:{zh:'烤冷面',      en:'grilled cold noodles'},  desc:{zh:'东北路边摊，一口就是青春！',       en:'Northeast street food classic!'},  mealType:['all-day'],           color:'#E67E22' },
+  { channel:'simple',   zh:'拉面',      en:'Ramen',                emoji:'🍜', w:4, kw:{zh:'拉面',        en:'ramen noodles'},         desc:{zh:'用一碗拉面代替心灵SPA！',          en:'Chewy noodles, rich broth!'},      mealType:['all-day'],           color:'#8E44AD' },
+  { channel:'simple',   zh:'板面',      en:'Banmian',              emoji:'🍜', w:3, kw:{zh:'板面',        en:'banmian noodles'},       desc:{zh:'安徽板面，劲道十足！',             en:'Chewy Anhui-style noodles!'},      mealType:['all-day'],           color:'#D4AC0D' },
+  { channel:'simple',   zh:'肉夹馍',    en:'Chinese Burger',       emoji:'🥪', w:4, kw:{zh:'肉夹馍',      en:'roujiamo'},              desc:{zh:'西安汉堡，早出现两千年！',         en:"Xi'an's legendary sandwich!"},     mealType:['all-day'],           color:'#E67E22' },
+  { channel:'simple',   zh:'羊肉泡馍',  en:'Lamb Bread Soup',      emoji:'🍲', w:4, kw:{zh:'羊肉泡馍',    en:'lamb bread soup'},       desc:{zh:'西安人的早饭，掰馍需要耐心！',    en:"Xi'an's legendary bread soup!"},   mealType:['breakfast','lunch'], color:'#A04000' },
+  { channel:'simple',   zh:'凉皮',      en:'Liangpi',              emoji:'🥒', w:4, kw:{zh:'凉皮',        en:'liangpi'},               desc:{zh:'透心凉，心飞扬！',                 en:'Cool, chewy & refreshing!'},       mealType:['all-day'],           color:'#16A085' },
+  { channel:'simple',   zh:'烤鱼',      en:'Grilled Fish',         emoji:'🐟', w:5, kw:{zh:'烤鱼',        en:'grilled fish'},          desc:{zh:'鱼在翻滚，你在微笑！',             en:'Spicy, tender & irresistible!'},   mealType:['dinner'],            color:'#2471A3' },
+  { channel:'simple',   zh:'串串香',    en:'Skewer Hot Pot',       emoji:'🍡', w:5, kw:{zh:'串串香',      en:'chuanchuan hotpot'},     desc:{zh:'每一签都是艰难的选择！',           en:'Every skewer is happiness!'},      mealType:['dinner'],            color:'#E67E22' },
+  { channel:'simple',   zh:'港式茶餐厅',en:'HK Cafe',              emoji:'🫖', w:4, kw:{zh:'港式茶餐厅 茶餐厅',en:'hong kong cafe'},    desc:{zh:'冻柠茶+菠萝油=香港精神！',        en:'Iconic HK cafe culture!'},         mealType:['all-day'],           color:'#F4A261' },
+  { channel:'simple',   zh:'牛蛙',      en:'Bullfrog',             emoji:'🐸', w:4, kw:{zh:'牛蛙 蛙肉',   en:'bullfrog'},              desc:{zh:'辣得够劲，蛙腿比鸡腿嫩！',         en:'Tender & spicy frog legs!'},       mealType:['dinner'],            color:'#27AE60' },
+  { channel:'simple',   zh:'水饺',      en:'Dumplings',            emoji:'🥢', w:4, kw:{zh:'水饺',        en:'dumplings'},             desc:{zh:'一口咬下去，里面全是幸福！',       en:'Thin skin, big filling, bliss!'},  mealType:['all-day'],           color:'#2E86C1' },
+  { channel:'simple',   zh:'烧腊',      en:'Roasted Meats',        emoji:'🍖', w:4, kw:{zh:'烧腊 叉烧 烧鸭',en:'cantonese roasted meats'}, desc:{zh:'叉烧烧鸭，广东人的日常！',     en:'Cantonese roasted perfection!'},   mealType:['all-day'],           color:'#C0392B' },
+  { channel:'simple',   zh:'猪脚饭',    en:'Pork Knuckle Rice',    emoji:'🍱', w:4, kw:{zh:'猪脚饭',      en:'pork knuckle rice'},     desc:{zh:'胶原蛋白拌饭，天然美容院！',       en:'Collagen-rich & satisfying!'},     mealType:['lunch'],             color:'#A04000' },
+  { channel:'simple',   zh:'葱油拌面',  en:'Scallion Oil Noodles', emoji:'🍜', w:3, kw:{zh:'葱油拌面',    en:'scallion oil noodles'},  desc:{zh:'上海人的简单快乐！',               en:'Simple Shanghai comfort!'},        mealType:['all-day'],           color:'#1E8449' },
+  { channel:'simple',   zh:'小笼包',    en:'Xiaolongbao',          emoji:'🥟', w:5, kw:{zh:'小笼包',      en:'xiaolongbao'},           desc:{zh:'先开窗再吸汤，别烫嘴！',           en:'Soup dumplings, sip slowly!'},     mealType:['breakfast'],         color:'#CCD1D1' },
+  { channel:'simple',   zh:'苏州面',    en:'Suzhou Noodles',       emoji:'🍜', w:3, kw:{zh:'苏州面 头汤面',en:'suzhou noodles'},        desc:{zh:'头汤面，清晨苏州的味道！',         en:'Silky Suzhou morning noodles!'},   mealType:['breakfast','lunch'], color:'#2E86C1' },
+  { channel:'simple',   zh:'热干面',    en:'Hot Dry Noodles',      emoji:'🍜', w:4, kw:{zh:'热干面',      en:'hot dry noodles'},       desc:{zh:'武汉人：没吃这碗，这天没开始！',  en:"Wuhan's iconic noodles!"},         mealType:['breakfast'],         color:'#935116' },
+  { channel:'simple',   zh:'刀削面',    en:'Knife-cut Noodles',    emoji:'🍜', w:4, kw:{zh:'刀削面',      en:'knife cut noodles'},     desc:{zh:'每一刀都是师傅的情绪价值！',       en:'Hand-shaved, silky & chewy!'},     mealType:['all-day'],           color:'#7D6608' },
+  { channel:'simple',   zh:'烩面',      en:'Braised Noodles',      emoji:'🍜', w:4, kw:{zh:'烩面',        en:'henan braised noodles'}, desc:{zh:'河南烩面，一碗暖胃！',             en:'Henan-style braised noodles!'},    mealType:['all-day'],           color:'#CA6702' },
+  { channel:'simple',   zh:'胡辣汤',    en:'Pepper Soup',          emoji:'🍲', w:3, kw:{zh:'胡辣汤',      en:'spicy pepper soup'},     desc:{zh:'辣辣的，胃暖了整个人也暖了！',    en:'Warming spicy pepper soup!'},      mealType:['breakfast'],         color:'#D35400' },
+  { channel:'simple',   zh:'沙茶面',    en:'Satay Noodles',        emoji:'🍜', w:3, kw:{zh:'沙茶面',      en:'satay noodles'},         desc:{zh:'闽南沙茶香，一口就爱上！',         en:'Fujian satay noodle magic!'},      mealType:['all-day'],           color:'#CA6702' },
+  { channel:'simple',   zh:'酸汤鱼',    en:'Sour Soup Fish',       emoji:'🐠', w:4, kw:{zh:'酸汤鱼',      en:'sour soup fish'},        desc:{zh:'贵州的酸，是灵魂的酸！',           en:'Guizhou sour broth perfection!'},  mealType:['dinner'],            color:'#27AE60' },
+  { channel:'simple',   zh:'羊肉粉',    en:'Lamb Noodle Soup',     emoji:'🍜', w:3, kw:{zh:'羊肉粉',      en:'lamb noodle soup'},      desc:{zh:'贵州羊肉粉，一口鲜到飞！',         en:'Rich lamb broth noodles!'},        mealType:['breakfast','lunch'], color:'#7D6608' },
+  { channel:'simple',   zh:'南昌拌粉',  en:'Nanchang Noodles',     emoji:'🍜', w:3, kw:{zh:'南昌拌粉',    en:'nanchang noodles'},      desc:{zh:'江西人的早餐执念！',               en:'Jiangxi morning obsession!'},      mealType:['breakfast','all-day'],color:'#D35400' },
+  { channel:'simple',   zh:'酸辣粉',    en:'Sour Spicy Noodles',   emoji:'🌶️', w:4, kw:{zh:'酸辣粉',     en:'sour spicy noodles'},    desc:{zh:'酸到皱眉，辣到流泪，还要再来！',  en:'Sour, spicy & addictive!'},        mealType:['all-day'],           color:'#922B21' },
+  { channel:'simple',   zh:'炸酱面',    en:'Zhajiangmian',         emoji:'🍜', w:4, kw:{zh:'炸酱面',      en:'zhajiang noodles'},      desc:{zh:'老北京炸酱面，胡同里的记忆！',    en:"Beijing's saucy noodles!"},        mealType:['all-day'],           color:'#6E2F1A' },
+  { channel:'simple',   zh:'扬州炒饭',  en:'Yangzhou Fried Rice',  emoji:'🍚', w:4, kw:{zh:'扬州炒饭',    en:'yangzhou fried rice'},   desc:{zh:'蛋炒饭的天花板，粒粒分明！',       en:'The king of fried rice!'},         mealType:['lunch'],             color:'#F4D03F' },
+  { channel:'simple',   zh:'瓦罐汤',    en:'Clay Jar Soup',        emoji:'🍲', w:3, kw:{zh:'瓦罐汤',      en:'clay jar soup'},         desc:{zh:'慢火煨出来的爱意！',               en:'Slow-cooked soul soup!'},          mealType:['all-day'],           color:'#84A98C' },
+  { channel:'simple',   zh:'黄焖鸡米饭',en:'Braised Chicken',      emoji:'🍛', w:5, kw:{zh:'黄焖鸡米饭',  en:'braised chicken rice'},  desc:{zh:'国民外卖扛把子！',                 en:"China's most ordered delivery!"}, mealType:['lunch'],             color:'#CA6702' },
+  { channel:'simple',   zh:'盖浇饭',    en:'Rice Bowl',            emoji:'🍚', w:4, kw:{zh:'盖浇饭',      en:'rice with topping'},     desc:{zh:'往饭上一盖，问题都解决了！',       en:'One pour, all problems solved!'},  mealType:['lunch'],             color:'#A04000' },
+  { channel:'simple',   zh:'麻辣香锅',  en:'Mala Dry Pot',         emoji:'🌶️', w:4, kw:{zh:'麻辣香锅',    en:'mala dry pot'},          desc:{zh:'干锅不干，麻辣到底！',             en:'Dry pot, wet your appetite!'},     mealType:['dinner'],            color:'#B03A2E' },
+  { channel:'simple',   zh:'鸡公煲',    en:'Spicy Chicken Pot',    emoji:'🍲', w:4, kw:{zh:'鸡公煲',      en:'spicy chicken pot'},     desc:{zh:'土鸡煮锅，辣到停不下来！',         en:'Spicy clay pot chicken!'},         mealType:['dinner'],            color:'#E67E22' },
+  { channel:'simple',   zh:'过桥米线',  en:'Crossing Bridge Noodles',emoji:'🍜',w:4,kw:{zh:'过桥米线',   en:'crossing bridge noodles'},desc:{zh:'云南的浪漫，在一碗汤里！',         en:"Yunnan's legendary noodles!"},     mealType:['all-day'],           color:'#2E86C1' },
+  { channel:'simple',   zh:'鸡蛋灌饼',  en:'Egg Flatbread',        emoji:'🫔', w:3, kw:{zh:'鸡蛋灌饼',    en:'egg flatbread'},         desc:{zh:'脆脆的饼，烫烫的蛋！',             en:'Crispy egg-stuffed flatbread!'},   mealType:['breakfast'],         color:'#F39C12' },
+  { channel:'simple',   zh:'韩式烤肉',  en:'Korean BBQ',           emoji:'🥩', w:4, kw:{zh:'韩式烤肉',    en:'korean bbq'},            desc:{zh:'烤到滋滋响，蘸酱大口吃！',         en:'Sizzling Korean BBQ bliss!'},      mealType:['dinner'],            color:'#D35400' },
+  // ── 大吃一顿 ────────────────────────────────────────────────
+  { channel:'feast',    zh:'烤肉',      en:'BBQ',                  emoji:'🥩', w:5, kw:{zh:'烤肉',        en:'barbecue'},              desc:{zh:'今晚就是你了，牛！',             en:'Smoky & sizzling perfection!'},    mealType:['dinner'],    color:'#FF8C42' },
+  { channel:'feast',    zh:'东北菜',    en:'NE Chinese',           emoji:'🥘', w:4, kw:{zh:'东北菜',      en:'northeast chinese'},     desc:{zh:'份量大到老板以为你带了全家！',    en:'Hearty portions, warm your soul!'}, mealType:['all-day'],           color:'#E76F51' },
+  { channel:'feast',    zh:'砂锅',      en:'Clay Pot',             emoji:'🍚', w:4, kw:{zh:'砂锅',        en:'clay pot'},              desc:{zh:'软软糯糯，像胃被人轻轻拥抱！',    en:'Silky smooth & comforting!'},      mealType:['dinner'],            color:'#84A98C' },
+  { channel:'feast',    zh:'椰子鸡',    en:'Coconut Chicken',      emoji:'🥥', w:4, kw:{zh:'椰子鸡',      en:'coconut chicken'},       desc:{zh:'鸡：我本来想去海边的……',          en:'Fragrant coconut & tender chicken!'},mealType:['dinner'],          color:'#52B788' },
+  { channel:'feast',    zh:'麻辣烫',    en:'Malatang',             emoji:'🌶️', w:5, kw:{zh:'麻辣烫',      en:'malatang'},              desc:{zh:'自选地狱，主打一个心甘情愿！',    en:'Numbing, spicy & addictive!'},     mealType:['all-day'],           color:'#E63946' },
+  { channel:'feast',    zh:'KFC',       en:'KFC',                  emoji:'🍗', w:4, kw:{zh:'KFC肯德基',   en:'KFC'},                   desc:{zh:'炸鸡没有感情，但你有！',          en:'Crispy chicken, double the joy!'}, mealType:['all-day'],           color:'#D62828' },
+  { channel:'feast',    zh:'麦当劳',    en:"McDonald's",           emoji:'🍔', w:4, kw:{zh:'麦当劳',      en:"mcdonald's"},            desc:{zh:'我就喜欢！',                      en:"I'm lovin' it!"},                  mealType:['all-day'],           color:'#F4A261' },
+  { channel:'feast',    zh:'羊肉串',    en:'Lamb Skewers',         emoji:'🍢', w:4, kw:{zh:'羊肉串',      en:'lamb skewers'},          desc:{zh:'撸串，社交货币开始结算！',         en:'Charred & fragrant skewers!'},     mealType:['all-day'],           color:'#BF4E30' },
+  { channel:'feast',    zh:'海鲜砂锅粥',en:'Seafood Congee',       emoji:'🦞', w:4, kw:{zh:'海鲜砂锅粥',  en:'seafood congee'},        desc:{zh:'海鲜：今晚我们光荣牺牲了！',       en:'Ocean-fresh goodness in a pot!'},  mealType:['all-day'],           color:'#4A90D9' },
+  { channel:'feast',    zh:'湘菜',      en:'Hunan',                emoji:'🫑', w:4, kw:{zh:'湘菜',        en:'hunan food'},            desc:{zh:'辣椒：我们是认真的，非常认真！',   en:'Pure spicy, Hunan-style heat!'},   mealType:['all-day'],           color:'#27AE60' },
+  { channel:'feast',    zh:'杭帮菜',    en:'Hangzhou',             emoji:'🍃', w:4, kw:{zh:'杭帮菜',      en:'hangzhou food'},         desc:{zh:'西湖醋鱼：优雅地酸一下！',         en:'Delicate & elegant Jiangnan!'},    mealType:['all-day'],           color:'#1ABC9C' },
+  { channel:'feast',    zh:'烤鸭',      en:'Roast Duck',           emoji:'🦆', w:4, kw:{zh:'烤鸭',        en:'roast duck'},            desc:{zh:'脆皮是信仰，蘸酱是仪式！',         en:'Crispy skin, juicy Beijing duck!'}, mealType:['dinner'],           color:'#D4622A' },
+  { channel:'feast',    zh:'自助餐',    en:'Buffet',               emoji:'🍽️', w:3, kw:{zh:'自助餐',      en:'buffet restaurant'},     desc:{zh:'今天开始要回本，先原地热身！',     en:'All-you-can-eat, maximize value!'}, mealType:['dinner'],           color:'#2980B9' },
+  { channel:'feast',    zh:'小龙虾',    en:'Crayfish',             emoji:'🦞', w:5, kw:{zh:'小龙虾',      en:'crayfish'},              desc:{zh:'手指染红，快乐翻倍！',             en:'Summer night essential!'},         mealType:['dinner'],            color:'#E74C3C' },
+  { channel:'feast',    zh:'冒菜',      en:'Maocai',               emoji:'🌶️', w:4, kw:{zh:'冒菜',        en:'maocai'},                desc:{zh:'成都的一人火锅，辣得孤独！',       en:'Solo hotpot Chengdu-style!'},      mealType:['all-day'],           color:'#E74C3C' },
+  { channel:'feast',    zh:'酸菜鱼',    en:'Sauerkraut Fish',      emoji:'🐠', w:5, kw:{zh:'酸菜鱼',      en:'sauerkraut fish'},       desc:{zh:'鱼在酸菜里，你在幸福里！',         en:'Tangy, tender & rice-killer!'},    mealType:['dinner'],            color:'#117A65' },
+  { channel:'feast',    zh:'炸鸡',      en:'Fried Chicken',        emoji:'🍗', w:5, kw:{zh:'炸鸡',        en:'fried chicken'},         desc:{zh:'今天不需要理由，只需要炸鸡！',     en:'Crispy outside, juicy inside!'},   mealType:['dinner'],            color:'#D35400' },
+  { channel:'feast',    zh:'披萨',      en:'Pizza',                emoji:'🍕', w:4, kw:{zh:'披萨',        en:'pizza'},                 desc:{zh:'芝士就是正义！',                   en:'Cheesy pull, life is good!'},      mealType:['all-day'],           color:'#CB4335' },
+  { channel:'feast',    zh:'重庆小面',  en:'Chongqing Noodles',    emoji:'🍜', w:4, kw:{zh:'重庆小面',    en:'chongqing noodles'},     desc:{zh:'辣到冒汗，还是停不下来！',         en:'Fiery Chongqing noodles!'},        mealType:['all-day'],           color:'#C0392B' },
+  { channel:'feast',    zh:'沙县小吃',  en:'Shaxian Snacks',       emoji:'🥟', w:4, kw:{zh:'沙县小吃',    en:'shaxian snacks'},        desc:{zh:'国民小吃，遍地开花！',             en:"China's most ubiquitous snacks!"}, mealType:['all-day'],           color:'#CA6702' },
+  { channel:'feast',    zh:'潮汕牛肉锅',en:'Chaoshan Beef Pot',    emoji:'🥩', w:4, kw:{zh:'潮汕牛肉锅 潮汕火锅',en:'chaoshan beef hotpot'}, desc:{zh:'鲜甜弹嫩，汕头的骄傲！',       en:'Ultra-fresh Chaoshan beef!'},      mealType:['dinner'],            color:'#E74C3C' },
+  { channel:'feast',    zh:'新疆菜',    en:'Xinjiang',             emoji:'🍖', w:4, kw:{zh:'新疆菜 新疆餐厅',en:'xinjiang food'},        desc:{zh:'大盘鸡和手抓饭，西域风情！',       en:'Hearty Central Asian flavors!'},   mealType:['all-day'],           color:'#F39C12' },
+  { channel:'feast',    zh:'炒菜',      en:'Stir-fry',             emoji:'🍳', w:4, kw:{zh:'家常炒菜',    en:'stir fry'},              desc:{zh:'厨师用锅气告诉你，今晚有爱！',     en:'Homestyle comfort food!'},         mealType:['lunch'],             color:'#1E8449' },
+  { channel:'feast',    zh:'越南菜',    en:'Vietnamese',           emoji:'🍜', w:3, kw:{zh:'越南菜 越南餐厅',en:'vietnamese food'},      desc:{zh:'清爽越式，河粉与春卷的盛宴！',    en:'Fresh Vietnamese delight!'},       mealType:['all-day'],           color:'#27AE60' },
+  { channel:'feast',    zh:'生煎包',    en:'Pan-fried Buns',       emoji:'🥟', w:4, kw:{zh:'生煎包',      en:'pan fried buns'},        desc:{zh:'底部那层脆，是上海的骄傲！',       en:'Crispy bottom, juicy burst!'},     mealType:['breakfast'],         color:'#B7950B' },
+  { channel:'feast',    zh:'手把肉',    en:'Hand-held Lamb',       emoji:'🍖', w:3, kw:{zh:'手把肉 手抓羊肉',en:'hand-held lamb'},      desc:{zh:'内蒙古草原，豪放地用手撕！',       en:'Inner Mongolia hand-torn lamb!'},  mealType:['dinner'],            color:'#7D6608' },
+  { channel:'feast',    zh:'烤羊腿',    en:'Roast Lamb Leg',       emoji:'🍖', w:4, kw:{zh:'烤羊腿',      en:'roast lamb leg'},        desc:{zh:'扎进去一口，孤独感消失了！',       en:'Juicy whole roasted lamb leg!'},   mealType:['dinner'],            color:'#D35400' },
+  { channel:'feast',    zh:'钵钵鸡',    en:'Bocbo Chicken',        emoji:'🍡', w:4, kw:{zh:'钵钵鸡',      en:'bocbo chicken'},         desc:{zh:'签签都选不完，快乐没有边界！',     en:'Numbing & spicy skewered!'},       mealType:['all-day'],           color:'#784212' },
+  { channel:'feast',    zh:'铁锅炖',    en:'Iron Pot Stew',        emoji:'🍲', w:4, kw:{zh:'铁锅炖',      en:'iron pot stew'},         desc:{zh:'东北铁锅，炖得熟烂入味！',         en:'Slow-cooked Northeast stew!'},     mealType:['dinner'],            color:'#5D6D7E' },
+  { channel:'feast',    zh:'闽菜',      en:'Fujian',               emoji:'🍜', w:3, kw:{zh:'闽菜 福建菜',  en:'fujian food'},           desc:{zh:'鲜甜清淡，闽南人的骄傲！',         en:'Light & fresh Fujian flavors!'},   mealType:['all-day'],           color:'#2E86C1' },
+  { channel:'feast',    zh:'馄饨',      en:'Wonton',               emoji:'🥟', w:4, kw:{zh:'馄饨',        en:'wonton soup'},           desc:{zh:'薄皮大馅，满满都是诚意！',         en:'Silky wontons in savory broth!'},  mealType:['all-day'],           color:'#ADB5BD' },
+  { channel:'feast',    zh:'炒花甲',    en:'Stir-fried Clams',     emoji:'🐚', w:4, kw:{zh:'炒花甲',      en:'stir fried clams'},      desc:{zh:'海鲜控的必选项！',                 en:'Spicy stir-fried shellfish!'},     mealType:['dinner'],            color:'#117A65' },
+  { channel:'feast',    zh:'石锅拌饭',  en:'Bibimbap',             emoji:'🍚', w:4, kw:{zh:'石锅拌饭 韩式拌饭',en:'bibimbap stone pot'}, desc:{zh:'咔滋咔滋底部锅巴，是信仰！',      en:'Crispy bottom bibimbap!'},         mealType:['lunch','dinner'],    color:'#E74C3C' },
+  { channel:'feast',    zh:'猪肚鸡',    en:'Pork Belly Chicken',   emoji:'🍲', w:4, kw:{zh:'猪肚鸡',      en:'pork belly chicken soup'},desc:{zh:'胡椒猪肚鸡，冬日暖身神器！',      en:'Pepper-powered warming soup!'},    mealType:['dinner'],            color:'#84A98C' },
+  { channel:'feast',    zh:'羊蝎子',    en:'Lamb Spine Pot',       emoji:'🍲', w:4, kw:{zh:'羊蝎子',      en:'lamb spine hotpot'},     desc:{zh:'啃骨头的满足感，无可替代！',       en:'Fall-off-the-bone lamb spine!'},   mealType:['dinner'],            color:'#7D6608' },
+  { channel:'feast',    zh:'重庆火锅',  en:'Chongqing Hotpot',     emoji:'🌶️', w:5, kw:{zh:'重庆火锅',    en:'chongqing hotpot'},      desc:{zh:'九宫格里的人生百味，辣到飞升！',  en:'Nine-grid inferno!'},              mealType:['dinner'],            color:'#922B21' },
+  { channel:'feast',    zh:'老北京火锅',en:'Beijing Hotpot',       emoji:'🍲', w:4, kw:{zh:'老北京火锅 铜锅涮肉',en:'beijing hotpot'},    desc:{zh:'铜锅涮肉，羊肉卷多来几份！',      en:'Classic Beijing copper pot!'},     mealType:['dinner'],            color:'#C0392B' },
+  { channel:'feast',    zh:'啫啫煲',    en:'Jeje Claypot',         emoji:'🍲', w:4, kw:{zh:'啫啫煲',      en:'jeje claypot'},          desc:{zh:'滋滋冒泡，广式热情！',             en:'Sizzling Cantonese claypot!'},     mealType:['dinner'],            color:'#D4622A' },
+  { channel:'feast',    zh:'牛排',      en:'Steak',                emoji:'🥩', w:4, kw:{zh:'牛排西餐',    en:'steak western food'},    desc:{zh:'几分熟？今晚最重要的问题！',       en:"How well done? Tonight's big Q!"}, mealType:['all-day'],           color:'#7B241C' },
+  { channel:'feast',    zh:'铁板烧',    en:'Teppanyaki',           emoji:'🥩', w:4, kw:{zh:'铁板烧',      en:'teppanyaki'},            desc:{zh:'铁板上的表演，视觉味觉双享受！',  en:'Sizzling teppanyaki spectacle!'},  mealType:['dinner'],            color:'#2C3E50' },
+  { channel:'feast',    zh:'海鲜大排档',en:'Seafood Stall',        emoji:'🦐', w:4, kw:{zh:'海鲜大排档',  en:'seafood food stall'},    desc:{zh:'吃海鲜，要在大排档！',             en:'Lively outdoor seafood feast!'},   mealType:['dinner'],            color:'#2471A3' },
+  { channel:'feast',    zh:'居酒屋',    en:'Izakaya',              emoji:'🍶', w:4, kw:{zh:'居酒屋 日式酒馆',en:'izakaya japanese bar'}, desc:{zh:'下班后的灵魂放松！',               en:'After-work Japanese escape!'},     mealType:['dinner'],            color:'#8E44AD' },
+  { channel:'feast',    zh:'日式烧肉',  en:'Japanese BBQ',         emoji:'🥩', w:4, kw:{zh:'日式烧肉',    en:'japanese bbq yakiniku'}, desc:{zh:'精致的碳火，精致的牛肉！',         en:'Premium Japanese wagyu BBQ!'},     mealType:['dinner'],            color:'#C0392B' },
+  { channel:'feast',    zh:'齐齐哈尔烤肉',en:'Qiqihar BBQ',        emoji:'🥩', w:3, kw:{zh:'齐齐哈尔烤肉',en:'qiqihar grilled meat'},  desc:{zh:'东北最正宗的炭火！',               en:"Northeast China's finest BBQ!"},   mealType:['dinner'],            color:'#E67E22' },
+  { channel:'feast',    zh:'江西菜',    en:'Jiangxi',              emoji:'🌶️', w:3, kw:{zh:'江西菜',      en:'jiangxi food'},          desc:{zh:'辣椒炒肉，简单粗暴真实惠！',       en:'Bold & fiery Jiangxi style!'},     mealType:['all-day'],           color:'#922B21' },
+  { channel:'feast',    zh:'客家菜',    en:'Hakka',                emoji:'🍲', w:3, kw:{zh:'客家菜',      en:'hakka food'},            desc:{zh:'客家人的豪情，藏在盐焗里！',       en:'Robust Hakka home cooking!'},      mealType:['all-day'],           color:'#A04000' },
+  { channel:'feast',    zh:'广式早茶',  en:'Dim Sum',              emoji:'🫖', w:4, kw:{zh:'广式早茶点心',en:'dim sum cantonese'},     desc:{zh:'一盅两件，人生最美好的上午！',     en:'Dim sum & tea, perfect morning!'}, mealType:['breakfast'],         color:'#A04000' },
+  { channel:'feast',    zh:'陕西菜',    en:'Shaanxi',              emoji:'🥙', w:3, kw:{zh:'陕西菜',      en:'shaanxi food'},          desc:{zh:'面食的故乡，吃遍陕西！',           en:'Shaanxi noodle wonderland!'},      mealType:['all-day'],           color:'#D4AC0D' },
+  { channel:'feast',    zh:'烩面',      en:'Braised Noodles',      emoji:'🍜', w:4, kw:{zh:'烩面',        en:'henan braised noodles'}, desc:{zh:'河南烩面，一碗暖胃！',             en:'Henan-style braised noodles!'},    mealType:['all-day'],           color:'#CA6702' },
+  { channel:'feast',    zh:'胡辣汤',    en:'Pepper Soup',          emoji:'🍲', w:3, kw:{zh:'胡辣汤',      en:'spicy pepper soup'},     desc:{zh:'辣辣的，胃暖了整个人也暖了！',    en:'Warming spicy pepper soup!'},      mealType:['breakfast'],         color:'#D35400' },
+  { channel:'feast',    zh:'刀削面',    en:'Knife-cut Noodles',    emoji:'🍜', w:4, kw:{zh:'刀削面',      en:'knife cut noodles'},     desc:{zh:'每一刀都是师傅的情绪价值！',       en:'Hand-shaved, silky & chewy!'},     mealType:['all-day'],           color:'#7D6608' },
+  { channel:'feast',    zh:'莜面',      en:'Oat Noodles',          emoji:'🍜', w:3, kw:{zh:'莜面',        en:'oat noodles'},           desc:{zh:'山西莜面，吃了不饿！',             en:'Hearty Shanxi oat noodles!'},      mealType:['all-day'],           color:'#D4AC0D' },
+  // ── 喝点什么 ────────────────────────────────────────────────
+  { channel:'beverage', zh:'奶茶',      en:'Milk Tea',             emoji:'🧋', w:3, kw:{zh:'奶茶',        en:'milk tea'},              desc:{zh:'下午茶的灵魂！',                   en:'Afternoon essential!'},            mealType:['all-day'],           color:'#7D6608' },
+  { channel:'beverage', zh:'水果茶',    en:'Fruit Tea',            emoji:'🍵', w:3, kw:{zh:'水果茶',      en:'fruit tea'},             desc:{zh:'酸酸甜甜，就像人生的调味！',       en:'Sweet & tangy life flavoring!'},   mealType:['all-day'],           color:'#E74C3C' },
+  { channel:'beverage', zh:'咖啡',      en:'Coffee',               emoji:'☕', w:3, kw:{zh:'咖啡',        en:'coffee'},                desc:{zh:'早起的秘诀，就藏在这一杯里！',     en:'Morning magic in a cup!'},         mealType:['all-day'],           color:'#6E2F1A' },
+  { channel:'beverage', zh:'柠檬茶',    en:'Lemon Tea',            emoji:'🍋', w:3, kw:{zh:'柠檬茶',      en:'lemon tea'},             desc:{zh:'一口柠檬，夏天就被治愈了！',       en:'One sip, summer solved!'},         mealType:['all-day'],           color:'#F4D03F' },
+  { channel:'beverage', zh:'果汁',      en:'Juice',                emoji:'🧃', w:3, kw:{zh:'果汁',        en:'juice'},                 desc:{zh:'鲜果一榨，维C直接补充！',          en:'Fresh squeeze, instant wellness!'},mealType:['all-day'],           color:'#E67E22' },
+  { channel:'beverage', zh:'气泡水',    en:'Sparkling Water',      emoji:'✨',  w:3, kw:{zh:'气泡水',      en:'sparkling water'},       desc:{zh:'无糖无卡，健身人士的福音！',       en:'Zero guilt, pure fizz!'},          mealType:['all-day'],           color:'#2E86C1' },
+  { channel:'beverage', zh:'豆浆',      en:'Soy Milk',             emoji:'🥛', w:3, kw:{zh:'豆浆',        en:'soy milk'},              desc:{zh:'早餐标配，豆香四溢！',             en:'Breakfast staple, bean perfect!'}, mealType:['breakfast'],         color:'#F5CBA7' },
+  { channel:'beverage', zh:'杨枝甘露',  en:'Mango Pomelo Sago',    emoji:'🌴', w:3, kw:{zh:'杨枝甘露',    en:'mango pomelo sago'},     desc:{zh:'港式甜品，一口就是满足！',         en:'Cantonese sweet perfection!'},     mealType:['all-day'],           color:'#F7DC6F' },
+  { channel:'beverage', zh:'碳酸饮料',  en:'Soft Drink',           emoji:'🥤', w:3, kw:{zh:'碳酸饮料',    en:'soft drink'},            desc:{zh:'嘶啦啦，少女的快乐！',             en:'Fizzy girl energy!'},              mealType:['all-day'],           color:'#1ABC9C' },
+  { channel:'beverage', zh:'萄汁',      en:'Grape Juice',          emoji:'🍇', w:3, kw:{zh:'葡萄汁 萄汁', en:'grape juice'},           desc:{zh:'紫色的浓郁，满满的甘甜！',         en:'Rich & sweet grape goodness!'},    mealType:['all-day'],           color:'#8E44AD' },
+  { channel:'beverage', zh:'植物蛋白饮料',en:'Plant Protein Drink', emoji:'🌿',w:3, kw:{zh:'植物蛋白饮料', en:'plant protein drink'},   desc:{zh:'绿色健康，蛋白质满满！',           en:'Plant-powered protein boost!'},    mealType:['all-day'],           color:'#27AE60' },
+  { channel:'beverage', zh:'低卡饮品',  en:'Low-cal Drink',        emoji:'🧃', w:3, kw:{zh:'低卡饮品',    en:'low calorie drink'},     desc:{zh:'喝得开心，也要喝得健康！',         en:'Guilt-free refreshment!'},         mealType:['all-day'],           color:'#52B788' },
+  { channel:'beverage', zh:'白开水',    en:'Plain Water',          emoji:'💧', w:75,kw:null,              desc:{zh:'最便宜的养生，最朴素的智慧！',     en:'Simplest wellness, pure wisdom!'},  mealType:['all-day'],          color:'#5DADE2' },
+  { channel:'beverage', zh:'饿着',      en:'Skip It',              emoji:'😤', w:2, kw:null,              desc:{zh:'这叫"间歇性进化"，不叫没吃！',    en:'Save money, embrace the fast...'},  mealType:['all-day'],          color:'#6C757D' },
+  { channel:'beverage', zh:'不吃',      en:"Don't Eat",            emoji:'🙅', w:2, kw:null,              desc:{zh:'今天辟谷，明天少一克脂肪，值了！', en:'Fasting today, virtue +1'},        mealType:['all-day'],          color:'#495057' },
 ];
-
-const beverageStart = 47;
-const simpleIdx = new Set([1,2,4,6,7,8,9,11,12,13,14,15,16,18,22,23,24,25,33,38,40,42,43,44,45,46]);
-const feastIdx  = new Set([0,1,2,3,5,8,9,17,18,19,20,21,27,28,29,30,31,35,36,37,26,32]);
-const sharedIdx = new Set([1,2,8,9,18,23,24,38]);
 
 // ══════════════════════════════════════════════════════
 //  i18n
@@ -957,7 +1100,6 @@ function setLang(l) {
   document.getElementById('btnZH').classList.toggle('active', l === 'zh');
   document.getElementById('btnEN').classList.toggle('active', l === 'en');
   applyLang();
-  if (typeof rotation !== 'undefined') drawWheel(rotation);
 }
 
 function applyLang() {
@@ -965,10 +1107,6 @@ function applyLang() {
   document.getElementById('heroEyebrow').textContent = tx.eyebrow;
   document.getElementById('heroTitle').innerHTML = tx.title;
   document.getElementById('startBtn').textContent = tx.startBtn;
-  document.getElementById('wheelEyebrow').textContent = tx.wheelEyebrow;
-  document.getElementById('wheelTitle').innerHTML = tx.wheelTitle;
-  const btn = document.getElementById('spinBtn');
-  if (!animating) btn.textContent = btn.dataset.spun ? tx.respun : tx.spin;
   if (currentFood) { rerenderResult(); }
   if (currentWeather) displayWeather(currentWeather);
   else document.getElementById('wcTapHint').innerHTML = lang === 'zh' ? '点击获取<br>当前天气' : 'Tap for<br>weather';
@@ -1039,7 +1177,6 @@ function onWeatherCardTap() {
     }
     currentWeather = weather;
     buildSegsWithWeather(getMealType(), weather);
-    drawWheel(rotation);
     displayWeather(weather);
   });
 }
@@ -1204,143 +1341,12 @@ function getWeight(f, mealType = null, weather = null) {
 }
 
 // ══════════════════════════════════════════════════════
-//  Canvas 转盘
+//  扭蛋机
 // ══════════════════════════════════════════════════════
-// 参考图6色系（按食物分类）
-const FIBER_COLORS = [
-  '#DC2626',  // 0 红 — 辣/烤/热
-  '#EA580C',  // 1 橙 — 快餐/面点/小吃
-  '#D97706',  // 2 黄 — 面/饭/主食
-  '#16A34A',  // 3 绿 — 健康/清淡
-  '#1D4ED8',  // 4 蓝 — 海鲜/精致
-  '#0891B2',  // 5 青 — 汤/锅/饮品
-];
 
-function getFiberColor(food) {
-  const z = food.zh;
-  // 红：辣/烤/炸/串
-  if (['烤肉','麻辣烫','螺蛳粉','KFC','川菜','湘菜','羊肉串','钵钵鸡','酸辣粉','烤羊腿',
-       '小龙虾','串串香','麻辣香锅','重庆火锅','炸鸡','牛排','烤鱼'].includes(z))
-    return FIBER_COLORS[0];
-  // 橙：快餐/面包/肉夹
-  if (['麦当劳','煎饼果子','烤冷面','肉夹馍','羊肉泡馍','烤鸭','黄焖鸡米饭','炸酱面',
-       '盖浇饭','披萨','广式早茶','生煎包','热干面'].includes(z))
-    return FIBER_COLORS[1];
-  // 黄：面/饭/包
-  if (['拉面','板面','扬州炒饭','煲仔饭','包子','河粉','肠粉','刀削面',
-       '水饺','简餐','小笼包','炒菜'].includes(z))
-    return FIBER_COLORS[2];
-  // 绿：健康/蔬菜/清淡
-  if (['轻食沙拉','凉皮','杭帮菜','东北菜','酸菜鱼'].includes(z))
-    return FIBER_COLORS[3];
-  // 蓝：海鲜/精致菜系
-  if (['日料','粤菜','海鲜砂锅粥','椰子鸡','砂锅','铁锅炖','徽菜','自助餐'].includes(z))
-    return FIBER_COLORS[4];
-  // 青：汤/锅/饮品/其他
-  return FIBER_COLORS[5];
-}
-let canvas, ctx, CX, CY, R, SIZE, segs = [], rotation = 0, activeFoods = [], totalW = 0;
+
+let segs = [], activeFoods = [], totalW = 0;
 let _appStarted = false;
-let wheelImg = null;
-
-function loadWheelImage() {
-  const img = new Image();
-  img.onload  = () => { wheelImg = img; if (ctx) drawWheel(rotation); };
-  img.onerror = () => { wheelImg = null; };
-  img.src = './wheel.jpg';
-}
-
-function initCanvas() {
-  const iw = window.innerWidth || 375;
-  SIZE = Math.max(260, Math.min(340, iw - 36));
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  canvas = document.getElementById('wheelCanvas');
-  canvas.style.width = SIZE + 'px'; canvas.style.height = SIZE + 'px';
-  canvas.width = SIZE * dpr; canvas.height = SIZE * dpr;
-  ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  CX = SIZE/2; CY = SIZE/2; R = SIZE/2 - 5;
-  loadWheelImage();
-  rebuildSegs();
-}
-
-const GAP_ANGLE = 0;
-const INNER_R = 0.28;
-
-// 颜色亮度调节
-function adjColor(hex, factor) {
-  const n = parseInt(hex.replace('#',''), 16);
-  const r = Math.min(255, Math.round(((n>>16)&255) * factor));
-  const g = Math.min(255, Math.round(((n>>8)&255)  * factor));
-  const b = Math.min(255, Math.round((n&255)        * factor));
-  return `rgb(${r},${g},${b})`;
-}
-
-// 绘制绒线纤维（放射状细线，批量描绘提高性能）
-function drawFibers(sa, ea, inner, outer, color, fast) {
-  // 底色填充
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(CX, CY, inner, sa, ea);
-  ctx.arc(CX, CY, outer, ea, sa, true);
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.restore();
-
-  if (fast) return; // 旋转中只填底色，停止后才画纤维
-
-  const arcLen = (ea - sa) * outer;
-  const num = Math.max(3, Math.floor(arcLen / 1.9));
-  // 3档亮度分批绘制（减少 strokeStyle 切换次数）
-  [[0, 0.82], [1, 1.05], [2, 1.28]].forEach(([off, bright]) => {
-    ctx.beginPath();
-    for (let i = off; i <= num; i += 3) {
-      const angle = sa + (ea - sa) * (i / num);
-      const wob   = Math.sin(i * 7.13 + angle * 4) * 0.010;
-      const r1    = inner + 1;
-      const r2    = outer - 2 - Math.abs(Math.cos(i * 3.7)) * 4;
-      ctx.moveTo(CX + Math.cos(angle + wob) * r1, CY + Math.sin(angle + wob) * r1);
-      ctx.lineTo(CX + Math.cos(angle)       * r2, CY + Math.sin(angle)       * r2);
-    }
-    ctx.strokeStyle = adjColor(color, bright);
-    ctx.lineWidth   = 1.7;
-    ctx.globalAlpha = 0.55;
-    ctx.stroke();
-  });
-  ctx.globalAlpha = 1;
-}
-
-function drawWheel(rot, fast = false) {
-  if (!ctx) return;
-  ctx.clearRect(0, 0, SIZE, SIZE);
-  const inner = R * INNER_R;
-
-  // ── 按食物权重绘制纤维色块 ──
-  segs.forEach((seg) => {
-    const sa = seg.sa + rot, ea = seg.ea + rot;
-    if (ea - sa < 0.005) return;
-    drawFibers(sa, ea, inner, R, getFiberColor(seg), fast);
-  });
-
-  // ── 外缘描边 ──
-  ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 3; ctx.stroke();
-
-  // ── 中心圆顶（奶白色，与图片风格一致）──
-  const hubR = inner * 1.08;
-  const hub  = ctx.createRadialGradient(CX - hubR*0.3, CY - hubR*0.35, 1, CX, CY, hubR);
-  hub.addColorStop(0,    '#fff9f0');
-  hub.addColorStop(0.30, '#f5ead8');
-  hub.addColorStop(0.65, '#dcc8b0');
-  hub.addColorStop(1,    '#a08868');
-  ctx.beginPath(); ctx.arc(CX, CY, hubR, 0, Math.PI * 2);
-  ctx.fillStyle = hub; ctx.fill();
-  ctx.beginPath(); ctx.arc(CX, CY, hubR, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255,248,230,0.7)'; ctx.lineWidth = 2; ctx.stroke();
-  ctx.beginPath(); ctx.arc(CX, CY, hubR + 1.5, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 2.5; ctx.stroke();
-}
 
 function buildSegsWithWeather(mealType, weather) {
   let acc = 0;
@@ -1356,16 +1362,15 @@ function buildSegsWithWeather(mealType, weather) {
 
 async function rebuildSegs() {
   if (currentChannel === 'simple') {
-    activeFoods = foods.filter((_,i) => i < beverageStart && (simpleIdx.has(i) || sharedIdx.has(i)));
+    activeFoods = foods.filter(f => f.channel === 'simple' || f.channel === 'shared');
   } else if (currentChannel === 'feast') {
-    activeFoods = foods.filter((_,i) => i < beverageStart && (feastIdx.has(i) || sharedIdx.has(i)));
+    activeFoods = foods.filter(f => f.channel === 'feast' || f.channel === 'shared');
   } else {
-    activeFoods = foods.filter((_,i) => i >= beverageStart);
+    activeFoods = foods.filter(f => f.channel === 'beverage');
   }
   const mealType = getMealType();
   // Build immediately without weather so UI is responsive
   buildSegsWithWeather(mealType, null);
-  rotation = 0; drawWheel(0);
   // Weather fetched only when user taps the card (see onWeatherCardTap)
 }
 
@@ -1377,7 +1382,7 @@ function setChannel(ch) {
       (ch==='simple'&&id==='btnSimple')||(ch==='feast'&&id==='btnFeast')||(ch==='beverage'&&id==='btnBeverage'));
   });
   const btn = document.getElementById('spinBtn');
-  btn.textContent = t().spin; delete btn.dataset.spun;
+  if (btn) { btn.textContent = '转！'; delete btn.dataset.spun; }
   rebuildSegs();
 }
 
@@ -1396,53 +1401,131 @@ function launchConfetti(color) {
 }
 
 // ══════════════════════════════════════════════════════
-//  旋转
+//  转盘逻辑
 // ══════════════════════════════════════════════════════
+
+const WHEEL_COLORS = [
+  '#FF3B30','#FF9500','#FFCC00','#34C759',
+  '#00C7BE','#007AFF','#AF52DE','#FF2D55',
+  '#FF6B35','#5AC8FA','#4CD964','#FFD60A',
+  '#BF5AF2','#30D5C8','#FF453A','#FF9F0A'
+];
+
+let wheelSegs   = [];
+let wheelRot    = 0;
+let wheelSpin   = false;
+let wheelRafId  = null;
+
+function buildWheel() {
+  const canvas = document.getElementById('wheelCanvas');
+  if (!canvas || !activeFoods.length) return;
+  const SIZE = Math.min(window.innerWidth - 80, 300);
+  canvas.width = canvas.height = SIZE;
+  const tw = activeFoods.reduce((s, f) => s + getWeight(f), 0);
+  let angle = -Math.PI / 2;
+  wheelSegs = activeFoods.map((food, i) => {
+    const arc = (getWeight(food) / tw) * Math.PI * 2;
+    const seg = { food, sa: angle, ea: angle + arc, color: WHEEL_COLORS[i % WHEEL_COLORS.length] };
+    angle += arc;
+    return seg;
+  });
+  drawWheel(wheelRot);
+}
+
+function drawWheel(rot) {
+  const canvas = document.getElementById('wheelCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const SIZE = canvas.width;
+  const CX = SIZE / 2, CY = SIZE / 2, R = SIZE / 2 - 1;
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  wheelSegs.forEach((seg) => {
+    const sa = seg.sa + rot, ea = seg.ea + rot;
+    const arc = ea - sa, mid = (sa + ea) / 2;
+    ctx.beginPath(); ctx.moveTo(CX, CY);
+    ctx.arc(CX, CY, R, sa, ea); ctx.closePath();
+    ctx.fillStyle = seg.color; ctx.fill();
+    const textR = R * 0.62;
+    ctx.save(); ctx.translate(CX, CY); ctx.rotate(mid);
+    const eSize = Math.max(9, Math.min(22, arc * R * 0.30));
+    ctx.font = `${eSize}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (arc > 0.10) ctx.fillText(seg.food.emoji || '🍽', textR, 0);
+    ctx.restore();
+  });
+  ctx.beginPath(); ctx.arc(CX, CY, 38, 0, Math.PI * 2);
+  ctx.fillStyle = '#0a0022'; ctx.fill();
+}
+
 function weightedPick() {
-  let r = Math.random() * totalW, cum = 0;
-  for (let i = 0; i < activeFoods.length; i++) { cum += getWeight(activeFoods[i]); if (r < cum) return i; }
+  const tw = activeFoods.reduce((s, f) => s + getWeight(f), 0);
+  let r = Math.random() * tw, cum = 0;
+  for (let i = 0; i < activeFoods.length; i++) {
+    cum += getWeight(activeFoods[i]);
+    if (r < cum) return i;
+  }
   return activeFoods.length - 1;
 }
-function spin() {
-  if (!ctx || !segs || !segs.length) { _appStarted = false; startApp(); setTimeout(spin, 600); return; }
-  if (animating) return;
-  animating = true;
+
+function doSpin() {
+  if (wheelSpin || !activeFoods.length) return;
+  wheelSpin = true;
   const btn = document.getElementById('spinBtn');
-  btn.disabled = true; btn.textContent = t().spinning;
-  const idx = weightedPick();
-  const seg = segs[idx];
-  currentFood = activeFoods[idx]; currentSeg = seg;
-  const pointer = -Math.PI/2, midAngle = (seg.sa+seg.ea)/2, targetBase = pointer - midAngle;
-  const curNorm = ((rotation%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
-  const tgtNorm = ((targetBase%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
-  let delta = tgtNorm - curNorm; if (delta <= 0.01) delta += Math.PI*2;
-  const target = rotation + (5+Math.floor(Math.random()*3))*Math.PI*2 + delta;
-  const startRot = rotation, t0 = performance.now();
-  const easeOut = x => 1 - Math.pow(1-x, 4);
-  requestAnimationFrame(function frame(now) {
-    const prog = Math.min((now - t0) / 4800, 1);
-    rotation = startRot + (target - startRot) * easeOut(prog);
-    drawWheel(rotation, true);   // 旋转中快速渲染
-    if (prog < 1) { requestAnimationFrame(frame); }
+  const bar = document.getElementById('wheelResultBar');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  if (bar) bar.classList.remove('visible');
+  const pickIdx = weightedPick();
+  currentFood = activeFoods[pickIdx];
+  const seg = wheelSegs[pickIdx];
+  const segMid = (seg.sa + seg.ea) / 2;
+  const pointerAngle = -Math.PI / 2;
+  const delta = ((pointerAngle - segMid - wheelRot) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  const endRot = wheelRot + (5 + Math.floor(Math.random() * 3)) * Math.PI * 2 + delta;
+  const startRot = wheelRot, duration = 4600, startTime = performance.now();
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3.8); }
+  function animate(now) {
+    const t = Math.min(1, (now - startTime) / duration);
+    wheelRot = startRot + (endRot - startRot) * easeOut(t);
+    drawWheel(wheelRot);
+    if (t < 1) { wheelRafId = requestAnimationFrame(animate); }
     else {
-      rotation = target; animating = false;
-      btn.disabled = false; btn.textContent = t().respun; btn.dataset.spun = '1';
+      wheelRot = endRot; wheelSpin = false;
+      if (btn) { btn.disabled = false; btn.textContent = '再转！'; }
+      const label = document.getElementById('wheelFoodLabel');
+      if (label) label.textContent = currentFood.zh;
+      if (bar) bar.classList.add('visible');
       launchConfetti(currentFood.color);
-      showResult(currentFood);
     }
-  });
+  }
+  wheelRafId = requestAnimationFrame(animate);
+}
+
+function resetWheel() {
+  if (wheelRafId) { cancelAnimationFrame(wheelRafId); wheelRafId = null; }
+  wheelSpin = false;
+  const bar = document.getElementById('wheelResultBar');
+  if (bar) bar.classList.remove('visible');
+  const btn = document.getElementById('spinBtn');
+  if (btn) { btn.disabled = false; btn.textContent = '转！'; }
+}
+
+function wheelViewDetail() {
+  if (currentFood) showResult(currentFood);
 }
 
 // ══════════════════════════════════════════════════════
 //  屏幕切换
 // ══════════════════════════════════════════════════════
-function goToWheel() {
+function goToGacha() {
+  resetWheel();
   document.getElementById('screen-main').classList.add('hidden');
   document.getElementById('screen-result').classList.remove('active');
-  document.getElementById('screen-wheel').classList.add('active');
+  document.getElementById('screen-gacha').classList.add('active');
+  rebuildSegs();
+  setTimeout(buildWheel, 60);
 }
 function goToMain() {
-  document.getElementById('screen-wheel').classList.remove('active');
+  document.getElementById('screen-gacha').classList.remove('active');
   document.getElementById('screen-result').classList.remove('active');
   document.getElementById('screen-main').classList.remove('hidden');
 }
@@ -1620,7 +1703,7 @@ function showResult(food) {
   document.querySelectorAll('.links-panel').forEach(p => p.classList.remove('open'));
   document.querySelectorAll('.action-chip').forEach(c => c.classList.remove('active-chip'));
   document.getElementById('screen-result').classList.add('active');
-  document.getElementById('screen-wheel').classList.remove('active');
+  document.getElementById('screen-gacha').classList.remove('active');
   document.getElementById('screen-main').classList.add('hidden');
 }
 
@@ -1631,24 +1714,13 @@ function startApp() {
   if (_appStarted) return;
   _appStarted = true;
   try {
-    initCanvas(); applyLang();
-    document.getElementById('spinBtn').textContent = t().spin;
-    setTimeout(() => { if (ctx) drawWheel(0); }, 300);
+    applyLang();
+    rebuildSegs();
   } catch(e) { _appStarted = false; setTimeout(startApp, 150); }
 }
 
 if (document.readyState === 'complete') { setTimeout(startApp, 0); }
 else { window.addEventListener('load', () => setTimeout(startApp, 0)); }
-
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    if (ctx) return;
-    const ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(6,6,6,0.96)';
-    ov.innerHTML = `<div style="text-align:center;color:#fff;padding:32px;"><div style="font-size:48px;margin-bottom:16px;">🎡</div><div style="font-size:20px;font-weight:700;margin-bottom:8px;color:#FFBF00;">今天吃什么</div><button onclick="this.closest('div[style]').remove();_appStarted=false;startApp();" style="background:#FFBF00;border:none;color:#111;padding:14px 36px;border-radius:50px;font-size:16px;font-weight:800;cursor:pointer;margin-top:16px;">启动</button></div>`;
-    document.body.appendChild(ov);
-  }, 1800);
-});
 </script>
 </body>
 </html>
