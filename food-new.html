@@ -1582,7 +1582,7 @@ async function rebuildSegs() {
     activeFoods = sets.map(s => ({
       ...s, channel: 'cooking', isCooking: true,
       en: s.zh, desc: { zh: s.dishes.map(d=>d.name).join(' + '), en: s.dishes.map(d=>d.name).join(' + ') },
-      kw: null, weight: 1
+      kw: null, w: 1
     }));
   } else if (currentChannel === 'simple') {
     activeFoods = foods.filter(f => f.channel === 'simple' || f.channel === 'shared');
