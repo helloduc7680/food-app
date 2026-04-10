@@ -7,9 +7,26 @@
   <meta name="theme-color" content="#060606" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
+  <!-- 字体：优先走国内镜像，加载失败自动降级到系统字体 -->
+  <link rel="preconnect" href="https://fonts.loli.net" crossorigin />
+  <link rel="preconnect" href="https://gstatic.loli.net" crossorigin />
+  <link id="fontLink" href="https://fonts.loli.net/css2?family=Nunito:wght@900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
+  <script>
+    // 字体加载失败检测：3s 无响应则切换备用源
+    (function(){
+      var loaded = false;
+      var lk = document.getElementById('fontLink');
+      lk.onload = function(){ loaded = true; };
+      setTimeout(function(){
+        if (!loaded) {
+          var bk = document.createElement('link');
+          bk.rel = 'stylesheet';
+          bk.href = 'https://fonts.font.im/css2?family=Nunito:wght@900&family=ZCOOL+KuaiLe&display=swap';
+          document.head.appendChild(bk);
+        }
+      }, 3000);
+    })();
+  </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -1599,11 +1616,19 @@ async function getWeather() {
     const loadEl = document.getElementById('wcLoadText');
     if (loadEl) loadEl.textContent = lang === 'zh' ? 'IP定位中…' : 'IP locating…';
     const ipServices = [
+      // 国内可用：ipinfo.io，返回 "loc":"lat,lon"
+      async () => {
+        const r = await fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(5000) });
+        const d = await r.json();
+        if (d.loc) { const [la,lo] = d.loc.split(','); return { lat: +la, lon: +lo }; }
+      },
+      // 国内可用：ip-api.com
       async () => {
         const r = await fetch('https://ip-api.com/json/?fields=lat,lon,status', { signal: AbortSignal.timeout(5000) });
         const d = await r.json();
         if (d.status === 'success') return { lat: d.lat, lon: d.lon };
       },
+      // 备用
       async () => {
         const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
         const d = await r.json();
