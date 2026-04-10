@@ -130,10 +130,11 @@
       flex: 1 1 0;
       min-height: 0;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
       position: relative;
       overflow: hidden;
+      margin-top: -140px;
     }
 
     .character-zone::before {
@@ -155,10 +156,8 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      object-position: center bottom;
+      object-position: center center;
       display: block;
-      /* Slightly lift them up */
-      padding-bottom: 8px;
     }
 
     /* Fallback when no image */
@@ -1435,8 +1434,12 @@ let wheelRafId  = null;
 function buildWheel() {
   const canvas = document.getElementById('wheelCanvas');
   if (!canvas || !activeFoods.length) return;
-  const SIZE = Math.min(window.innerWidth - 80, 300);
-  canvas.width = canvas.height = SIZE;
+  const dpr = window.devicePixelRatio || 1;
+  const CSS_SIZE = Math.min(window.innerWidth - 80, 300);
+  canvas.width = CSS_SIZE * dpr;
+  canvas.height = CSS_SIZE * dpr;
+  canvas.style.width = CSS_SIZE + 'px';
+  canvas.style.height = CSS_SIZE + 'px';
   const tw = activeFoods.reduce((s, f) => s + getWeight(f), 0);
   let angle = -Math.PI / 2;
   wheelSegs = activeFoods.map((food, i) => {
@@ -1452,8 +1455,9 @@ function drawWheel(rot) {
   const canvas = document.getElementById('wheelCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const SIZE = canvas.width;
-  const CX = SIZE / 2, CY = SIZE / 2, R = SIZE / 2 - 1;
+  const dpr = window.devicePixelRatio || 1;
+  const SIZE = canvas.width; // physical pixels
+  const CX = SIZE / 2, CY = SIZE / 2, R = SIZE / 2 - dpr;
   ctx.clearRect(0, 0, SIZE, SIZE);
   wheelSegs.forEach((seg) => {
     const sa = seg.sa + rot, ea = seg.ea + rot;
@@ -1463,13 +1467,13 @@ function drawWheel(rot) {
     ctx.fillStyle = seg.color; ctx.fill();
     const textR = R * 0.62;
     ctx.save(); ctx.translate(CX, CY); ctx.rotate(mid);
-    const eSize = Math.max(9, Math.min(22, arc * R * 0.30));
+    const eSize = Math.max(9 * dpr, Math.min(22 * dpr, arc * R * 0.30));
     ctx.font = `${eSize}px sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     if (arc > 0.10) ctx.fillText(seg.food.emoji || '🍽', textR, 0);
     ctx.restore();
   });
-  ctx.beginPath(); ctx.arc(CX, CY, 38, 0, Math.PI * 2);
+  ctx.beginPath(); ctx.arc(CX, CY, 38 * dpr, 0, Math.PI * 2);
   ctx.fillStyle = '#0a0022'; ctx.fill();
 }
 
