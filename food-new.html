@@ -1906,34 +1906,52 @@ function iosOpenApp(scheme, fallback, kw, appName) {
 }
 function openJD(kw) {
   const ua = navigator.userAgent;
-  const appParams = encodeURIComponent(JSON.stringify({category:'jump',des:'miaosong',keyWord:kw}));
+  const enc = encodeURIComponent(kw);
+  const searchParams = encodeURIComponent(JSON.stringify({category:'jump',des:'search',keyWord:kw}));
   copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
   if (/Android/i.test(ua)) {
-    window.location.href = `intent://virtual?params=${appParams}#Intent;scheme=openapp.jdmobile;package=com.jingdong.app.mall;S.browser_fallback_url=${encodeURIComponent('https://app.jd.com/')};end`;
+    const fbUrl = encodeURIComponent(`https://so.m.jd.com/ware/search.action?keyword=${enc}`);
+    window.location.href = `intent://virtual?params=${searchParams}#Intent;scheme=openapp.jdmobile;package=com.jingdong.app.mall;S.browser_fallback_url=${fbUrl};end`;
   } else {
-    const t2 = setTimeout(() => showToast('请先安装京东App'), 2000);
+    const t2 = setTimeout(() => { showToast('请先安装京东App'); window.location.href = `https://so.m.jd.com/ware/search.action?keyword=${enc}`; }, 2000);
     window.addEventListener('blur', () => clearTimeout(t2), {once:true});
-    window.location.href = `openapp.jdmobile://virtual?params=${appParams}`;
+    window.location.href = `openapp.jdmobile://virtual?params=${searchParams}`;
   }
 }
 function openTaobao(kw) {
+  const ua = navigator.userAgent;
   const enc = encodeURIComponent(kw);
   copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
-  iosOpenApp(`eleme://search?keyword=${enc}`, `https://www.ele.me/`, null, null);
+  const fbUrl = `https://h5.ele.me/msite/search/?query=${enc}`;
+  if (/Android/i.test(ua)) {
+    const fb = encodeURIComponent(fbUrl);
+    window.location.href = `intent://search?keyword=${enc}#Intent;scheme=eleme;package=me.ele;S.browser_fallback_url=${fb};end`;
+  } else {
+    iosOpenApp(`eleme://search?keyword=${enc}`, fbUrl, null, '饿了么App');
+  }
 }
 function openMeituan(kw) {
   const enc = encodeURIComponent(kw);
   copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
   const ua = navigator.userAgent;
-  if (/Android/i.test(ua)) window.location.href = `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${enc}`;
-  else iosOpenApp(`meituanwaimai://search?keyword=${enc}`, null, null, '美团外卖App');
+  if (/Android/i.test(ua)) {
+    const fbUrl = encodeURIComponent(`https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${enc}`);
+    window.location.href = `intent://search?keyword=${enc}#Intent;scheme=meituanwaimai;package=com.sankuai.meituan.takeoutnew;S.browser_fallback_url=${fbUrl};end`;
+  } else {
+    iosOpenApp(`meituanwaimai://search?keyword=${enc}`, `https://h5.waimai.meituan.com/waimai/mindex/search?keyword=${enc}`, null, '美团外卖App');
+  }
 }
 function openDianping(kw) {
   const enc = encodeURIComponent(kw);
   copyKw(kw); showToast('「'+kw+'」已复制 ✓ 长按粘贴搜索');
   const ua = navigator.userAgent;
-  if (/Android/i.test(ua)) window.location.href = `https://m.dianping.com/search?keyword=${enc}`;
-  else iosOpenApp(`dianping://search?kw=${enc}`, `https://m.dianping.com/search?keyword=${enc}`, null, null);
+  const fbUrl = `https://m.dianping.com/search?keyword=${enc}`;
+  if (/Android/i.test(ua)) {
+    const fb = encodeURIComponent(fbUrl);
+    window.location.href = `intent://search?kw=${enc}#Intent;scheme=dianping;package=com.dianping.v1;S.browser_fallback_url=${fb};end`;
+  } else {
+    iosOpenApp(`dianping://search?kw=${enc}`, fbUrl, null, null);
+  }
 }
 function doShare() {
   if (!currentFood) return;
