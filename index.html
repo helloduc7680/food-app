@@ -1862,13 +1862,13 @@ function drawWheel(rot) {
 }
 
 function weightedPick() {
-  const tw = activeFoods.reduce((s, f) => s + getWeight(f), 0);
-  let r = Math.random() * tw, cum = 0;
-  for (let i = 0; i < activeFoods.length; i++) {
-    cum += getWeight(activeFoods[i]);
+  // 直接使用 segs 里已经计算好的权重（含 fixedProb）
+  let r = Math.random() * totalW, cum = 0;
+  for (let i = 0; i < segs.length; i++) {
+    cum += segs[i].w;
     if (r < cum) return i;
   }
-  return activeFoods.length - 1;
+  return segs.length - 1;
 }
 
 function doSpin() {
