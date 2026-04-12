@@ -318,12 +318,40 @@
     #btnDIY { background: rgba(90,200,250,0.1); border-color: rgba(90,200,250,0.28); color: rgba(90,200,250,0.8); }
     #btnDIY.active { background: linear-gradient(135deg, #5AC8FA, #007AFF); border-color: #5AC8FA; color: #fff; box-shadow: 0 4px 18px rgba(90,200,250,0.45); }
 
-    /* 食材选择面板 */
-    .diy-panel {
-      display: none; flex-direction: column; gap: 10px;
-      margin-top: 10px; max-height: 260px; overflow: hidden;
+    /* ─────────────────────────────────────────────
+       DIY SCREEN
+    ───────────────────────────────────────────── */
+    #screen-diy {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      background: radial-gradient(ellipse at 50% 0%, #002a3a 0%, #001520 50%, #060610 100%);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s;
+      z-index: 50;
+      overflow-y: auto;
     }
-    .diy-panel.show { display: flex; }
+    #screen-diy.active { opacity: 1; pointer-events: auto; }
+
+    .diy-screen-nav {
+      padding: calc(var(--safe-top) + 16px) 20px 0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .diy-screen-title {
+      font-size: 18px; font-weight: 800; color: #fff;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
+    }
+    .diy-clear-btn {
+      font-size: 12px; color: rgba(90,200,250,0.7); background: none;
+      border: none; cursor: pointer; padding: 4px 8px;
+    }
+
+    .diy-body { flex: 1; padding: 16px 20px 120px; display: flex; flex-direction: column; gap: 14px; }
+
+    .diy-section-label {
+      font-size: 11px; color: rgba(255,255,255,0.4);
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: -6px;
+    }
 
     /* 食材分类标签栏 */
     .diy-cat-row {
@@ -346,37 +374,39 @@
 
     /* 食材格子 */
     .diy-ing-grid {
-      display: flex; flex-wrap: wrap; gap: 7px;
-      max-height: 150px; overflow-y: auto;
-      scrollbar-width: none;
+      display: flex; flex-wrap: wrap; gap: 8px;
     }
-    .diy-ing-grid::-webkit-scrollbar { display: none; }
     .diy-ing-chip {
       display: flex; align-items: center; gap: 4px;
-      padding: 5px 10px; border-radius: 18px;
+      padding: 7px 13px; border-radius: 20px;
       border: 1.5px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.65);
-      font-size: 12px; cursor: pointer;
+      font-size: 13px; cursor: pointer;
       transition: all 0.18s; user-select: none;
     }
     .diy-ing-chip.selected {
-      background: rgba(90,200,250,0.2); border-color: #5AC8FA;
-      color: #fff;
+      background: rgba(90,200,250,0.22); border-color: #5AC8FA;
+      color: #fff; box-shadow: 0 0 8px rgba(90,200,250,0.25);
     }
 
-    /* 已选统计 + 生成按钮 */
+    /* 底部悬浮生成栏 */
     .diy-footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 2px;
+      padding: 14px 20px calc(var(--safe-bottom) + 14px);
+      background: rgba(0,15,30,0.92);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      z-index: 10;
     }
-    .diy-selected-tip { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .diy-selected-tip { font-size: 13px; color: rgba(255,255,255,0.5); }
     .diy-selected-tip span { color: #5AC8FA; font-weight: 700; }
     .diy-gen-btn {
-      padding: 7px 20px; border-radius: 20px; border: none;
+      padding: 11px 28px; border-radius: 24px; border: none;
       background: linear-gradient(135deg, #5AC8FA, #007AFF);
-      color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
       font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
-      box-shadow: 0 3px 12px rgba(90,200,250,0.4);
+      box-shadow: 0 4px 18px rgba(90,200,250,0.45);
       transition: opacity 0.2s;
     }
     .diy-gen-btn:disabled { opacity: 0.35; cursor: not-allowed; }
@@ -1040,7 +1070,7 @@
       <button class="channel-chip active" id="btnSimple"   onclick="setChannel('simple')">简单吃吃</button>
       <button class="channel-chip" id="btnBeverage" onclick="setChannel('beverage')">喝点什么</button>
       <button class="channel-chip" id="btnCooking"  onclick="setChannel('cooking')">🍳自己动手</button>
-      <button class="channel-chip" id="btnDIY"      onclick="setChannel('diy')">🥗自己搭配</button>
+      <button class="channel-chip" id="btnDIY"      onclick="goToDIY()">🥗自己搭配</button>
     </div>
     <div class="cooking-time-row" id="cookingTimeRow">
       <button class="time-chip active" id="time10" onclick="setCookTime('10')">⚡10分钟</button>
@@ -1048,17 +1078,25 @@
       <button class="time-chip" id="time30" onclick="setCookTime('30')">⏱30分钟</button>
     </div>
 
-    <!-- 自己搭配面板 -->
-    <div class="diy-panel" id="diyPanel">
-      <div class="diy-cat-row" id="diyCatRow"></div>
-      <div class="diy-ing-grid" id="diyIngGrid"></div>
-      <div class="diy-footer">
-        <div class="diy-selected-tip">已选 <span id="diyCount">0</span> 种食材</div>
-        <button class="diy-gen-btn" id="diyGenBtn" onclick="diyGenerate()" disabled>✨ 生成推荐菜</button>
-      </div>
-    </div>
-
     <button class="cta-btn" id="startBtn" onclick="goToGacha()">开始！</button>
+  </div>
+</div>
+
+<!-- ══════════════════════ 自己搭配屏幕 ══════════════════════ -->
+<div id="screen-diy">
+  <div class="diy-screen-nav">
+    <button class="nav-pill" onclick="goBackFromDIY()">← 返回</button>
+    <span class="diy-screen-title">🥗 自己搭配</span>
+    <button class="diy-clear-btn" onclick="diyClearAll()">清空</button>
+  </div>
+  <div class="diy-body">
+    <div class="diy-section-label">选择食材</div>
+    <div class="diy-cat-row" id="diyCatRow"></div>
+    <div class="diy-ing-grid" id="diyIngGrid"></div>
+  </div>
+  <div class="diy-footer">
+    <div class="diy-selected-tip">已选 <span id="diyCount">0</span> 种食材</div>
+    <button class="diy-gen-btn" id="diyGenBtn" onclick="diyGenerate()" disabled>✨ 生成推荐菜</button>
   </div>
 </div>
 
@@ -1090,8 +1128,8 @@
 <div id="screen-result">
   <div class="result-top" id="resultTop">
     <div class="nav-bar">
-      <button class="nav-pill" onclick="goToMain()">← 返回</button>
-      <button class="nav-pill" onclick="goToGacha()">再抽</button>
+      <button class="nav-pill" id="resultBackBtn" onclick="resultGoBack()">← 返回</button>
+      <button class="nav-pill" id="resultRerollBtn" onclick="goToGacha()">再抽</button>
     </div>
     <div class="result-eyebrow">
       <span>✦ 命运已定</span><span>今日推荐</span>
@@ -1429,6 +1467,7 @@ function diyGenerate() {
     diyMethod: best.method,
     diyTime: best.time,
   };
+  document.getElementById('screen-diy').classList.remove('active');
   showResult(food);
 }
 
@@ -1960,20 +1999,40 @@ async function rebuildSegs() {
 function setChannel(ch) {
   if (currentChannel === ch) return;
   currentChannel = ch;
-  ['btnSimple','btnFeast','btnBeverage','btnCooking','btnDIY'].forEach(id => {
+  ['btnSimple','btnFeast','btnBeverage','btnCooking'].forEach(id => {
     document.getElementById(id).classList.toggle('active',
       (ch==='simple'&&id==='btnSimple')||(ch==='feast'&&id==='btnFeast')||
-      (ch==='beverage'&&id==='btnBeverage')||(ch==='cooking'&&id==='btnCooking')||
-      (ch==='diy'&&id==='btnDIY'));
+      (ch==='beverage'&&id==='btnBeverage')||(ch==='cooking'&&id==='btnCooking'));
   });
   document.getElementById('cookingTimeRow').classList.toggle('show', ch === 'cooking');
-  document.getElementById('diyPanel').classList.toggle('show', ch === 'diy');
-  // 自己搭配通道时隐藏开始按钮（直接在面板操作）
-  document.getElementById('startBtn').style.display = ch === 'diy' ? 'none' : '';
-  if (ch === 'diy') diyInitPanel();
   const btn = document.getElementById('spinBtn');
   if (btn) { btn.textContent = '转！'; delete btn.dataset.spun; }
   rebuildSegs();
+}
+
+function goToDIY() {
+  // 取消其他通道高亮
+  ['btnSimple','btnFeast','btnBeverage','btnCooking'].forEach(id => {
+    document.getElementById(id).classList.remove('active');
+  });
+  document.getElementById('btnDIY').classList.add('active');
+  // 切到 screen-diy
+  document.getElementById('screen-main').classList.add('hidden');
+  document.getElementById('screen-diy').classList.add('active');
+  diyInitPanel();
+}
+
+function goBackFromDIY() {
+  document.getElementById('screen-diy').classList.remove('active');
+  document.getElementById('screen-main').classList.remove('hidden');
+  document.getElementById('btnDIY').classList.remove('active');
+}
+
+function diyClearAll() {
+  diySelectedIngs.clear();
+  document.getElementById('diyCount').textContent = '0';
+  document.getElementById('diyGenBtn').disabled = true;
+  diyRenderIngs();
 }
 
 function setCookTime(t) {
@@ -2147,7 +2206,9 @@ function goToGacha() {
 function goToMain() {
   document.getElementById('screen-gacha').classList.remove('active');
   document.getElementById('screen-result').classList.remove('active');
+  document.getElementById('screen-diy').classList.remove('active');
   document.getElementById('screen-main').classList.remove('hidden');
+  document.getElementById('btnDIY').classList.remove('active');
 }
 
 // ══════════════════════════════════════════════════════
@@ -2396,15 +2457,36 @@ function rerenderResult() {
   }
 }
 
+let _resultFromDIY = false;
+
+function resultGoBack() {
+  if (_resultFromDIY) {
+    document.getElementById('screen-result').classList.remove('active');
+    document.getElementById('screen-diy').classList.add('active');
+  } else {
+    goToMain();
+  }
+}
+
 function showResult(food) {
+  _resultFromDIY = food.channel === 'diy';
   saveHistory(food); _histCache = null;
   document.getElementById('rEmoji').textContent = food.emoji || '🍳';
   document.getElementById('resultBottom').style.background = food.color || '#FFBF00';
   // 结果页眉：烹饪模式特殊文案
   const eyebrow = document.querySelector('#screen-result .result-eyebrow');
-  if (eyebrow) eyebrow.innerHTML = food.isCooking
-    ? '<span>🍳 今日菜谱</span><span>自己动手做</span>'
-    : '<span>✦ 命运已定</span><span>今日推荐</span>';
+  if (eyebrow) {
+    if (_resultFromDIY) {
+      eyebrow.innerHTML = '<span>🥗 自己搭配</span><span>推荐菜谱</span>';
+    } else if (food.isCooking) {
+      eyebrow.innerHTML = '<span>🍳 今日菜谱</span><span>自己动手做</span>';
+    } else {
+      eyebrow.innerHTML = '<span>✦ 命运已定</span><span>今日推荐</span>';
+    }
+  }
+  // DIY来源隐藏"再抽"（转盘没有DIY通道）
+  const rerollBtn = document.getElementById('resultRerollBtn');
+  if (rerollBtn) rerollBtn.style.display = _resultFromDIY ? 'none' : '';
   rerenderResult();
   document.querySelectorAll('.links-panel').forEach(p => p.classList.remove('open'));
   document.querySelectorAll('.action-chip').forEach(c => c.classList.remove('active-chip'));
