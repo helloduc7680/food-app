@@ -314,6 +314,73 @@
       color: #4CD964;
     }
 
+    /* 自己搭配 通道按钮 */
+    #btnDIY { background: rgba(90,200,250,0.1); border-color: rgba(90,200,250,0.28); color: rgba(90,200,250,0.8); }
+    #btnDIY.active { background: linear-gradient(135deg, #5AC8FA, #007AFF); border-color: #5AC8FA; color: #fff; box-shadow: 0 4px 18px rgba(90,200,250,0.45); }
+
+    /* 食材选择面板 */
+    .diy-panel {
+      display: none; flex-direction: column; gap: 10px;
+      margin-top: 10px; max-height: 260px; overflow: hidden;
+    }
+    .diy-panel.show { display: flex; }
+
+    /* 食材分类标签栏 */
+    .diy-cat-row {
+      display: flex; gap: 6px; overflow-x: auto;
+      scrollbar-width: none; padding-bottom: 2px;
+    }
+    .diy-cat-row::-webkit-scrollbar { display: none; }
+    .diy-cat-btn {
+      flex-shrink: 0; padding: 5px 14px; border-radius: 16px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6);
+      font-size: 12px; cursor: pointer; white-space: nowrap;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
+      transition: all 0.2s;
+    }
+    .diy-cat-btn.active {
+      background: rgba(90,200,250,0.2); border-color: rgba(90,200,250,0.6);
+      color: #5AC8FA;
+    }
+
+    /* 食材格子 */
+    .diy-ing-grid {
+      display: flex; flex-wrap: wrap; gap: 7px;
+      max-height: 150px; overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .diy-ing-grid::-webkit-scrollbar { display: none; }
+    .diy-ing-chip {
+      display: flex; align-items: center; gap: 4px;
+      padding: 5px 10px; border-radius: 18px;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.65);
+      font-size: 12px; cursor: pointer;
+      transition: all 0.18s; user-select: none;
+    }
+    .diy-ing-chip.selected {
+      background: rgba(90,200,250,0.2); border-color: #5AC8FA;
+      color: #fff;
+    }
+
+    /* 已选统计 + 生成按钮 */
+    .diy-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2px;
+    }
+    .diy-selected-tip { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .diy-selected-tip span { color: #5AC8FA; font-weight: 700; }
+    .diy-gen-btn {
+      padding: 7px 20px; border-radius: 20px; border: none;
+      background: linear-gradient(135deg, #5AC8FA, #007AFF);
+      color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
+      box-shadow: 0 3px 12px rgba(90,200,250,0.4);
+      transition: opacity 0.2s;
+    }
+    .diy-gen-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
     /* 时长子选择器 */
     .cooking-time-row {
       display: none; gap: 8px; justify-content: center;
@@ -973,12 +1040,24 @@
       <button class="channel-chip active" id="btnSimple"   onclick="setChannel('simple')">简单吃吃</button>
       <button class="channel-chip" id="btnBeverage" onclick="setChannel('beverage')">喝点什么</button>
       <button class="channel-chip" id="btnCooking"  onclick="setChannel('cooking')">🍳自己动手</button>
+      <button class="channel-chip" id="btnDIY"      onclick="setChannel('diy')">🥗自己搭配</button>
     </div>
     <div class="cooking-time-row" id="cookingTimeRow">
       <button class="time-chip active" id="time10" onclick="setCookTime('10')">⚡10分钟</button>
       <button class="time-chip" id="time20" onclick="setCookTime('20')">🔥20分钟</button>
       <button class="time-chip" id="time30" onclick="setCookTime('30')">⏱30分钟</button>
     </div>
+
+    <!-- 自己搭配面板 -->
+    <div class="diy-panel" id="diyPanel">
+      <div class="diy-cat-row" id="diyCatRow"></div>
+      <div class="diy-ing-grid" id="diyIngGrid"></div>
+      <div class="diy-footer">
+        <div class="diy-selected-tip">已选 <span id="diyCount">0</span> 种食材</div>
+        <button class="diy-gen-btn" id="diyGenBtn" onclick="diyGenerate()" disabled>✨ 生成推荐菜</button>
+      </div>
+    </div>
+
     <button class="cta-btn" id="startBtn" onclick="goToGacha()">开始！</button>
   </div>
 </div>
@@ -1227,6 +1306,136 @@ let currentWeather = null;
 let currentFood = null;
 let currentChannel = 'simple';
 let currentCookTime = '10';
+
+// ══════════════════════════════════════════════════════
+//  自己搭配：食材库 & 菜谱数据
+// ══════════════════════════════════════════════════════
+const DIY_INGREDIENTS = {
+  '🥩 肉类': ['猪肉','五花肉','鸡肉','鸡翅','鸡腿','牛肉','羊肉','猪排','腊肉','培根'],
+  '🥦 蔬菜': ['番茄','土豆','茄子','白菜','菠菜','豆角','青椒','洋葱','胡萝卜','西兰花','韭菜','芹菜','黄瓜','冬瓜','莴笋','南瓜','白萝卜','丝瓜'],
+  '🦐 海鲜': ['虾','鱼','螃蟹','蛤蜊','鱿鱼','带鱼','扇贝','鲈鱼','三文鱼'],
+  '🥚 蛋豆': ['鸡蛋','鸭蛋','皮蛋','豆腐','嫩豆腐','腐竹','豆皮'],
+  '🍄 菌菇': ['香菇','金针菇','木耳','平菇','杏鲍菇','蘑菇'],
+  '🫘 其他': ['粉丝','腐竹','花生','豆芽','玉米','莲藕','魔芋'],
+};
+
+// 食材emoji映射
+const ING_EMOJI = {
+  猪肉:'🥩',五花肉:'🥩',鸡肉:'🍗',鸡翅:'🍗',鸡腿:'🍗',牛肉:'🥩',羊肉:'🍖',猪排:'🥩',腊肉:'🥩',培根:'🥓',
+  番茄:'🍅',土豆:'🥔',茄子:'🍆',白菜:'🥬',菠菜:'🌿',豆角:'🫛',青椒:'🫑',洋葱:'🧅',胡萝卜:'🥕',西兰花:'🥦',
+  韭菜:'🌿',芹菜:'🌿',黄瓜:'🥒',冬瓜:'🟩',莴笋:'🌿',南瓜:'🎃',白萝卜:'⬜',丝瓜:'🟩',
+  虾:'🦐',鱼:'🐟',螃蟹:'🦀',蛤蜊:'🐚',鱿鱼:'🦑',带鱼:'🐟',扇贝:'🐚',鲈鱼:'🐟',三文鱼:'🐟',
+  鸡蛋:'🥚',鸭蛋:'🥚',皮蛋:'🥚',豆腐:'🟨',嫩豆腐:'🟨',腐竹:'🍜',豆皮:'🍜',
+  香菇:'🍄',金针菇:'🍄',木耳:'🍄',平菇:'🍄',杏鲍菇:'🍄',蘑菇:'🍄',
+  粉丝:'🍜',花生:'🥜',豆芽:'🌱',玉米:'🌽',莲藕:'🍛',魔芋:'🟫',
+};
+
+const DIY_RECIPES = [
+  { name:'番茄炒蛋',     emoji:'🍳', color:'#FF6B35', key:['番茄','鸡蛋'], opt:[], method:'热锅冷油，鸡蛋炒散盛出；番茄翻炒出汁，倒回鸡蛋，加盐糖翻炒均匀即可。', time:'10分钟' },
+  { name:'红烧五花肉',   emoji:'🥩', color:'#C0392B', key:['五花肉'],       opt:['土豆','鸡蛋'], method:'五花肉焯水切块，炒糖色包裹，加酱油料酒老抽，加水没过，小火炖40分钟收汁。', time:'50分钟' },
+  { name:'麻婆豆腐',     emoji:'🟨', color:'#E74C3C', key:['豆腐','猪肉'],  opt:[], method:'豆腐切丁焯水；猪肉末炒熟，加豆瓣酱、蒜末、高汤煮开，放豆腐煮2分钟，勾芡撒花椒粉。', time:'15分钟' },
+  { name:'宫保鸡丁',     emoji:'🍗', color:'#F39C12', key:['鸡肉'],         opt:['花生','青椒'], method:'鸡胸肉腌制，花生炸香；热锅爆香干辣椒，鸡丁炒变色，加宫保汁料翻炒，放花生出锅。', time:'20分钟' },
+  { name:'鱼香肉丝',     emoji:'🥩', color:'#E67E22', key:['猪肉'],         opt:['胡萝卜','木耳'], method:'猪肉丝腌制；调好鱼香汁；热油爆香豆瓣酱，放肉丝翻炒，加配菜，倒入鱼香汁翻炒均匀。', time:'20分钟' },
+  { name:'青椒炒肉',     emoji:'🫑', color:'#27AE60', key:['猪肉','青椒'],  opt:[], method:'猪肉切片腌制；热油爆香蒜片，放肉片炒变色，加青椒大火翻炒，加盐生抽调味出锅。', time:'10分钟' },
+  { name:'土豆炖牛肉',   emoji:'🥔', color:'#8B4513', key:['牛肉','土豆'],  opt:['胡萝卜','洋葱'], method:'牛肉焯水切块，热油翻炒，加酱料和热水大火烧开，转小火炖40分钟，加土豆再炖15分钟。', time:'60分钟' },
+  { name:'可乐鸡翅',     emoji:'🍗', color:'#D35400', key:['鸡翅'],         opt:[], method:'鸡翅两面划刀，冷锅煎至两面金黄，倒入可乐和生抽，大火烧开转中火收汁。', time:'20分钟' },
+  { name:'蒜蓉虾',       emoji:'🦐', color:'#FF6B9D', key:['虾'],           opt:[], method:'虾开背去虾线；蒜末炒香，铺在虾上，浇热油激香，蒸8分钟，撒葱花淋生抽即可。', time:'15分钟' },
+  { name:'清蒸鱼',       emoji:'🐟', color:'#3498DB', key:['鱼'],           opt:[], method:'鱼划刀抹盐，葱姜塞腹，蒸8-10分钟；倒掉蒸出的水，浇蒸鱼豉油，热油激香葱丝即可。', time:'15分钟' },
+  { name:'白菜豆腐汤',   emoji:'🥬', color:'#52B788', key:['白菜','豆腐'],  opt:[], method:'豆腐切块先煎至两面金黄；加白菜翻炒，加热水煮开，转小火炖10分钟，加盐调味。', time:'15分钟' },
+  { name:'韭菜炒蛋',     emoji:'🥚', color:'#F4D03F', key:['韭菜','鸡蛋'],  opt:[], method:'鸡蛋打散加盐；热油炒鸡蛋成块盛出；原锅炒韭菜断生，倒回鸡蛋翻炒均匀即可。', time:'8分钟' },
+  { name:'西兰花炒牛肉', emoji:'🥦', color:'#117A65', key:['牛肉','西兰花'],opt:[], method:'牛肉腌制备用；西兰花焯水；热锅爆香蒜末，牛肉滑炒断生，加西兰花翻炒，蚝油调味出锅。', time:'15分钟' },
+  { name:'香菇炖鸡',     emoji:'🍄', color:'#784212', key:['鸡肉','香菇'],  opt:[], method:'鸡肉斩块焯水；香菇泡发；锅中爆香姜片，加鸡块翻炒，加香菇和热水，小火炖30分钟。', time:'40分钟' },
+  { name:'羊肉炖萝卜',   emoji:'🍖', color:'#A04000', key:['羊肉','白萝卜'],opt:[], method:'羊肉焯水，加姜片料酒热水大火烧开，转小火炖30分钟，加白萝卜再炖20分钟，加盐出锅。', time:'55分钟' },
+  { name:'冬瓜虾仁汤',   emoji:'🦐', color:'#5DADE2', key:['虾','冬瓜'],    opt:[], method:'冬瓜切片；虾去壳去虾线；热油爆香姜片，放冬瓜翻炒，加热水煮开，放虾仁煮熟，加盐调味。', time:'15分钟' },
+  { name:'酸辣土豆丝',   emoji:'🥔', color:'#F39C12', key:['土豆'],         opt:['青椒'], method:'土豆切丝泡水去淀粉；热油爆香干辣椒和蒜末，放土豆丝大火翻炒，加醋盐翻炒均匀即可。', time:'10分钟' },
+  { name:'茄子炖土豆',   emoji:'🍆', color:'#8E44AD', key:['茄子','土豆'],  opt:[], method:'茄子土豆切滚刀块；热油先炸茄子至软；另起锅炒香酱料，加茄子土豆和水，炖至软烂收汁。', time:'25分钟' },
+  { name:'腐竹烧肉',     emoji:'🍜', color:'#CA6702', key:['猪肉','腐竹'],  opt:[], method:'腐竹泡发切段；五花肉煸出油，加酱油老抽翻炒上色，放腐竹加水没过，小火烧20分钟收汁。', time:'30分钟' },
+  { name:'金针菇牛肉卷', emoji:'🍄', color:'#E74C3C', key:['牛肉','金针菇'],opt:[], method:'牛肉片腌制；金针菇分成小把，用牛肉片卷起；煎锅放油，将肉卷煎至两面金黄，刷照烧汁即可。', time:'15分钟' },
+  { name:'酸菜鱼',       emoji:'🐟', color:'#27AE60', key:['鱼','白菜'],    opt:[], method:'鱼片腌制；酸菜炒香，加高汤煮开，放鱼骨熬汤，鱼片下锅烫熟，浇热油激香辣椒。', time:'25分钟' },
+  { name:'虾仁炒蛋',     emoji:'🦐', color:'#F4A261', key:['虾','鸡蛋'],    opt:[], method:'虾仁腌制；鸡蛋打散；热油先炒鸡蛋半熟盛出，再炒虾仁变色，倒回鸡蛋翻炒，加盐出锅。', time:'10分钟' },
+  { name:'蒜蓉炒菠菜',   emoji:'🌿', color:'#1E8449', key:['菠菜'],         opt:[], method:'菠菜洗净焯水30秒捞出；热油爆香蒜末，倒入菠菜大火翻炒，加盐鸡精出锅。', time:'8分钟' },
+  { name:'洋葱炒牛肉',   emoji:'🧅', color:'#D35400', key:['牛肉','洋葱'],  opt:[], method:'牛肉腌制；热油爆香洋葱出香，推到锅边，放牛肉大火翻炒断生，混合翻炒，加蚝油生抽出锅。', time:'12分钟' },
+  { name:'皮蛋豆腐',     emoji:'🥚', color:'#7D6608', key:['皮蛋','豆腐'],  opt:[], method:'内酯豆腐扣盘，皮蛋切块摆上；浇上蒸鱼豉油、香油、蒜末，撒葱花辣椒圈，淋热油激香即可。', time:'5分钟' },
+  { name:'木耳炒鸡蛋',   emoji:'🍄', color:'#2C3E50', key:['木耳','鸡蛋'],  opt:[], method:'木耳泡发撕小朵；鸡蛋打散；热油炒鸡蛋成块，放木耳翻炒，加盐、生抽调味即可。', time:'10分钟' },
+  { name:'蛤蜊蒸蛋',     emoji:'🐚', color:'#2471A3', key:['蛤蜊','鸡蛋'],  opt:[], method:'蛤蜊吐沙焯水备用；鸡蛋加温水1:1打散过滤，放入蛤蜊；中小火蒸12分钟，浇生抽香油。', time:'20分钟' },
+  { name:'黄瓜炒虾仁',   emoji:'🥒', color:'#52B788', key:['虾','黄瓜'],    opt:[], method:'虾仁腌制；黄瓜切片；热油爆香蒜末，放虾仁炒变色，加黄瓜翻炒，加盐出锅。', time:'10分钟' },
+  { name:'番茄炖牛腩',   emoji:'🍅', color:'#C0392B', key:['牛肉','番茄'],  opt:['土豆'], method:'牛腩焯水切块；番茄炒出沙，加牛腩翻炒，加热水没过，小火炖40分钟，加土豆再炖15分钟。', time:'60分钟' },
+  { name:'南瓜蒸排骨',   emoji:'🎃', color:'#E67E22', key:['猪排','南瓜'],  opt:[], method:'排骨腌制30分钟；南瓜切块铺底；排骨铺在南瓜上，上锅蒸25分钟即可。', time:'40分钟' },
+];
+
+let diySelectedIngs = new Set();
+let diyCurrentCat = Object.keys(DIY_INGREDIENTS)[0];
+
+function diyRenderCats() {
+  const row = document.getElementById('diyCatRow');
+  if (!row) return;
+  row.innerHTML = Object.keys(DIY_INGREDIENTS).map(cat =>
+    `<button class="diy-cat-btn${cat===diyCurrentCat?' active':''}" onclick="diySetCat('${cat}')">${cat}</button>`
+  ).join('');
+}
+
+function diyRenderIngs() {
+  const grid = document.getElementById('diyIngGrid');
+  if (!grid) return;
+  const ings = DIY_INGREDIENTS[diyCurrentCat] || [];
+  grid.innerHTML = ings.map(ing => {
+    const sel = diySelectedIngs.has(ing) ? ' selected' : '';
+    const emoji = ING_EMOJI[ing] || '🥘';
+    return `<div class="diy-ing-chip${sel}" onclick="diyToggleIng('${ing}')">${emoji} ${ing}</div>`;
+  }).join('');
+}
+
+function diySetCat(cat) {
+  diyCurrentCat = cat;
+  diyRenderCats();
+  diyRenderIngs();
+}
+
+function diyToggleIng(ing) {
+  if (diySelectedIngs.has(ing)) diySelectedIngs.delete(ing);
+  else diySelectedIngs.add(ing);
+  document.getElementById('diyCount').textContent = diySelectedIngs.size;
+  document.getElementById('diyGenBtn').disabled = diySelectedIngs.size === 0;
+  diyRenderIngs();
+}
+
+function diyGenerate() {
+  if (diySelectedIngs.size === 0) return;
+  const sel = [...diySelectedIngs];
+
+  // 评分：匹配的必需食材数 * 3 + 匹配的可选食材数
+  let best = null, bestScore = -1;
+  for (const r of DIY_RECIPES) {
+    const keyMatch = r.key.filter(k => sel.includes(k)).length;
+    const optMatch = r.opt.filter(k => sel.includes(k)).length;
+    const score = keyMatch * 3 + optMatch;
+    if (score > bestScore) { bestScore = score; best = r; }
+  }
+
+  // 没有任何匹配时，随机推荐一道
+  if (!best || bestScore === 0) best = DIY_RECIPES[Math.floor(Math.random() * DIY_RECIPES.length)];
+
+  // 构造成和cooking channel一样的food对象，复用结果页
+  const food = {
+    zh: best.name, en: best.name, emoji: best.emoji, color: best.color,
+    channel: 'diy', isCooking: true,
+    desc: { zh: `用 ${sel.join('、')} 做的推荐菜`, en: best.name },
+    kw: null, w: 1,
+    dishes: [{
+      type: 'main', name: best.name,
+      ing: `${best.key.concat(best.opt).join('、')}，以及适量盐、酱油、蒜等调料`,
+      steps: best.method
+    }],
+    diyMethod: best.method,
+    diyTime: best.time,
+  };
+  showResult(food);
+}
+
+function diyInitPanel() {
+  diyRenderCats();
+  diyRenderIngs();
+}
 
 // ══════════════════════════════════════════════════════
 //  自己动手菜谱数据
@@ -1739,6 +1948,8 @@ async function rebuildSegs() {
     activeFoods = foods.filter(f => f.channel === 'simple' || f.channel === 'shared');
   } else if (currentChannel === 'feast') {
     activeFoods = foods.filter(f => f.channel === 'feast' || f.channel === 'shared');
+  } else if (currentChannel === 'diy') {
+    activeFoods = []; // diy通道不走轮盘
   } else {
     activeFoods = foods.filter(f => f.channel === 'beverage');
   }
@@ -1749,12 +1960,17 @@ async function rebuildSegs() {
 function setChannel(ch) {
   if (currentChannel === ch) return;
   currentChannel = ch;
-  ['btnSimple','btnFeast','btnBeverage','btnCooking'].forEach(id => {
+  ['btnSimple','btnFeast','btnBeverage','btnCooking','btnDIY'].forEach(id => {
     document.getElementById(id).classList.toggle('active',
       (ch==='simple'&&id==='btnSimple')||(ch==='feast'&&id==='btnFeast')||
-      (ch==='beverage'&&id==='btnBeverage')||(ch==='cooking'&&id==='btnCooking'));
+      (ch==='beverage'&&id==='btnBeverage')||(ch==='cooking'&&id==='btnCooking')||
+      (ch==='diy'&&id==='btnDIY'));
   });
   document.getElementById('cookingTimeRow').classList.toggle('show', ch === 'cooking');
+  document.getElementById('diyPanel').classList.toggle('show', ch === 'diy');
+  // 自己搭配通道时隐藏开始按钮（直接在面板操作）
+  document.getElementById('startBtn').style.display = ch === 'diy' ? 'none' : '';
+  if (ch === 'diy') diyInitPanel();
   const btn = document.getElementById('spinBtn');
   if (btn) { btn.textContent = '转！'; delete btn.dataset.spun; }
   rebuildSegs();
@@ -2115,31 +2331,50 @@ function rerenderResult() {
 
   const recipeArea = document.getElementById('recipeArea');
   if (food.isCooking && food.dishes) {
-    // 菜谱模式
     document.getElementById('rDesc').textContent = '';
     const cookRec = getWeatherRecScore(food);
     const recTag = cookRec ? `<span class="tag weather-rec score${cookRec.score}">${cookRec.emoji} ${cookRec.stars} ${cookRec.label}</span>` : '';
-    document.getElementById('tagsRow').innerHTML = `<span class="tag meal">🍳 自己动手</span><span class="tag meal">⏱ ${currentCookTime}分钟</span>${recTag}`;
     document.getElementById('actionRow').style.display = 'none';
     document.getElementById('mapPanel').innerHTML = '';
     document.getElementById('deliveryPanel').innerHTML = '';
     document.getElementById('noMapArea').innerHTML = '';
-    recipeArea.innerHTML = food.dishes.map(d => `
-      <div class="dish-block">
-        <div class="dish-header">
-          <span class="dish-type-badge ${d.type==='荤'?'meat':'veg'}">${d.type==='荤'?'🥩 荤菜':'🥬 素菜'}</span>
-          <span class="dish-name-h">${d.name}</span>
-        </div>
-        <div class="dish-section-label">食材</div>
-        <div class="dish-ingredients">${d.ing}</div>
-        <div class="dish-section-label">步骤</div>
-        <div class="dish-steps">${d.steps.map((s,i)=>`
-          <div class="dish-step">
-            <div class="step-num">${i+1}</div>
-            <div class="step-text">${s}</div>
-          </div>`).join('')}
-        </div>
-      </div>`).join('');
+
+    if (food.channel === 'diy') {
+      // 自己搭配：单道菜
+      document.getElementById('tagsRow').innerHTML =
+        `<span class="tag meal">🥗 自己搭配</span><span class="tag meal">⏱ ${food.diyTime||''}</span>${recTag}`;
+      const d = food.dishes[0];
+      recipeArea.innerHTML = `
+        <div class="dish-block">
+          <div class="dish-header"><span class="dish-name-h">${d.name}</span></div>
+          <div class="dish-section-label">所需食材</div>
+          <div class="dish-ingredients">${d.ing}</div>
+          <div class="dish-section-label">制作方法</div>
+          <div class="dish-steps">
+            <div class="dish-step"><div class="step-text">${d.steps}</div></div>
+          </div>
+        </div>`;
+    } else {
+      // 自己动手：多道套餐
+      document.getElementById('tagsRow').innerHTML =
+        `<span class="tag meal">🍳 自己动手</span><span class="tag meal">⏱ ${currentCookTime}分钟</span>${recTag}`;
+      recipeArea.innerHTML = food.dishes.map(d => `
+        <div class="dish-block">
+          <div class="dish-header">
+            <span class="dish-type-badge ${d.type==='荤'?'meat':'veg'}">${d.type==='荤'?'🥩 荤菜':'🥬 素菜'}</span>
+            <span class="dish-name-h">${d.name}</span>
+          </div>
+          <div class="dish-section-label">食材</div>
+          <div class="dish-ingredients">${d.ing}</div>
+          <div class="dish-section-label">步骤</div>
+          <div class="dish-steps">${d.steps.map((s,i)=>`
+            <div class="dish-step">
+              <div class="step-num">${i+1}</div>
+              <div class="step-text">${s}</div>
+            </div>`).join('')}
+          </div>
+        </div>`).join('');
+    }
     recipeArea.classList.add('show');
   } else {
     recipeArea.classList.remove('show');
