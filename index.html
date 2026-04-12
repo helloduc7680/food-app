@@ -1065,7 +1065,7 @@ const foods = [
   { channel:'shared',   zh:'贵州菜',    en:'Guizhou',              emoji:'🌶️', w:3, kw:{zh:'贵州菜',      en:'guizhou food'},          desc:{zh:'酸辣鲜香，黔味难忘！',            en:'Sour, spicy & unforgettable!'},    mealType:['all-day'],           color:'#8E44AD' },
   // ── 简单吃吃 ────────────────────────────────────────────────
   { channel:'simple',   zh:'螺蛳粉',    en:'Snail Noodles',        emoji:'🍜', w:4, kw:{zh:'螺蛳粉',      en:'luosifen noodles'},      desc:{zh:'那股味儿，是你今天的试炼！',       en:'Stinky & irresistible!'},          mealType:['all-day'],           color:'#F77F00' },
-  { channel:'simple',   zh:'轻食沙拉',  en:'Salad Bowl',           emoji:'🥗', w:4, kw:{zh:'轻食沙拉',    en:'salad healthy food'},    desc:{zh:'脂肪在跟你拜拜，肌肉在招手！',    en:'Low-cal, high-protein, abs!'},     mealType:['lunch'],             color:'#52B788' },
+  { channel:'simple',   zh:'轻食沙拉',  en:'Salad Bowl',           emoji:'🥗', w:4, fixedProb:0.4, kw:{zh:'轻食沙拉',    en:'salad healthy food'},    desc:{zh:'脂肪在跟你拜拜，肌肉在招手！',    en:'Low-cal, high-protein, abs!'},     mealType:['lunch'],             color:'#52B788' },
   { channel:'simple',   zh:'简餐',      en:'Simple Meal',          emoji:'🥙', w:4, kw:{zh:'简餐轻食',    en:'simple meal'},           desc:{zh:'别人吃龙虾，你在感悟人生！',       en:'Simple but satisfying!'},          mealType:['lunch'],             color:'#84A98C' },
   { channel:'simple',   zh:'煲仔饭',    en:'Claypot Rice',         emoji:'🍱', w:4, kw:{zh:'煲仔饭',      en:'claypot rice'},          desc:{zh:'锅底那层焦饭，才是精华！',         en:'Wok-charred & fragrant!'},         mealType:['lunch'],             color:'#CA6702' },
   { channel:'simple',   zh:'包子',      en:'Steamed Buns',         emoji:'🥟', w:3, kw:{zh:'包子',        en:'baozi'},                 desc:{zh:'热乎乎的包子，童年最美记忆！',    en:'Fluffy warm buns, so satisfying!'}, mealType:['breakfast'],        color:'#ADB5BD' },
@@ -1689,7 +1689,7 @@ function getLastSeen(foodZh) {
   return foodZh in map ? map[foodZh] : null;
 }
 function getWeight(f, mealType = null, weather = null) {
-  let w = f.zh === '轻食沙拉' ? f.w * 6 : f.w;
+  let w = f.w;
   if (!mealType) mealType = getMealType();
   if (f.mealType) {
     if (f.mealType.includes(mealType)) w *= 1.5;
@@ -1713,10 +1713,24 @@ let segs = [], activeFoods = [], totalW = 0;
 let _appStarted = false;
 
 function buildSegsWithWeather(mealType, weather) {
+  // 第一步：区分固定概率项 vs 普通项
+  const fixedItems  = activeFoods.filter(f => f.fixedProb != null);
+  const normalItems = activeFoods.filter(f => f.fixedProb == null);
+  const fixedProbSum = fixedItems.reduce((s, f) => s + f.fixedProb, 0);
+
+  // 第二步：计算普通项的总权重
+  const normalTotalW = normalItems.reduce((s, f) => s + getWeight(f, mealType, weather), 0);
+
+  // 第三步：把固定概率换算成等效权重
+  // fixedItem 占比 = fixedProb，普通项合计占比 = 1 - fixedProbSum
+  // fixedItem 等效权重 = fixedProb / (1 - fixedProbSum) * normalTotalW
+  const scale = fixedProbSum < 1 ? normalTotalW / (1 - fixedProbSum) : 1;
+  const getEffW = (f) => f.fixedProb != null ? f.fixedProb * scale : getWeight(f, mealType, weather);
+
   let acc = 0;
-  totalW = activeFoods.reduce((s,f) => s + getWeight(f, mealType, weather), 0);
+  totalW = activeFoods.reduce((s, f) => s + getEffW(f), 0);
   segs = activeFoods.map(f => {
-    const w = getWeight(f, mealType, weather);
+    const w = getEffW(f);
     const arc = w / totalW * Math.PI * 2;
     const s = { ...f, w, mealType, weather, sa: acc, ea: acc + arc };
     acc += arc;
