@@ -1824,14 +1824,13 @@ function buildWheel() {
   canvas.height = CSS_SIZE * dpr;
   canvas.style.width = CSS_SIZE + 'px';
   canvas.style.height = CSS_SIZE + 'px';
-  const tw = activeFoods.reduce((s, f) => s + getWeight(f), 0);
-  let angle = -Math.PI / 2;
-  wheelSegs = activeFoods.map((food, i) => {
-    const arc = (getWeight(food) / tw) * Math.PI * 2;
-    const seg = { food, sa: angle, ea: angle + arc, color: WHEEL_COLORS[i % WHEEL_COLORS.length] };
-    angle += arc;
-    return seg;
-  });
+  // 直接用 segs（含 fixedProb 权重），保证轮盘扇区和抽取概率完全一致
+  wheelSegs = segs.map((s, i) => ({
+    food: activeFoods[i],
+    sa: s.sa - Math.PI / 2,
+    ea: s.ea - Math.PI / 2,
+    color: WHEEL_COLORS[i % WHEEL_COLORS.length]
+  }));
   drawWheel(wheelRot);
 }
 
