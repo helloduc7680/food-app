@@ -2470,6 +2470,7 @@ function resultGoBack() {
 
 function showResult(food) {
   _resultFromDIY = food.channel === 'diy';
+  currentFood = food;
   saveHistory(food); _histCache = null;
   document.getElementById('rEmoji').textContent = food.emoji || '🍳';
   document.getElementById('resultBottom').style.background = food.color || '#FFBF00';
