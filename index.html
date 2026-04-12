@@ -329,6 +329,7 @@
       transition: opacity 0.4s;
       z-index: 50;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     #screen-diy.active { opacity: 1; pointer-events: auto; }
 
@@ -410,6 +411,82 @@
       transition: opacity 0.2s;
     }
     .diy-gen-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* DIY 两个子视图切换 */
+    #diySelectView, #diyResultsView {
+      transition: opacity 0.3s;
+    }
+    #diyResultsView {
+      display: none; flex-direction: column;
+      padding: calc(var(--safe-top) + 70px) 16px calc(var(--safe-bottom) + 24px);
+      gap: 10px;
+    }
+    #diyResultsView.visible { display: flex; }
+    #diySelectView.hidden { display: none; }
+
+    /* 结果列表头部 */
+    .diy-results-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .diy-results-count {
+      font-size: 13px; color: rgba(255,255,255,0.45);
+    }
+    .diy-results-reselect {
+      font-size: 12px; color: rgba(90,200,250,0.75); background: none;
+      border: 1px solid rgba(90,200,250,0.3); border-radius: 14px;
+      padding: 4px 12px; cursor: pointer;
+    }
+
+    /* 菜谱卡片 */
+    .diy-recipe-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: all 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .diy-recipe-card:active { transform: scale(0.98); opacity: 0.85; }
+    .diy-recipe-card-accent {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 4px; border-radius: 4px 0 0 4px;
+    }
+    .diy-recipe-emoji {
+      font-size: 36px; flex-shrink: 0; line-height: 1;
+    }
+    .diy-recipe-info { flex: 1; min-width: 0; }
+    .diy-recipe-name {
+      font-size: 16px; font-weight: 800; color: #fff;
+      font-family: 'ZCOOL KuaiLe', 'Nunito', sans-serif;
+      margin-bottom: 4px;
+    }
+    .diy-recipe-tags {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 5px;
+    }
+    .diy-recipe-tag {
+      font-size: 11px; padding: 2px 7px; border-radius: 8px;
+      background: rgba(90,200,250,0.15); color: #5AC8FA;
+    }
+    .diy-recipe-tag.miss {
+      background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.35);
+    }
+    .diy-recipe-meta {
+      font-size: 11px; color: rgba(255,255,255,0.4);
+    }
+    .diy-recipe-arrow {
+      font-size: 16px; color: rgba(255,255,255,0.25); flex-shrink: 0;
+    }
+    /* 完全匹配高亮卡片 */
+    .diy-recipe-card.full-match {
+      border-color: rgba(90,200,250,0.35);
+      background: rgba(90,200,250,0.08);
+    }
+    /* 分组标签 */
+    .diy-group-label {
+      font-size: 11px; color: rgba(255,255,255,0.35);
+      letter-spacing: 1px; padding: 8px 4px 2px;
+    }
 
     /* 时长子选择器 */
     .cooking-time-row {
@@ -1084,19 +1161,33 @@
 
 <!-- ══════════════════════ 自己搭配屏幕 ══════════════════════ -->
 <div id="screen-diy">
-  <div class="diy-screen-nav">
-    <button class="nav-pill" onclick="goBackFromDIY()">← 返回</button>
-    <span class="diy-screen-title">🥗 自己搭配</span>
-    <button class="diy-clear-btn" onclick="diyClearAll()">清空</button>
+  <!-- 顶部导航（始终显示） -->
+  <div class="diy-screen-nav" id="diyScreenNav">
+    <button class="nav-pill" id="diyNavBack" onclick="diyNavBack()">← 返回</button>
+    <span class="diy-screen-title" id="diyNavTitle">🥗 自己搭配</span>
+    <button class="diy-clear-btn" id="diyNavRight" onclick="diyClearAll()">清空</button>
   </div>
-  <div class="diy-body">
-    <div class="diy-section-label">选择食材</div>
-    <div class="diy-cat-row" id="diyCatRow"></div>
-    <div class="diy-ing-grid" id="diyIngGrid"></div>
+
+  <!-- 子视图 1：食材选择 -->
+  <div id="diySelectView">
+    <div class="diy-body">
+      <div class="diy-section-label">选择食材</div>
+      <div class="diy-cat-row" id="diyCatRow"></div>
+      <div class="diy-ing-grid" id="diyIngGrid"></div>
+    </div>
+    <div class="diy-footer">
+      <div class="diy-selected-tip">已选 <span id="diyCount">0</span> 种食材</div>
+      <button class="diy-gen-btn" id="diyGenBtn" onclick="diyGenerate()" disabled>✨ 生成推荐菜</button>
+    </div>
   </div>
-  <div class="diy-footer">
-    <div class="diy-selected-tip">已选 <span id="diyCount">0</span> 种食材</div>
-    <button class="diy-gen-btn" id="diyGenBtn" onclick="diyGenerate()" disabled>✨ 生成推荐菜</button>
+
+  <!-- 子视图 2：推荐菜列表 -->
+  <div id="diyResultsView">
+    <div class="diy-results-header">
+      <span class="diy-results-count" id="diyResultsCount"></span>
+      <button class="diy-results-reselect" onclick="diyShowSelectView()">重新选择</button>
+    </div>
+    <div id="diyResultsList"></div>
   </div>
 </div>
 
@@ -1441,34 +1532,119 @@ function diyGenerate() {
   if (diySelectedIngs.size === 0) return;
   const sel = [...diySelectedIngs];
 
-  // 评分：匹配的必需食材数 * 3 + 匹配的可选食材数
-  let best = null, bestScore = -1;
-  for (const r of DIY_RECIPES) {
-    const keyMatch = r.key.filter(k => sel.includes(k)).length;
-    const optMatch = r.opt.filter(k => sel.includes(k)).length;
-    const score = keyMatch * 3 + optMatch;
-    if (score > bestScore) { bestScore = score; best = r; }
+  // 对每道菜计算匹配分数
+  const scored = DIY_RECIPES.map(r => {
+    const keyMatched = r.key.filter(k => sel.includes(k));
+    const optMatched = r.opt.filter(k => sel.includes(k));
+    const keyMiss    = r.key.filter(k => !sel.includes(k));
+    const score = keyMatched.length * 3 + optMatched.length;
+    return { r, score, keyMatched, optMatched, keyMiss };
+  }).filter(x => x.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  // 无任何匹配时展示3道随机推荐
+  if (scored.length === 0) {
+    const shuffled = [...DIY_RECIPES].sort(() => Math.random() - 0.5).slice(0, 3);
+    diyShowResultsList(shuffled.map(r => ({
+      r, score: 0, keyMatched: [], optMatched: [], keyMiss: r.key
+    })), sel, true);
+  } else {
+    diyShowResultsList(scored, sel, false);
+  }
+}
+
+function diyShowResultsList(scored, sel, isRandom) {
+  // 切换到结果视图
+  document.getElementById('diySelectView').classList.add('hidden');
+  document.getElementById('diyResultsView').classList.add('visible');
+
+  // 更新顶部导航
+  document.getElementById('diyNavTitle').textContent = '推荐菜谱';
+  document.getElementById('diyNavRight').style.display = 'none';
+
+  const count = isRandom ? '随机推荐 3 道' : `找到 ${scored.length} 道菜谱`;
+  document.getElementById('diyResultsCount').textContent = count;
+
+  let html = '';
+
+  if (isRandom) {
+    html += `<div class="diy-group-label">💡 未找到精准匹配，随机推荐</div>`;
+    html += scored.map((x, i) => diyRecipeCardHTML(x, i, false)).join('');
+  } else {
+    // 分组：完全匹配 vs 部分匹配
+    const full    = scored.filter(x => x.keyMiss.length === 0);
+    const partial = scored.filter(x => x.keyMiss.length > 0);
+    if (full.length > 0) {
+      html += `<div class="diy-group-label">✅ 食材完全匹配 (${full.length}道)</div>`;
+      html += full.map((x, i) => diyRecipeCardHTML(x, i, true)).join('');
+    }
+    if (partial.length > 0) {
+      html += `<div class="diy-group-label">${full.length > 0 ? '🔸 部分匹配' : '🔸 推荐菜谱'} (${partial.length}道)</div>`;
+      html += partial.map((x, i) => diyRecipeCardHTML(x, full.length + i, false)).join('');
+    }
   }
 
-  // 没有任何匹配时，随机推荐一道
-  if (!best || bestScore === 0) best = DIY_RECIPES[Math.floor(Math.random() * DIY_RECIPES.length)];
+  document.getElementById('diyResultsList').innerHTML = html;
+  // 滚到顶部
+  document.getElementById('screen-diy').scrollTop = 0;
+}
 
-  // 构造成和cooking channel一样的food对象，复用结果页
+function diyRecipeCardHTML(x, idx, isFullMatch) {
+  const { r, keyMatched, optMatched, keyMiss } = x;
+  const allMatched = [...keyMatched, ...optMatched];
+  const tagHTML = [
+    ...keyMatched.map(k => `<span class="diy-recipe-tag">${ING_EMOJI[k]||''}${k}</span>`),
+    ...optMatched.map(k => `<span class="diy-recipe-tag">${ING_EMOJI[k]||''}${k}</span>`),
+    ...keyMiss.map(k => `<span class="diy-recipe-tag miss">还需 ${k}</span>`),
+  ].join('');
+  return `
+    <div class="diy-recipe-card${isFullMatch?' full-match':''}" onclick="diyOpenRecipe(${DIY_RECIPES.indexOf(r)})">
+      <div class="diy-recipe-card-accent" style="background:${r.color}"></div>
+      <div class="diy-recipe-emoji">${r.emoji}</div>
+      <div class="diy-recipe-info">
+        <div class="diy-recipe-name">${r.name}</div>
+        <div class="diy-recipe-tags">${tagHTML}</div>
+        <div class="diy-recipe-meta">⏱ ${r.time}</div>
+      </div>
+      <div class="diy-recipe-arrow">›</div>
+    </div>`;
+}
+
+function diyOpenRecipe(recipeIdx) {
+  const r = DIY_RECIPES[recipeIdx];
+  const sel = [...diySelectedIngs];
   const food = {
-    zh: best.name, en: best.name, emoji: best.emoji, color: best.color,
+    zh: r.name, en: r.name, emoji: r.emoji, color: r.color,
     channel: 'diy', isCooking: true,
-    desc: { zh: `用 ${sel.join('、')} 做的推荐菜`, en: best.name },
+    desc: { zh: `用 ${sel.join('、')} 做的推荐菜`, en: r.name },
     kw: null, w: 1,
     dishes: [{
-      type: 'main', name: best.name,
-      ing: `${best.key.concat(best.opt).join('、')}，以及适量盐、酱油、蒜等调料`,
-      steps: best.method
+      type: 'main', name: r.name,
+      ing: `${r.key.concat(r.opt).join('、')}，以及适量盐、酱油、蒜等调料`,
+      steps: r.method
     }],
-    diyMethod: best.method,
-    diyTime: best.time,
+    diyMethod: r.method,
+    diyTime: r.time,
   };
   document.getElementById('screen-diy').classList.remove('active');
   showResult(food);
+}
+
+function diyShowSelectView() {
+  document.getElementById('diySelectView').classList.remove('hidden');
+  document.getElementById('diyResultsView').classList.remove('visible');
+  document.getElementById('diyNavTitle').textContent = '🥗 自己搭配';
+  document.getElementById('diyNavRight').style.display = '';
+  document.getElementById('screen-diy').scrollTop = 0;
+}
+
+function diyNavBack() {
+  // 如果正在看结果列表，返回食材选择
+  if (document.getElementById('diyResultsView').classList.contains('visible')) {
+    diyShowSelectView();
+  } else {
+    goBackFromDIY();
+  }
 }
 
 function diyInitPanel() {
@@ -2019,6 +2195,7 @@ function goToDIY() {
   // 切到 screen-diy
   document.getElementById('screen-main').classList.add('hidden');
   document.getElementById('screen-diy').classList.add('active');
+  diyShowSelectView();
   diyInitPanel();
 }
 
@@ -2032,6 +2209,7 @@ function diyClearAll() {
   diySelectedIngs.clear();
   document.getElementById('diyCount').textContent = '0';
   document.getElementById('diyGenBtn').disabled = true;
+  diyShowSelectView();
   diyRenderIngs();
 }
 
@@ -2463,6 +2641,10 @@ function resultGoBack() {
   if (_resultFromDIY) {
     document.getElementById('screen-result').classList.remove('active');
     document.getElementById('screen-diy').classList.add('active');
+    // 确保停留在结果列表视图（如果已生成过）
+    if (!document.getElementById('diyResultsView').classList.contains('visible')) {
+      diyShowSelectView();
+    }
   } else {
     goToMain();
   }
