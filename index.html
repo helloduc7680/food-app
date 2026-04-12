@@ -475,15 +475,6 @@
         0 12px 50px rgba(0,0,0,0.7),
         0 0 80px rgba(180,80,255,0.25);
     }
-    /* Stars on outer ring */
-    .wheel-frame::after {
-      content: '★ ★ ★ ★ ★ ★ ★ ★';
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 8px; color: rgba(255,255,255,0.0);
-      border-radius: 50%;
-      background: transparent;
-    }
     .wheel-inner {
       border-radius: 50%;
       background: #0a0022;
@@ -1104,7 +1095,7 @@ const foods = [
   { channel:'simple',   zh:'盖浇饭',    en:'Rice Bowl',            emoji:'🍚', w:4, kw:{zh:'盖浇饭',      en:'rice with topping'},     desc:{zh:'往饭上一盖，问题都解决了！',       en:'One pour, all problems solved!'},  mealType:['lunch'],             color:'#A04000' },
   { channel:'simple',   zh:'麻辣香锅',  en:'Mala Dry Pot',         emoji:'🌶️', w:4, kw:{zh:'麻辣香锅',    en:'mala dry pot'},          desc:{zh:'干锅不干，麻辣到底！',             en:'Dry pot, wet your appetite!'},     mealType:['dinner'],            color:'#B03A2E' },
   { channel:'simple',   zh:'鸡公煲',    en:'Spicy Chicken Pot',    emoji:'🍲', w:4, kw:{zh:'鸡公煲',      en:'spicy chicken pot'},     desc:{zh:'土鸡煮锅，辣到停不下来！',         en:'Spicy clay pot chicken!'},         mealType:['dinner'],            color:'#E67E22' },
-  { channel:'simple',   zh:'过桥米线',  en:'Crossing Bridge Noodles',emoji:'🍜',w:4,kw:{zh:'过桥米线',   en:'crossing bridge noodles'},desc:{zh:'云南的浪漫，在一碗汤里！',         en:"Yunnan's legendary noodles!"},     mealType:['all-day'],           color:'#2E86C1' },
+  { channel:'simple',   zh:'过桥米线',  en:'Crossing Bridge Noodles', emoji:'🍜', w:4, kw:{zh:'过桥米线',   en:'crossing bridge noodles'}, desc:{zh:'云南的浪漫，在一碗汤里！',        en:"Yunnan's legendary noodles!"},     mealType:['all-day'],           color:'#2E86C1' },
   { channel:'simple',   zh:'鸡蛋灌饼',  en:'Egg Flatbread',        emoji:'🫔', w:3, kw:{zh:'鸡蛋灌饼',    en:'egg flatbread'},         desc:{zh:'脆脆的饼，烫烫的蛋！',             en:'Crispy egg-stuffed flatbread!'},   mealType:['breakfast'],         color:'#F39C12' },
   { channel:'simple',   zh:'韩式烤肉',  en:'Korean BBQ',           emoji:'🥩', w:4, kw:{zh:'韩式烤肉',    en:'korean bbq'},            desc:{zh:'烤到滋滋响，蘸酱大口吃！',         en:'Sizzling Korean BBQ bliss!'},      mealType:['dinner'],            color:'#D35400' },
   // ── 大吃一顿 ────────────────────────────────────────────────
@@ -1233,9 +1224,7 @@ const I18N = {
 
 let lang = 'zh';
 let currentWeather = null;
-let animating = false;
 let currentFood = null;
-let currentSeg = null;
 let currentChannel = 'simple';
 let currentCookTime = '10';
 
@@ -2102,9 +2091,6 @@ function buildTags(food) {
   const rec = getWeatherRecScore(food);
   if (rec) {
     html += `<span class="tag weather-rec score${rec.score}">${rec.emoji} ${rec.stars} ${rec.label}</span>`;
-  } else if (currentSeg && currentSeg.weather) {
-    const w = currentSeg.weather;
-    html += `<span class="tag weather">🌤️ ${Math.round(w.temp)}°C</span>`;
   }
   return html;
 }
