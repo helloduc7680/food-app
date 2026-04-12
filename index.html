@@ -1850,11 +1850,23 @@ function drawWheel(rot) {
 }
 
 function weightedPick() {
-  // 直接使用 segs 里已经计算好的权重（含 fixedProb）
-  let r = Math.random() * totalW, cum = 0;
+  // 第一步：用 [0,1) 随机数判断是否命中固定概率项
+  const r = Math.random();
+  let fixedCum = 0;
   for (let i = 0; i < segs.length; i++) {
-    cum += segs[i].w;
-    if (r < cum) return i;
+    if (segs[i].fixedProb != null) {
+      fixedCum += segs[i].fixedProb;
+      if (r < fixedCum) return i;
+    }
+  }
+  // 第二步：未命中固定项，从普通项里按权重随机选
+  const normalW = segs.reduce((s, seg) => seg.fixedProb == null ? s + seg.w : s, 0);
+  let r2 = Math.random() * normalW, cum = 0;
+  for (let i = 0; i < segs.length; i++) {
+    if (segs[i].fixedProb == null) {
+      cum += segs[i].w;
+      if (r2 < cum) return i;
+    }
   }
   return segs.length - 1;
 }
